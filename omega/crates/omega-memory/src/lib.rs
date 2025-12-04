@@ -224,9 +224,9 @@ impl CosmicMemory {
         let cosmic_stats = self.cosmic_scale.read().await.stats().await;
 
         MemoryStats {
-            individual: individual_stats,
-            species: species_stats,
-            cosmic: cosmic_stats,
+            individual: individual_stats.clone(),
+            species: species_stats.clone(),
+            cosmic: cosmic_stats.clone(),
             total_memories: individual_stats.total + species_stats.total + cosmic_stats.total,
         }
     }

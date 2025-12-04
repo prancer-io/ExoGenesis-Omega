@@ -2,47 +2,70 @@
 //!
 //! Integrated runtime environment for the ExoGenesis Omega system.
 //! Coordinates all subsystems including AgentDB, Memory, Loops, and Meta-SONA.
+//!
+//! ## Overview
+//!
+//! The Omega Runtime provides a unified orchestration layer for all Omega subsystems:
+//!
+//! - **AgentDB**: Agent lifecycle and persistence management
+//! - **Memory System**: Multi-tier memory with working, short-term, and long-term storage
+//! - **Loop Engine**: Cognitive loops (conscious, subconscious, meta, unconscious)
+//! - **Meta-SONA**: Self-organizing neural architectures and evolution
+//!
+//! ## Features
+//!
+//! - **Event System**: Comprehensive event bus for system-wide notifications
+//! - **State Management**: Robust state machine with lifecycle management
+//! - **Configuration**: Flexible, validated configuration system
+//! - **API**: High-level API for all subsystem operations
+//! - **Health Monitoring**: Built-in health checks for all components
+//!
+//! ## Example
+//!
+//! ```rust,no_run
+//! use omega_runtime::{OmegaRuntime, OmegaConfig, OmegaAPI};
+//! use std::sync::Arc;
+//!
+//! #[tokio::main]
+//! async fn main() -> Result<(), Box<dyn std::error::Error>> {
+//!     // Create runtime with default configuration
+//!     let config = OmegaConfig::default();
+//!     let runtime = Arc::new(OmegaRuntime::new(config).await?);
+//!
+//!     // Start all subsystems
+//!     runtime.start().await?;
+//!
+//!     // Create API for high-level operations
+//!     let api = OmegaAPI::new(runtime.clone());
+//!
+//!     // Use the API...
+//!
+//!     // Shutdown gracefully
+//!     runtime.stop().await?;
+//!     Ok(())
+//! }
+//! ```
 
-use omega_core::OmegaComponent;
-use omega_agentdb::AgentDB;
-use omega_memory::MemorySystem;
-use omega_loops::LoopEngine;
-use omega_meta_sona::MetaSONA;
+pub mod api;
+pub mod config;
+pub mod error;
+pub mod events;
+pub mod runtime;
 
-/// Main runtime orchestrator
-pub struct OmegaRuntime {
-    pub agentdb: AgentDB,
-    pub memory: MemorySystem,
-    pub loops: LoopEngine,
-    pub meta_sona: MetaSONA,
-}
+#[cfg(test)]
+mod tests;
 
-impl OmegaRuntime {
-    /// Create a new OmegaRuntime instance with all subsystems
-    pub fn new() -> Self {
-        Self {
-            agentdb: AgentDB::new(),
-            memory: MemorySystem::new(),
-            loops: LoopEngine::new(),
-            meta_sona: MetaSONA::new(),
-        }
-    }
-
-    /// Initialize all subsystems
-    pub async fn initialize(&mut self) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
-        self.agentdb.initialize().await?;
-        self.memory.initialize().await?;
-        self.loops.initialize().await?;
-        self.meta_sona.initialize().await?;
-        Ok(())
-    }
-
-    /// Shutdown all subsystems gracefully
-    pub async fn shutdown(&mut self) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
-        self.meta_sona.shutdown().await?;
-        self.loops.shutdown().await?;
-        self.memory.shutdown().await?;
-        self.agentdb.shutdown().await?;
-        Ok(())
-    }
-}
+// Re-export main types
+pub use api::{
+    Architecture, CycleInput, CycleOutput, Intelligence, IntelligenceSpec,
+    LoopInfo, LoopStatus, Memory, OmegaAPI, RuntimeMetrics,
+};
+pub use config::{
+    AgentDBConfig, LoopsConfig, MemoryConfig, MetaSONAConfig, OmegaConfig,
+};
+pub use error::{APIError, APIResult, ConfigError, ConfigResult, RuntimeError, RuntimeResult};
+pub use events::{
+    ArchitectureId, EventBus, EventHandler, IntelligenceId, LoopType,
+    MemoryTier, OmegaEvent,
+};
+pub use runtime::{OmegaRuntime, RuntimeHealth, RuntimeState};
