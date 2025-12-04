@@ -1,0 +1,21 @@
+[package]
+name = "omega-runtime"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+
+[dependencies]
+omega-core = { path = "../omega-core" }
+omega-agentdb = { path = "../omega-agentdb" }
+omega-memory = { path = "../omega-memory" }
+omega-loops = { path = "../omega-loops" }
+omega-meta-sona = { path = "../omega-meta-sona" }
+tokio.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+uuid.workspace = true
+chrono.workspace = true
+thiserror.workspace = true
+tracing.workspace = true
+async-trait.workspace = true
