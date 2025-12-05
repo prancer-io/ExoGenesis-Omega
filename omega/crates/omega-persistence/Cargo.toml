@@ -19,7 +19,7 @@ serde_json = "1.0"
 thiserror = "1.0"
 chrono = { version = "0.4", features = ["serde"] }
 uuid = { version = "1.0", features = ["v4", "serde"] }
-omega-core = { path = "../omega-core" }
+omega-core = { version = "0.1.0", path = "../omega-core" }
 
 [dev-dependencies]
 tempfile = "3.0"
