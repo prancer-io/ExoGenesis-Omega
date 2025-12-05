@@ -12,7 +12,7 @@ categories.workspace = true
 description = "7 temporal cognitive loops from Reflexive (1ms) to Transcendent (10y) for multi-scale processing"
 
 [dependencies]
-omega-core = { version = "0.1.0", path = "../omega-core" }
+omega-core = { version = "1.0.0", path = "../omega-core" }
 tokio.workspace = true
 serde.workspace = true
 serde_json.workspace = true

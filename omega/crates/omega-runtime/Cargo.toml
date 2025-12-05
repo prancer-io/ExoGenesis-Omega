@@ -12,11 +12,11 @@ categories.workspace = true
 description = "Production runtime orchestrator integrating all ExoGenesis Omega subsystems with health monitoring"
 
 [dependencies]
-omega-core = { version = "0.1.0", path = "../omega-core" }
-omega-agentdb = { version = "0.1.0", path = "../omega-agentdb" }
-omega-memory = { version = "0.1.0", path = "../omega-memory" }
-omega-loops = { version = "0.1.0", path = "../omega-loops" }
-omega-meta-sona = { version = "0.1.0", path = "../omega-meta-sona" }
+omega-core = { version = "1.0.0", path = "../omega-core" }
+omega-agentdb = { version = "1.0.0", path = "../omega-agentdb" }
+omega-memory = { version = "1.0.0", path = "../omega-memory" }
+omega-loops = { version = "1.0.0", path = "../omega-loops" }
+omega-meta-sona = { version = "1.0.0", path = "../omega-meta-sona" }
 tokio.workspace = true
 serde.workspace = true
 serde_json.workspace = true
