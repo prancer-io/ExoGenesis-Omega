@@ -3,6 +3,7 @@
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
 use omega_core::{Architecture, FitnessScore};
+use super::benchmarks::BenchmarkSuite;
 
 #[derive(Error, Debug)]
 pub enum EvaluationError {
@@ -27,6 +28,7 @@ pub struct FitnessEvaluator {
     efficiency_weight: f64,
     alignment_weight: f64,
     novelty_weight: f64,
+    benchmark_suite: BenchmarkSuite,
 }
 
 impl FitnessEvaluator {
@@ -42,6 +44,7 @@ impl FitnessEvaluator {
             efficiency_weight: 0.2,
             alignment_weight: 0.3,
             novelty_weight: 0.1,
+            benchmark_suite: BenchmarkSuite::new(),
         }
     }
 
@@ -62,26 +65,25 @@ impl FitnessEvaluator {
             efficiency_weight: efficiency,
             alignment_weight: alignment,
             novelty_weight: novelty,
+            benchmark_suite: BenchmarkSuite::with_weights(capability, efficiency, alignment, novelty),
         }
     }
 
     /// Evaluate architecture fitness across all dimensions
     pub async fn evaluate(
         &self,
-        architecture: &Architecture,
+        _architecture: &Architecture,
     ) -> Result<FitnessScore, EvaluationError> {
-        // Evaluate each dimension in parallel
-        let capability = self.evaluate_capability(architecture).await?;
-        let efficiency = self.evaluate_efficiency(architecture).await?;
-        let alignment = self.evaluate_alignment(architecture).await?;
-        let novelty = self.evaluate_novelty(architecture).await?;
+        // Run the comprehensive benchmark suite
+        let suite_result = self.benchmark_suite.run().await
+            .map_err(|e| EvaluationError::EvaluationFailed(e.to_string()))?;
 
-        // Compute weighted overall score
-        let overall =
-            self.capability_weight * capability +
-            self.efficiency_weight * efficiency +
-            self.alignment_weight * alignment +
-            self.novelty_weight * novelty;
+        // Extract scores from benchmark results
+        let capability = suite_result.capability;
+        let efficiency = suite_result.efficiency;
+        let alignment = suite_result.alignment;
+        let novelty = suite_result.novelty;
+        let overall = suite_result.overall;
 
         // Compute confidence based on variance of component scores
         let scores = vec![capability, efficiency, alignment, novelty];

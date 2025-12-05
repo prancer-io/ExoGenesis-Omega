@@ -47,9 +47,13 @@
 //! ```
 
 pub mod api;
+pub mod circuit_breaker;
 pub mod config;
+pub mod degradation;
 pub mod error;
 pub mod events;
+pub mod health;
+pub mod retry;
 pub mod runtime;
 
 #[cfg(test)]
@@ -60,12 +64,16 @@ pub use api::{
     Architecture, CycleInput, CycleOutput, Intelligence, IntelligenceSpec,
     LoopInfo, LoopStatus, Memory, OmegaAPI, RuntimeMetrics,
 };
+pub use circuit_breaker::{CircuitBreaker, CircuitBreakerConfig, CircuitBreakerError, CircuitState};
 pub use config::{
     AgentDBConfig, LoopsConfig, MemoryConfig, MetaSONAConfig, OmegaConfig,
 };
+pub use degradation::{DegradationError, DegradationManager, FeatureInfo};
 pub use error::{APIError, APIResult, ConfigError, ConfigResult, RuntimeError, RuntimeResult};
 pub use events::{
     ArchitectureId, EventBus, EventHandler, IntelligenceId, LoopType,
     MemoryTier, OmegaEvent,
 };
+pub use health::{HealthError, HealthMonitor, HealthMonitorConfig, HealthStatus, SubsystemHealth};
+pub use retry::{RetryConfig, RetryConfigBuilder, RetryError, RetryPolicy};
 pub use runtime::{OmegaRuntime, RuntimeHealth, RuntimeState};

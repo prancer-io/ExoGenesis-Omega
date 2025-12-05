@@ -7,6 +7,7 @@ members = [
     "crates/omega-loops",
     "crates/omega-meta-sona",
     "crates/omega-runtime",
+    "crates/omega-persistence",
 ]
 
 [workspace.package]
