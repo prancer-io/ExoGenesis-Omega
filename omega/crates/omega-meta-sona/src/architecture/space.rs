@@ -94,6 +94,8 @@ pub struct ArchitectureState {
     pub nodes: Vec<String>,
     pub edges: Vec<(String, String)>,
     pub hyperparameters: std::collections::HashMap<String, f64>,
+    pub depth: usize,
+    pub max_depth: usize,
 }
 
 impl ArchitectureState {
@@ -102,10 +104,37 @@ impl ArchitectureState {
             nodes: Vec::new(),
             edges: Vec::new(),
             hyperparameters: std::collections::HashMap::new(),
+            depth: 0,
+            max_depth: 20,
+        }
+    }
+
+    pub fn with_max_depth(max_depth: usize) -> Self {
+        Self {
+            nodes: Vec::new(),
+            edges: Vec::new(),
+            hyperparameters: std::collections::HashMap::new(),
+            depth: 0,
+            max_depth,
         }
     }
 
     pub fn is_complete(&self) -> bool {
         !self.nodes.is_empty() && !self.edges.is_empty()
+    }
+
+    pub fn is_terminal(&self) -> bool {
+        self.depth >= self.max_depth ||
+        (self.nodes.len() >= 3 && self.edges.len() >= 2)
+    }
+
+    pub fn has_edge(&self, from: &str, to: &str) -> bool {
+        self.edges.iter().any(|(f, t)| f == from && t == to)
+    }
+}
+
+impl Default for ArchitectureState {
+    fn default() -> Self {
+        Self::new()
     }
 }

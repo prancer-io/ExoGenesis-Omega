@@ -60,7 +60,7 @@ pub struct Connection {
     pub connection_type: ConnectionType,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub enum ConnectionType {
     Forward,
     Recurrent,

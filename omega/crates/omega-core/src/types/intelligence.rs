@@ -6,7 +6,7 @@ pub type IntelligenceId = String;
 pub type ArchitectureId = String;
 pub type CapabilityId = String;
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub enum Paradigm {
     Neural,
     Symbolic,
@@ -82,6 +82,19 @@ pub struct FitnessScore {
     pub alignment: f64,
     pub novelty: f64,
     pub confidence: f64,
+}
+
+impl Default for FitnessScore {
+    fn default() -> Self {
+        Self {
+            overall: 0.5,
+            capability: 0.5,
+            efficiency: 0.5,
+            alignment: 0.5,
+            novelty: 0.5,
+            confidence: 0.5,
+        }
+    }
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

@@ -4,11 +4,13 @@
 //! This is an in-memory implementation that mimics AgentDB's functionality
 //! for the ExoGenesis Omega cognitive architecture.
 
+mod hnsw;
+
 use serde::{Deserialize, Serialize};
-use std::collections::HashMap;
 use std::sync::Arc;
 use tokio::sync::RwLock;
 use chrono::{DateTime, Utc};
+use hnsw::{HnswIndex, HnswConfig, VectorPoint};
 
 pub type VectorId = String;
 pub type ReflexionId = String;
@@ -87,7 +89,7 @@ impl Default for AgentDBConfig {
 /// Main AgentDB interface providing vector storage, reflexion, causal, and skill management
 pub struct AgentDB {
     config: AgentDBConfig,
-    vectors: Arc<RwLock<HashMap<VectorId, (Embedding, serde_json::Value)>>>,
+    vector_index: Arc<RwLock<HnswIndex>>,
     episodes: Arc<RwLock<Vec<ReflexionEpisode>>>,
     causal_edges: Arc<RwLock<Vec<CausalEdge>>>,
     skills: Arc<RwLock<Vec<Skill>>>,
@@ -96,9 +98,15 @@ pub struct AgentDB {
 impl AgentDB {
     /// Creates a new AgentDB instance with the given configuration
     pub async fn new(config: AgentDBConfig) -> Result<Self, AgentDBError> {
+        let hnsw_config = HnswConfig {
+            ef_construction: config.hnsw_ef,
+            ef_search: config.hnsw_ef,
+            m: config.hnsw_m,
+        };
+
         Ok(Self {
             config,
-            vectors: Arc::new(RwLock::new(HashMap::new())),
+            vector_index: Arc::new(RwLock::new(HnswIndex::new(hnsw_config))),
             episodes: Arc::new(RwLock::new(Vec::new())),
             causal_edges: Arc::new(RwLock::new(Vec::new())),
             skills: Arc::new(RwLock::new(Vec::new())),
@@ -122,12 +130,18 @@ impl AgentDB {
         }
 
         let id = uuid::Uuid::new_v4().to_string();
-        let mut vectors = self.vectors.write().await;
-        vectors.insert(id.clone(), (embedding, metadata));
+
+        let point = VectorPoint {
+            id: id.clone(),
+            embedding,
+            metadata,
+        };
+
+        self.vector_index.write().await.insert(point);
         Ok(id)
     }
 
-    /// Searches for the k most similar vectors using cosine similarity
+    /// Searches for the k most similar vectors using HNSW index
     pub async fn vector_search(
         &self,
         query: &Embedding,
@@ -141,41 +155,33 @@ impl AgentDB {
             )));
         }
 
-        let vectors = self.vectors.read().await;
-        let mut results: Vec<VectorResult> = Vec::new();
+        let results = self.vector_index.write().await.search(query, k);
 
-        for (id, (embedding, metadata)) in vectors.iter() {
-            let similarity = cosine_similarity(query, embedding);
-            results.push(VectorResult {
-                id: id.clone(),
-                similarity,
-                metadata: metadata.clone(),
-            });
-        }
-
-        // Sort by similarity descending and take top k
-        results.sort_by(|a, b| b.similarity.partial_cmp(&a.similarity).unwrap());
-        results.truncate(k);
-
-        Ok(results)
+        Ok(results.into_iter().map(|r| VectorResult {
+            id: r.id,
+            similarity: r.similarity as f64,
+            metadata: r.metadata,
+        }).collect())
     }
 
     /// Retrieves a specific vector by ID
     pub async fn vector_get(&self, id: &str) -> Result<(Embedding, serde_json::Value), AgentDBError> {
-        let vectors = self.vectors.read().await;
-        vectors
+        let index = self.vector_index.read().await;
+        let point = index
             .get(id)
-            .cloned()
-            .ok_or_else(|| AgentDBError::NotFound(format!("Vector {} not found", id)))
+            .ok_or_else(|| AgentDBError::NotFound(format!("Vector {} not found", id)))?;
+
+        Ok((point.embedding.clone(), point.metadata.clone()))
     }
 
     /// Deletes a vector by ID
     pub async fn vector_delete(&self, id: &str) -> Result<(), AgentDBError> {
-        let mut vectors = self.vectors.write().await;
-        vectors
-            .remove(id)
-            .ok_or_else(|| AgentDBError::NotFound(format!("Vector {} not found", id)))?;
-        Ok(())
+        let mut index = self.vector_index.write().await;
+        if index.remove(id) {
+            Ok(())
+        } else {
+            Err(AgentDBError::NotFound(format!("Vector {} not found", id)))
+        }
     }
 
     // ==================== Reflexion Operations ====================
@@ -470,13 +476,13 @@ impl AgentDB {
 
     /// Returns statistics about the database
     pub async fn stats(&self) -> AgentDBStats {
-        let vectors = self.vectors.read().await;
+        let vector_index = self.vector_index.read().await;
         let episodes = self.episodes.read().await;
         let edges = self.causal_edges.read().await;
         let skills = self.skills.read().await;
 
         AgentDBStats {
-            vector_count: vectors.len(),
+            vector_count: vector_index.len(),
             episode_count: episodes.len(),
             causal_edge_count: edges.len(),
             skill_count: skills.len(),
@@ -485,12 +491,18 @@ impl AgentDB {
 
     /// Clears all data from the database
     pub async fn clear(&self) -> Result<(), AgentDBError> {
-        let mut vectors = self.vectors.write().await;
+        let hnsw_config = HnswConfig {
+            ef_construction: self.config.hnsw_ef,
+            ef_search: self.config.hnsw_ef,
+            m: self.config.hnsw_m,
+        };
+
+        let mut vector_index = self.vector_index.write().await;
         let mut episodes = self.episodes.write().await;
         let mut edges = self.causal_edges.write().await;
         let mut skills = self.skills.write().await;
 
-        vectors.clear();
+        *vector_index = HnswIndex::new(hnsw_config);
         episodes.clear();
         edges.clear();
         skills.clear();
@@ -667,5 +679,127 @@ mod tests {
         let e = vec![1.0, 1.0, 0.0];
         let f = vec![1.0, 1.0, 0.0];
         assert!((cosine_similarity(&e, &f) - 1.0).abs() < 0.001);
+    }
+
+    #[tokio::test]
+    async fn test_hnsw_vector_operations() {
+        let db = AgentDB::new(AgentDBConfig {
+            dimension: 128,
+            ..Default::default()
+        })
+        .await
+        .unwrap();
+
+        // Store test vectors
+        let emb1: Embedding = (0..128).map(|i| i as f32 / 128.0).collect();
+        let emb2: Embedding = (0..128).map(|i| (128 - i) as f32 / 128.0).collect();
+
+        let id1 = db.vector_store(emb1.clone(), serde_json::json!({"name": "v1"})).await.unwrap();
+        let id2 = db.vector_store(emb2.clone(), serde_json::json!({"name": "v2"})).await.unwrap();
+
+        // Retrieve specific vector
+        let (retrieved, meta) = db.vector_get(&id2).await.unwrap();
+        assert_eq!(retrieved.len(), 128);
+        assert_eq!(meta["name"], "v2");
+
+        // Delete a vector
+        db.vector_delete(&id2).await.unwrap();
+        assert!(db.vector_get(&id2).await.is_err());
+
+        // Stats should reflect deletion
+        let stats = db.stats().await;
+        assert_eq!(stats.vector_count, 1);
+    }
+
+    #[tokio::test]
+    async fn test_hnsw_large_dataset() {
+        let db = AgentDB::new(AgentDBConfig {
+            dimension: 64,
+            hnsw_m: 16,
+            hnsw_ef: 100,
+            ..Default::default()
+        })
+        .await
+        .unwrap();
+
+        // Insert 100 vectors
+        for i in 0..100 {
+            let embedding: Embedding = (0..64).map(|j| ((i * j) as f32) / 1000.0).collect();
+            db.vector_store(embedding, serde_json::json!({"index": i})).await.unwrap();
+        }
+
+        // Search for similar to vector 50
+        let query: Embedding = (0..64).map(|j| ((50 * j) as f32) / 1000.0).collect();
+        let results = db.vector_search(&query, 10).await.unwrap();
+
+        // HNSW is approximate - just verify we get meaningful results
+        assert!(!results.is_empty());
+        assert!(results.len() <= 10);
+
+        // Results should have reasonable similarity
+        assert!(results[0].similarity > 0.5, "Top result should have >50% similarity");
+
+        // Verify stats
+        let stats = db.stats().await;
+        assert_eq!(stats.vector_count, 100);
+    }
+
+    #[tokio::test]
+    async fn test_hnsw_empty_search() {
+        let db = AgentDB::new(AgentDBConfig {
+            dimension: 32,
+            ..Default::default()
+        })
+        .await
+        .unwrap();
+
+        let query: Embedding = vec![0.1; 32];
+        let results = db.vector_search(&query, 10).await.unwrap();
+        assert!(results.is_empty());
+    }
+
+    #[tokio::test]
+    async fn test_hnsw_stats() {
+        let db = AgentDB::new(AgentDBConfig {
+            dimension: 16,
+            ..Default::default()
+        })
+        .await
+        .unwrap();
+
+        let stats = db.stats().await;
+        assert_eq!(stats.vector_count, 0);
+
+        for i in 0..5 {
+            let emb: Embedding = vec![i as f32; 16];
+            db.vector_store(emb, serde_json::json!({})).await.unwrap();
+        }
+
+        let stats = db.stats().await;
+        assert_eq!(stats.vector_count, 5);
+
+        db.clear().await.unwrap();
+        let stats = db.stats().await;
+        assert_eq!(stats.vector_count, 0);
+    }
+
+    #[tokio::test]
+    async fn test_hnsw_dimension_validation() {
+        let db = AgentDB::new(AgentDBConfig {
+            dimension: 64,
+            ..Default::default()
+        })
+        .await
+        .unwrap();
+
+        // Try to store wrong dimension
+        let wrong_emb: Embedding = vec![1.0; 32];
+        let result = db.vector_store(wrong_emb, serde_json::json!({})).await;
+        assert!(result.is_err());
+
+        // Try to search with wrong dimension
+        let wrong_query: Embedding = vec![1.0; 32];
+        let result = db.vector_search(&wrong_query, 5).await;
+        assert!(result.is_err());
     }
 }

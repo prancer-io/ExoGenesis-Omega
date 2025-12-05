@@ -6,10 +6,11 @@ use omega_core::{Architecture, Intelligence, Paradigm, SubstrateType};
 
 use crate::{
     search::{MCTS, MCTSConfig},
-    optimization::{PPOOptimizer, PPOConfig, Trajectory},
+    optimization::{PPOOptimizer, PPOConfig, Trajectory, Experience},
     fitness::FitnessEvaluator,
     architecture::ArchitectureState,
 };
+use ndarray::Array1;
 
 #[derive(Error, Debug)]
 pub enum FactoryError {
@@ -57,18 +58,18 @@ impl IntelligenceFactory {
         let mcts_config = MCTSConfig::default();
         let ppo_config = PPOConfig::default();
 
-        let initial_state = ArchitectureState::new();
-        let mcts = MCTS::new(mcts_config, initial_state);
-        let ppo = PPOOptimizer::new(ppo_config);
+        let mcts = MCTS::new(mcts_config);
+        // PPO state_dim = 4096 (architecture encoding), action_dim = 128 (hyperparameter choices)
+        let ppo = PPOOptimizer::new(ppo_config, 4096, 128);
         let evaluator = FitnessEvaluator::new();
 
         Self { mcts, ppo, evaluator }
     }
 
     pub fn with_configs(mcts_config: MCTSConfig, ppo_config: PPOConfig) -> Self {
-        let initial_state = ArchitectureState::new();
-        let mcts = MCTS::new(mcts_config, initial_state);
-        let ppo = PPOOptimizer::new(ppo_config);
+        let mcts = MCTS::new(mcts_config);
+        // PPO state_dim = 4096 (architecture encoding), action_dim = 128 (hyperparameter choices)
+        let ppo = PPOOptimizer::new(ppo_config, 4096, 128);
         let evaluator = FitnessEvaluator::new();
 
         Self { mcts, ppo, evaluator }
@@ -178,10 +179,10 @@ impl IntelligenceFactory {
             .map_err(|e| FactoryError::EvolutionFailed(e.to_string()))?;
 
         tracing::debug!(
-            "PPO optimization: loss={:.4}, policy_loss={:.4}, value_loss={:.4}",
-            result.final_loss,
+            "PPO optimization: policy_loss={:.4}, value_loss={:.4}, entropy={:.4}",
             result.policy_loss,
-            result.value_loss
+            result.value_loss,
+            result.entropy
         );
 
         // Return optimized architecture (simplified - would apply learned changes)
@@ -200,14 +201,19 @@ impl IntelligenceFactory {
             let mut trajectory = Trajectory::new();
 
             // Generate random trajectory (simplified)
-            for _ in 0..20 {
-                trajectory.add_step(
-                    vec![0.0; 4096], // state
-                    vec![0.5; 128],  // action
-                    rand::random::<f64>(), // reward
-                    0.5,             // value
-                    0.0,             // log_prob
-                );
+            for i in 0..20 {
+                let state = Array1::from_vec(vec![i as f64 / 20.0; 4096]);
+                let next_state = Array1::from_vec(vec![(i + 1) as f64 / 20.0; 4096]);
+
+                trajectory.add(Experience {
+                    state,
+                    action: rand::random::<usize>() % 128,
+                    reward: rand::random::<f64>(),
+                    next_state,
+                    done: i == 19,
+                    log_prob: -1.0,
+                    value: 0.5,
+                });
             }
 
             trajectories.push(trajectory);
