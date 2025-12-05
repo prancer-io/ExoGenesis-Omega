@@ -4,9 +4,15 @@ version.workspace = true
 edition.workspace = true
 authors.workspace = true
 license.workspace = true
+repository.workspace = true
+homepage.workspace = true
+documentation.workspace = true
+keywords.workspace = true
+categories.workspace = true
+description = "Self-Optimizing Neural Architecture (META-SONA) with evolutionary search and fitness evaluation"
 
 [dependencies]
-omega-core = { path = "../omega-core" }
+omega-core = { version = "0.1.0", path = "../omega-core" }
 tokio = { workspace = true, features = ["full"] }
 serde = { workspace = true, features = ["derive"] }
 serde_json.workspace = true

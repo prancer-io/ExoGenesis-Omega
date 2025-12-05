@@ -1,7 +1,15 @@
 [package]
 name = "omega-agentdb"
-version = "0.1.0"
-edition = "2021"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+homepage.workspace = true
+documentation.workspace = true
+keywords.workspace = true
+categories.workspace = true
+description = "SIMD-optimized vector database with HNSW index for agent storage and skill management"
 
 [dependencies]
 serde = { version = "1.0", features = ["derive"] }
