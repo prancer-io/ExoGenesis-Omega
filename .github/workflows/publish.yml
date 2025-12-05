@@ -43,12 +43,14 @@ jobs:
 
       - name: Verify version matches
         run: |
-          cd omega
-          CARGO_VERSION=$(grep -E '^version = ' Cargo.toml | head -1 | sed 's/version = "\(.*\)"/\1/')
+          CARGO_VERSION=$(grep -E '^version = ' omega/Cargo.toml | head -1 | sed 's/version = "\(.*\)"/\1/')
+          echo "Tag version: ${{ steps.version.outputs.VERSION }}"
+          echo "Cargo version: $CARGO_VERSION"
           if [ "$CARGO_VERSION" != "${{ steps.version.outputs.VERSION }}" ]; then
             echo "Error: Tag version (${{ steps.version.outputs.VERSION }}) does not match Cargo.toml version ($CARGO_VERSION)"
             exit 1
           fi
+          echo "Version check passed!"
 
       - name: Login to crates.io
         run: cargo login ${{ secrets.CARGO_REGISTRY_TOKEN }}
