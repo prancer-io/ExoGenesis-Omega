@@ -1,0 +1,22 @@
+[package]
+name = "omega-meta-sona"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+
+[dependencies]
+omega-core = { path = "../omega-core" }
+tokio = { workspace = true, features = ["full"] }
+serde = { workspace = true, features = ["derive"] }
+serde_json.workspace = true
+uuid = { workspace = true, features = ["v7"] }
+chrono.workspace = true
+thiserror.workspace = true
+tracing.workspace = true
+async-trait.workspace = true
+rand = "0.8"
+parking_lot = "0.12"
+futures = "0.3"
+ndarray = "0.15"
+ndarray-rand = "0.14"

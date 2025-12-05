@@ -1,0 +1,27 @@
+[workspace]
+resolver = "2"
+members = [
+    "crates/omega-core",
+    "crates/omega-agentdb",
+    "crates/omega-memory",
+    "crates/omega-loops",
+    "crates/omega-meta-sona",
+    "crates/omega-runtime",
+    "crates/omega-persistence",
+]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2021"
+authors = ["ExoGenesis Omega Team"]
+license = "MIT"
+
+[workspace.dependencies]
+tokio = { version = "1.35", features = ["full"] }
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+uuid = { version = "1.6", features = ["v7", "serde"] }
+chrono = { version = "0.4", features = ["serde"] }
+thiserror = "1.0"
+tracing = "0.1"
+async-trait = "0.1"
