@@ -1,0 +1,164 @@
+name: Publish to crates.io
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Dry run (do not actually publish)'
+        required: false
+        default: 'false'
+
+env:
+  RUST_BACKTRACE: 1
+  CARGO_TERM_COLOR: always
+
+jobs:
+  pre-checks:
+    name: Pre-Publication Checks
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy, rustfmt
+
+      - name: Cache cargo registry
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+          key: ${{ runner.os }}-cargo-registry-${{ hashFiles('**/Cargo.lock') }}
+
+      - name: Cache cargo build
+        uses: actions/cache@v4
+        with:
+          path: target
+          key: ${{ runner.os }}-cargo-build-${{ hashFiles('**/Cargo.lock') }}
+
+      - name: Run pre-publish checks
+        run: |
+          cd omega
+          ./scripts/pre-publish-check.sh
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: |
+            target/debug/
+            target/release/
+
+  publish:
+    name: Publish Crates
+    needs: pre-checks
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/v')
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Cache cargo registry
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+          key: ${{ runner.os }}-cargo-registry-${{ hashFiles('**/Cargo.lock') }}
+
+      - name: Extract version from tag
+        id: version
+        run: echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
+
+      - name: Verify version matches
+        run: |
+          cd omega
+          CARGO_VERSION=$(grep -E '^version = ' Cargo.toml | head -1 | sed 's/version = "\(.*\)"/\1/')
+          if [ "$CARGO_VERSION" != "${{ steps.version.outputs.VERSION }}" ]; then
+            echo "Error: Tag version (${{ steps.version.outputs.VERSION }}) does not match Cargo.toml version ($CARGO_VERSION)"
+            exit 1
+          fi
+
+      - name: Login to crates.io
+        run: cargo login ${{ secrets.CARGO_REGISTRY_TOKEN }}
+
+      - name: Publish crates
+        run: |
+          cd omega
+          if [ "${{ github.event.inputs.dry_run }}" = "true" ]; then
+            DRY_RUN=true ./scripts/publish-crates.sh
+          else
+            ./scripts/publish-crates.sh
+          fi
+
+      - name: Create GitHub Release
+        if: success()
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.ref }}
+          release_name: Release ${{ steps.version.outputs.VERSION }}
+          body: |
+            ExoGenesis Omega v${{ steps.version.outputs.VERSION }}
+
+            ## Published Crates
+            - omega-core
+            - omega-persistence
+            - omega-agentdb
+            - omega-memory
+            - omega-loops
+            - omega-meta-sona
+            - omega-runtime
+
+            ## Installation
+            ```bash
+            cargo add omega-runtime
+            ```
+
+            See [CHANGELOG.md](https://github.com/prancer-io/ExoGenesis-Omega/blob/main/CHANGELOG.md) for details.
+          draft: false
+          prerelease: false
+
+  post-publish:
+    name: Post-Publication Verification
+    needs: publish
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/v')
+    steps:
+      - name: Wait for crates.io indexing
+        run: sleep 60
+
+      - name: Verify crates published
+        run: |
+          CRATES=("omega-core" "omega-persistence" "omega-agentdb" "omega-memory" "omega-loops" "omega-meta-sona" "omega-runtime")
+          VERSION=${GITHUB_REF#refs/tags/v}
+
+          for crate in "${CRATES[@]}"; do
+            echo "Checking $crate..."
+            if cargo search "$crate" --limit 1 | grep -q "$crate"; then
+              echo "✅ $crate found on crates.io"
+            else
+              echo "❌ $crate not found on crates.io"
+              exit 1
+            fi
+          done
+
+      - name: Test installation
+        run: |
+          cargo new test-project --bin
+          cd test-project
+          cargo add omega-runtime
+          cargo check

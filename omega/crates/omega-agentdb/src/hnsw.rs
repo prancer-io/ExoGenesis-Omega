@@ -9,8 +9,10 @@ pub struct HnswConfig {
     /// Number of neighbors to consider during construction (100-200 for quality)
     pub ef_construction: usize,
     /// Number of neighbors to consider during search (50-100 for speed/quality tradeoff)
+    #[allow(dead_code)] // Reserved for future HNSW search optimization
     pub ef_search: usize,
     /// Maximum number of connections per node (16-32 typical)
+    #[allow(dead_code)] // Reserved for future HNSW graph construction
     pub m: usize,
 }
 

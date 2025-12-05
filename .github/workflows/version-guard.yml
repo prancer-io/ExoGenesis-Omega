@@ -1,0 +1,140 @@
+name: Version Guard
+
+# This workflow ensures every PR bumps the version correctly
+# based on conventional commit analysis
+
+on:
+  pull_request:
+    branches:
+      - main
+      - develop
+    paths:
+      - 'omega/**'
+      - '.github/workflows/**'
+
+env:
+  RUST_BACKTRACE: 1
+  CARGO_TERM_COLOR: always
+
+jobs:
+  version-check:
+    name: Verify Version Bump
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout PR branch
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Full history needed for comparison
+
+      - name: Setup Git
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Run version guard
+        id: version_guard
+        run: |
+          cd omega
+          chmod +x scripts/version-guard.sh
+
+          # Run version guard (will exit 1 if check fails)
+          ./scripts/version-guard.sh ${{ github.base_ref }}
+
+      - name: Post comment on success
+        if: success()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: `## ✅ Version Guard: PASSED
+
+The version bump in this PR is correct!
+
+**Details:**
+- Base branch: \`${{ github.base_ref }}\`
+- PR has bumped the version appropriately based on conventional commits
+- All checks passed
+
+See workflow logs for detailed analysis.
+`
+            });
+
+      - name: Post comment on failure
+        if: failure()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: `## ❌ Version Guard: FAILED
+
+This PR must bump the version in \`omega/Cargo.toml\` before merging.
+
+**Why?**
+Every PR must increment the version according to conventional commits:
+- \`fix:\` commits → PATCH bump (0.1.0 → 0.1.1)
+- \`feat:\` commits → MINOR bump (0.1.0 → 0.2.0)
+- \`feat!:\` or \`BREAKING CHANGE:\` → MAJOR bump (0.1.0 → 1.0.0)
+
+**How to fix:**
+\`\`\`bash
+cd omega
+./scripts/version-bump.sh [patch|minor|major]
+git add -A
+git commit -m "chore: bump version"
+git push
+\`\`\`
+
+**Need help?**
+Check the workflow logs above for:
+- What version bump is required
+- Analysis of your commits
+- Specific fix instructions
+
+See [CONVENTIONAL_COMMITS.md](https://github.com/${{ github.repository }}/blob/main/omega/docs/CONVENTIONAL_COMMITS.md) for commit format guide.
+`
+            });
+
+  summary:
+    name: Version Guard Summary
+    needs: version-check
+    runs-on: ubuntu-latest
+    if: always()
+
+    steps:
+      - name: Check result
+        run: |
+          if [ "${{ needs.version-check.result }}" == "success" ]; then
+            echo "✅ Version guard passed"
+            exit 0
+          else
+            echo "❌ Version guard failed - PR cannot be merged"
+            exit 1
+          fi
+
+      - name: Add to PR summary
+        if: always()
+        run: |
+          echo "## Version Guard Results" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          if [ "${{ needs.version-check.result }}" == "success" ]; then
+            echo "✅ **PASSED** - Version has been bumped correctly" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "❌ **FAILED** - Version must be bumped before merge" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "### How to Fix" >> $GITHUB_STEP_SUMMARY
+            echo "\`\`\`bash" >> $GITHUB_STEP_SUMMARY
+            echo "cd omega" >> $GITHUB_STEP_SUMMARY
+            echo "./scripts/version-bump.sh [patch|minor|major]" >> $GITHUB_STEP_SUMMARY
+            echo "git add -A && git commit -m 'chore: bump version' && git push" >> $GITHUB_STEP_SUMMARY
+            echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+          fi

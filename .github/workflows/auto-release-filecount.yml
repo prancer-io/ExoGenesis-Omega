@@ -1,0 +1,74 @@
+name: Auto Release (File Count)
+
+# This workflow is DISABLED by default - remove the comments to enable
+# Conventional commits (auto-release.yml) is recommended instead
+
+on:
+  # Uncomment to enable:
+  # push:
+  #   branches:
+  #     - main
+  workflow_dispatch:
+    inputs:
+      enable:
+        description: 'Enable file count based versioning (not recommended)'
+        required: true
+        default: 'false'
+
+env:
+  RUST_BACKTRACE: 1
+  CARGO_TERM_COLOR: always
+
+jobs:
+  analyze-and-release:
+    name: Analyze Files & Auto Release
+    runs-on: ubuntu-latest
+    if: github.event.inputs.enable == 'true'
+
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Analyze file changes
+        id: analyze
+        run: |
+          cd omega
+          chmod +x scripts/auto-version-filecount.sh
+          ./scripts/auto-version-filecount.sh
+
+      - name: Warning about file count method
+        run: |
+          echo "::warning::File count based versioning is less accurate than conventional commits"
+          echo "::warning::Consider using auto-release.yml (conventional commits) instead"
+
+      - name: Apply version bump
+        if: steps.analyze.outputs.BUMP_TYPE != ''
+        run: |
+          cd omega
+          ./scripts/version-bump.sh ${{ steps.analyze.outputs.BUMP_TYPE }} <<< "y"
+
+      - name: Run tests
+        run: |
+          cd omega
+          cargo test --workspace --release
+
+      - name: Commit and tag
+        if: steps.analyze.outputs.NEW_VERSION != ''
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          git add -A
+          git commit -m "chore: bump version to ${{ steps.analyze.outputs.NEW_VERSION }} (file count: ${{ steps.analyze.outputs.FILE_COUNT }})"
+          git tag -a "v${{ steps.analyze.outputs.NEW_VERSION }}" -m "Release v${{ steps.analyze.outputs.NEW_VERSION }}"
+
+          git push origin main
+          git push origin "v${{ steps.analyze.outputs.NEW_VERSION }}"

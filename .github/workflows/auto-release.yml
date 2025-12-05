@@ -1,0 +1,134 @@
+name: Auto Release (Conventional Commits)
+
+# NOTE: This workflow is DISABLED when using Version Guard
+# Version Guard requires manual version bumps in PRs
+# This workflow is for fully automated versioning (no PR checks)
+
+on:
+  # Disabled by default - uncomment to enable auto-versioning without PR checks
+  # push:
+  #   branches:
+  #     - main
+  workflow_dispatch:
+    inputs:
+      force_bump:
+        description: 'Force version bump type (major/minor/patch)'
+        required: false
+        default: 'auto'
+
+env:
+  RUST_BACKTRACE: 1
+  CARGO_TERM_COLOR: always
+
+jobs:
+  analyze-and-release:
+    name: Analyze Commits & Auto Release
+    runs-on: ubuntu-latest
+    # Only run if not a version bump commit
+    if: "!contains(github.event.head_commit.message, 'chore: bump version')"
+
+    permissions:
+      contents: write
+      pull-requests: read
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Full history for commit analysis
+
+      - name: Setup Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Analyze commits for version bump
+        id: analyze
+        run: |
+          cd omega
+          chmod +x scripts/auto-version.sh
+          ./scripts/auto-version.sh
+
+          # Read the outputs
+          if [ -f "$GITHUB_OUTPUT" ]; then
+            cat "$GITHUB_OUTPUT"
+          fi
+
+      - name: Override with manual bump type
+        if: github.event.inputs.force_bump != 'auto'
+        run: |
+          echo "BUMP_TYPE=${{ github.event.inputs.force_bump }}" >> $GITHUB_OUTPUT
+
+          # Recalculate version
+          cd omega
+          CURRENT=$(grep -E '^version = ' Cargo.toml | head -1 | sed 's/version = "\(.*\)"/\1/')
+          IFS='.' read -r major minor patch <<< "$CURRENT"
+
+          case "${{ github.event.inputs.force_bump }}" in
+            major)
+              major=$((major + 1))
+              minor=0
+              patch=0
+              ;;
+            minor)
+              minor=$((minor + 1))
+              patch=0
+              ;;
+            patch)
+              patch=$((patch + 1))
+              ;;
+          esac
+
+          echo "NEW_VERSION=$major.$minor.$patch" >> $GITHUB_OUTPUT
+
+      - name: Apply version bump
+        if: steps.analyze.outputs.BUMP_TYPE != ''
+        run: |
+          cd omega
+          chmod +x scripts/version-bump.sh
+
+          # Apply the bump
+          ./scripts/version-bump.sh ${{ steps.analyze.outputs.BUMP_TYPE }} <<< "y"
+
+      - name: Run tests before release
+        run: |
+          cd omega
+          cargo test --workspace --release
+
+      - name: Commit and tag new version
+        if: steps.analyze.outputs.NEW_VERSION != ''
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          git add -A
+          git commit -m "chore: bump version to ${{ steps.analyze.outputs.NEW_VERSION }}"
+          git tag -a "v${{ steps.analyze.outputs.NEW_VERSION }}" -m "Release v${{ steps.analyze.outputs.NEW_VERSION }}"
+
+          git push origin main
+          git push origin "v${{ steps.analyze.outputs.NEW_VERSION }}"
+
+      - name: Trigger publish workflow
+        if: steps.analyze.outputs.NEW_VERSION != ''
+        run: |
+          echo "✅ Version bumped to ${{ steps.analyze.outputs.NEW_VERSION }}"
+          echo "🚀 Tag pushed - publish workflow will trigger automatically"
+
+  summary:
+    name: Summary
+    needs: analyze-and-release
+    runs-on: ubuntu-latest
+    if: always()
+    steps:
+      - name: Report results
+        run: |
+          echo "## Auto Release Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "- Workflow: ${{ github.workflow }}" >> $GITHUB_STEP_SUMMARY
+          echo "- Trigger: ${{ github.event_name }}" >> $GITHUB_STEP_SUMMARY
+          echo "- Branch: ${{ github.ref_name }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          if [ "${{ needs.analyze-and-release.result }}" == "success" ]; then
+            echo "✅ Auto release completed successfully" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "ℹ️  No release needed or workflow skipped" >> $GITHUB_STEP_SUMMARY
+          fi
