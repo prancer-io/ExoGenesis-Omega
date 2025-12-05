@@ -521,6 +521,7 @@ dependencies = [
  "ordered-float 4.6.0",
  "serde",
  "serde_json",
+ "simsimd",
  "thiserror",
  "tokio",
  "tokio-test",
@@ -904,6 +905,15 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "7664a098b8e616bdfcc2dc0e9ac44eb231eedf41db4e9fe95d8d32ec728dedad"
 dependencies = [
  "libc",
+]
+
+[[package]]
+name = "simsimd"
+version = "5.9.11"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "9638f2829f4887c62a01958903b58fa1b740a64d5dc2bbc4a75a33827ee1bd53"
+dependencies = [
+ "cc",
 ]
 
 [[package]]

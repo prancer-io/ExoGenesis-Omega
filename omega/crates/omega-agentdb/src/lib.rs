@@ -531,21 +531,21 @@ pub struct AgentDBStats {
     pub skill_count: usize,
 }
 
-/// Computes cosine similarity between two vectors
+/// Computes cosine similarity between two vectors using SIMD optimization
 fn cosine_similarity(a: &[f32], b: &[f32]) -> f64 {
+    use simsimd::SpatialSimilarity;
+
     if a.len() != b.len() {
         return 0.0;
     }
 
-    let dot_product: f64 = a.iter().zip(b.iter()).map(|(x, y)| (*x as f64) * (*y as f64)).sum();
-    let magnitude_a: f64 = a.iter().map(|x| (*x as f64) * (*x as f64)).sum::<f64>().sqrt();
-    let magnitude_b: f64 = b.iter().map(|x| (*x as f64) * (*x as f64)).sum::<f64>().sqrt();
-
-    if magnitude_a == 0.0 || magnitude_b == 0.0 {
-        return 0.0;
+    // SIMD-optimized: SimSIMD returns DISTANCE, convert to SIMILARITY
+    // distance: 0 = identical, 1 = orthogonal, 2 = opposite
+    // similarity: 1 = identical, 0 = orthogonal, -1 = opposite
+    match f32::cosine(a, b) {
+        Some(distance) => 1.0 - distance,
+        None => 0.0,
     }
-
-    dot_product / (magnitude_a * magnitude_b)
 }
 
 /// Error types for AgentDB operations
