@@ -93,18 +93,25 @@ publish_crate() {
     echo ""
 }
 
-# Confirm publishing
+# Confirm publishing (skip in CI)
 if [[ "$DRY_RUN" != "true" ]]; then
     echo "⚠️  This will publish ${#PUBLISH_ORDER[@]} crates to crates.io"
     echo "   Crates: ${PUBLISH_ORDER[*]}"
     echo ""
-    read -p "❓ Proceed with publishing? (y/N) " -n 1 -r
-    echo
-    if [[ ! $REPLY =~ ^[Yy]$ ]]; then
-        echo "❌ Publishing cancelled"
-        exit 1
+
+    # Skip confirmation if running in CI
+    if [[ -n "$CI" ]] || [[ -n "$GITHUB_ACTIONS" ]]; then
+        echo "✅ Running in CI - proceeding with publish"
+        echo ""
+    else
+        read -p "❓ Proceed with publishing? (y/N) " -n 1 -r
+        echo
+        if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+            echo "❌ Publishing cancelled"
+            exit 1
+        fi
+        echo ""
     fi
-    echo ""
 fi
 
 # Publish each crate in order
