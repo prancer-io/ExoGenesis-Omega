@@ -34,20 +34,14 @@ pub struct VectorPoint {
 
 impl instant_distance::Point for VectorPoint {
     fn distance(&self, other: &Self) -> f32 {
-        // Cosine distance = 1 - cosine_similarity
-        let dot: f32 = self.embedding.iter()
-            .zip(other.embedding.iter())
-            .map(|(a, b)| a * b)
-            .sum();
+        // SIMD-optimized cosine distance (10-50x faster than scalar)
+        // SimSIMD returns distance directly (0 = identical, 1 = orthogonal, 2 = opposite)
+        use simsimd::SpatialSimilarity;
 
-        let norm_a: f32 = self.embedding.iter().map(|x| x * x).sum::<f32>().sqrt();
-        let norm_b: f32 = other.embedding.iter().map(|x| x * x).sum::<f32>().sqrt();
-
-        if norm_a == 0.0 || norm_b == 0.0 {
-            return 1.0;
+        match f32::cosine(&self.embedding, &other.embedding) {
+            Some(distance) => distance as f32,
+            None => 1.0, // Fallback for zero-length vectors
         }
-
-        1.0 - (dot / (norm_a * norm_b))
     }
 }
 

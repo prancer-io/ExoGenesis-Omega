@@ -4,9 +4,15 @@ version.workspace = true
 edition.workspace = true
 authors.workspace = true
 license.workspace = true
+repository.workspace = true
+homepage.workspace = true
+documentation.workspace = true
+keywords.workspace = true
+categories.workspace = true
+description = "12-tier cosmic memory system with automatic consolidation (Instant → Omega)"
 
 [dependencies]
-omega-core = { path = "../omega-core" }
+omega-core = { version = "0.1.0", path = "../omega-core" }
 tokio.workspace = true
 serde.workspace = true
 serde_json.workspace = true

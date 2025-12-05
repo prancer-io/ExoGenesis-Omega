@@ -1,7 +1,15 @@
 [package]
 name = "omega-persistence"
-version = "0.1.0"
-edition = "2021"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+homepage.workspace = true
+documentation.workspace = true
+keywords.workspace = true
+categories.workspace = true
+description = "SQLite-based persistence layer for ExoGenesis Omega with schema migrations and transactions"
 
 [dependencies]
 rusqlite = { version = "0.32", features = ["bundled", "backup"] }

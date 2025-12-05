@@ -13,8 +13,9 @@ pub enum TopologyType {
 }
 
 /// System architecture configuration
+/// Renamed from Architecture to SystemArchitecture to avoid conflict with intelligence::Architecture
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct Architecture {
+pub struct SystemArchitecture {
     pub id: Uuid,
     pub name: String,
     pub topology: TopologyType,

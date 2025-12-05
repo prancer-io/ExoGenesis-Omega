@@ -15,12 +15,17 @@ version = "0.1.0"
 edition = "2021"
 authors = ["ExoGenesis Omega Team"]
 license = "MIT"
+repository = "https://github.com/prancer-io/ExoGenesis-Omega"
+homepage = "https://github.com/prancer-io/ExoGenesis-Omega"
+documentation = "https://github.com/prancer-io/ExoGenesis-Omega/tree/main/docs"
+keywords = ["ai", "intelligence", "memory", "cognitive", "neural"]
+categories = ["science", "algorithms", "data-structures"]
 
 [workspace.dependencies]
 tokio = { version = "1.35", features = ["full"] }
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
-uuid = { version = "1.6", features = ["v7", "serde"] }
+uuid = { version = "1.6", features = ["v4", "v7", "serde"] }
 chrono = { version = "0.4", features = ["serde"] }
 thiserror = "1.0"
 tracing = "0.1"
