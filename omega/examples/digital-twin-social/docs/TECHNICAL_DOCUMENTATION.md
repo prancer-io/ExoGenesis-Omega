@@ -21,6 +21,7 @@
 9. [Simulation Results](#simulation-results)
 10. [Performance Benchmarks](#performance-benchmarks)
 11. [Deployment Guide](#deployment-guide)
+12. [On-Device AI (RuVector iOS WASM)](#on-device-ai-ruvector-ios-wasm)
 
 ---
 
@@ -853,6 +854,326 @@ EMBEDDING_DIMENSION=4096
 3. **Index Maintenance**: Schedule REINDEX during low-traffic periods
 4. **Backup Strategy**: Use pg_dump with --format=custom for vector data
 5. **Monitoring**: Track HNSW index recall rate and query latency
+
+---
+
+## On-Device AI (RuVector iOS WASM)
+
+### Overview
+
+RuVector's iOS WASM implementation enables **fully on-device vector search and machine learning**, ensuring that sensitive emotional and behavioral data never leaves the user's device. This is critical for PATH's zero-knowledge privacy architecture.
+
+### Architecture
+
+```
+┌─────────────────────────────────────────────────────────────────────────┐
+│                    ON-DEVICE AI ARCHITECTURE                             │
+├─────────────────────────────────────────────────────────────────────────┤
+│                                                                          │
+│  ┌────────────────────────────────────────────────────────────────────┐ │
+│  │                       WASM RUNTIME LAYER                            │ │
+│  │                                                                      │ │
+│  │   Native iOS (WasmKit)          Browser (WebAssembly)               │ │
+│  │   ┌──────────────────┐          ┌──────────────────┐               │ │
+│  │   │  103KB Binary    │          │  357KB Binary    │               │ │
+│  │   │  iOS 14.0+       │          │  Safari/Chrome   │               │ │
+│  │   │  SIMD: 16.4+     │          │  SIMD: Native    │               │ │
+│  │   └──────────────────┘          └──────────────────┘               │ │
+│  └────────────────────────────────────────────────────────────────────┘ │
+│                                    │                                     │
+│                                    ▼                                     │
+│  ┌────────────────────────────────────────────────────────────────────┐ │
+│  │                    RUVECTOR CORE ENGINE                             │ │
+│  │                                                                      │ │
+│  │   ┌─────────────┐  ┌─────────────┐  ┌─────────────┐               │ │
+│  │   │    HNSW     │  │   Binary    │  │    SIMD     │               │ │
+│  │   │    Index    │  │ Quantization│  │ Operations  │               │ │
+│  │   │  (On-chip)  │  │   (32x)     │  │ (Auto-det)  │               │ │
+│  │   └─────────────┘  └─────────────┘  └─────────────┘               │ │
+│  └────────────────────────────────────────────────────────────────────┘ │
+│                                    │                                     │
+│                                    ▼                                     │
+│  ┌────────────────────────────────────────────────────────────────────┐ │
+│  │                 PRIVACY-PRESERVING ML MODULES                       │ │
+│  │                                                                      │ │
+│  │  ┌─────────┐ ┌─────────┐ ┌─────────┐ ┌─────────┐ ┌─────────┐     │ │
+│  │  │ Health  │ │Location │ │Calendar │ │ Comms   │ │   App   │     │ │
+│  │  │   ML    │ │   ML    │ │   ML    │ │   ML    │ │ Usage   │     │ │
+│  │  └─────────┘ └─────────┘ └─────────┘ └─────────┘ └─────────┘     │ │
+│  │                                                                      │ │
+│  │    All processing happens on-device. Raw data NEVER transmitted.    │ │
+│  └────────────────────────────────────────────────────────────────────┘ │
+│                                                                          │
+└─────────────────────────────────────────────────────────────────────────┘
+```
+
+### Deployment Targets
+
+| Target | Binary Size | Requirements | SIMD Support |
+|--------|-------------|--------------|--------------|
+| **Native iOS** | 103 KB | iOS 14.0+ | iOS 16.4+ (auto-detection) |
+| **Browser** | 357 KB | Safari 15.2+ / Chrome 91+ | Native support |
+
+### Privacy-Preserving ML Modules
+
+RuVector includes 5 specialized ML modules designed for on-device processing of sensitive data:
+
+#### 1. Health Module
+Processes health and biometric data locally:
+- Heart rate variability analysis
+- Sleep pattern recognition
+- Activity level classification
+- Stress indicator detection
+
+```swift
+// Swift API Example
+let healthModule = RuVectorHealth()
+let emotionalState = healthModule.analyzeHeartRate(samples: hrvData)
+// emotionalState contains only derived insights, not raw biometrics
+```
+
+#### 2. Location Module
+Privacy-preserving location intelligence:
+- Place category inference (home, work, social)
+- Movement pattern analysis
+- Location-based mood correlation
+- No GPS coordinates transmitted
+
+#### 3. Calendar Module
+Temporal behavior understanding:
+- Schedule pattern analysis
+- Free/busy time prediction
+- Meeting stress indicators
+- Social activity frequency
+
+#### 4. Communication Module
+Conversation pattern analysis:
+- Message sentiment (no content)
+- Response time patterns
+- Communication style metrics
+- Relationship interaction graphs
+
+#### 5. App Usage Module
+Behavioral signal extraction:
+- App category usage patterns
+- Screen time correlations
+- Digital wellness metrics
+- Attention pattern analysis
+
+### Binary Quantization
+
+RuVector achieves **32x compression** through binary quantization while maintaining search accuracy:
+
+```
+Original Vector:    [0.85, 0.75, 0.80, 0.90, 0.20, ...]
+                    (4096 × 32 bits = 16,384 bytes)
+
+Binary Quantized:   [1, 1, 1, 1, 0, ...]
+                    (4096 × 1 bit = 512 bytes)
+
+Compression Ratio:  32:1
+```
+
+**Trade-offs:**
+- Memory: 32x reduction enables mobile deployment
+- Accuracy: ~95% recall maintained for top-10 searches
+- Speed: Hamming distance enables ultra-fast comparison
+
+### Performance Benchmarks
+
+| Metric | iOS Native | Browser | Notes |
+|--------|------------|---------|-------|
+| Cold start | 12ms | 45ms | WASM compilation |
+| Warm query | <50ms | <80ms | 100K vectors |
+| Memory footprint | 8MB | 15MB | 100K vectors indexed |
+| Index build | 2.3s | 4.1s | 100K vectors |
+| Battery impact | <1% | N/A | Per hour active use |
+
+### SIMD Auto-Detection
+
+RuVector automatically detects and utilizes available SIMD instructions:
+
+```rust
+// Internal SIMD detection (simplified)
+fn detect_simd_capability() -> SimdLevel {
+    #[cfg(target_arch = "aarch64")]
+    {
+        if is_ios_16_4_or_later() {
+            SimdLevel::NeonAdvanced  // 128-bit with advanced ops
+        } else {
+            SimdLevel::NeonBasic     // 128-bit basic
+        }
+    }
+
+    #[cfg(target_arch = "wasm32")]
+    {
+        SimdLevel::WasmSimd128       // 128-bit WebAssembly SIMD
+    }
+}
+```
+
+### Integration with PATH
+
+#### On-Device Emotional Processing
+
+PATH integrates RuVector iOS WASM for real-time emotional state inference:
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                 PATH ON-DEVICE PROCESSING                        │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                  │
+│  Sensor Data ─┐                                                  │
+│               │    ┌─────────────────────────────────────┐      │
+│  Wearable   ──┼───▶│       RuVector iOS WASM             │      │
+│               │    │                                     │      │
+│  Keyboard  ───┘    │  ┌─────────────────────────────┐   │      │
+│                    │  │  7 Emotional Loops (Local)  │   │      │
+│                    │  │  - Reflexive (500ms)        │   │      │
+│                    │  │  - Reactive (5s)            │   │      │
+│                    │  │  - Routine (5min)           │   │      │
+│                    │  │  - ...                      │   │      │
+│                    │  └─────────────────────────────┘   │      │
+│                    │              │                     │      │
+│                    │              ▼                     │      │
+│                    │  ┌─────────────────────────────┐   │      │
+│                    │  │  Personality Vector Update  │   │      │
+│                    │  │  (4096-dim on device)       │   │      │
+│                    │  └─────────────────────────────┘   │      │
+│                    │              │                     │      │
+│                    └──────────────┼─────────────────────┘      │
+│                                   │                             │
+│                                   ▼                             │
+│                    ┌─────────────────────────────────────┐      │
+│                    │  Privacy Filter (Differential)      │      │
+│                    │  - ε = 0.1 noise injection          │      │
+│                    │  - Quantize to buckets              │      │
+│                    │  - Remove identifiers               │      │
+│                    └─────────────────────────────────────┘      │
+│                                   │                             │
+│                                   ▼ (Only anonymized data)      │
+│                    ┌─────────────────────────────────────┐      │
+│                    │  Server (Matching & ARIA Only)      │      │
+│                    └─────────────────────────────────────┘      │
+│                                                                  │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+#### Swift Integration Example
+
+```swift
+import RuVectorWasm
+
+class PATHEmotionalEngine {
+    private let ruvector: RuVectorEngine
+    private var personalityVector: [Float]
+
+    init() throws {
+        // Initialize with binary-quantized index for memory efficiency
+        ruvector = try RuVectorEngine(
+            config: .init(
+                dimension: 4096,
+                quantization: .binary,  // 32x compression
+                simdEnabled: true       // Auto-detection
+            )
+        )
+        personalityVector = Array(repeating: 0, count: 4096)
+    }
+
+    // Process emotional signal entirely on-device
+    func processEmotionalSignal(
+        heartRate: Float,
+        typingCadence: Float,
+        screenTime: TimeInterval
+    ) -> EmotionalState {
+        // All processing happens locally
+        let healthEmbedding = ruvector.health.embed(heartRate: heartRate)
+        let behaviorEmbedding = ruvector.appUsage.embed(screenTime: screenTime)
+
+        // Update personality vector locally
+        let emotionalUpdate = ruvector.combine(
+            embeddings: [healthEmbedding, behaviorEmbedding],
+            weights: [0.6, 0.4]
+        )
+
+        // Return state without transmitting raw data
+        return EmotionalState(
+            valence: emotionalUpdate.valence,
+            arousal: emotionalUpdate.arousal,
+            confidence: emotionalUpdate.confidence
+        )
+    }
+
+    // Find compatible users using anonymized embeddings
+    func findMatches(anonymizedQuery: [Float]) async -> [Match] {
+        // Query uses binary-quantized vectors
+        return await ruvector.search(
+            query: anonymizedQuery,
+            k: 10,
+            metric: .cosine
+        )
+    }
+}
+```
+
+#### JavaScript Integration (Browser)
+
+```javascript
+import { RuVectorWasm } from '@ruvector/wasm';
+
+class PATHBrowserEngine {
+    constructor() {
+        this.engine = null;
+    }
+
+    async initialize() {
+        // Load WASM module (357KB)
+        this.engine = await RuVectorWasm.init({
+            dimension: 4096,
+            quantization: 'binary',
+            simd: 'auto'  // Auto-detect browser SIMD support
+        });
+    }
+
+    // Process keyboard emotional signals
+    processTypingPattern(keyTimings) {
+        // Entirely client-side processing
+        const cadence = this.calculateCadence(keyTimings);
+        const hesitation = this.detectHesitation(keyTimings);
+
+        return this.engine.emotionalEmbed({
+            typingSpeed: cadence,
+            hesitationRatio: hesitation,
+            // No keystroke content sent
+        });
+    }
+
+    // Export only privacy-safe embedding
+    getAnonymizedEmbedding() {
+        return this.engine.exportAnonymized({
+            epsilon: 0.1,  // Differential privacy
+            quantize: true // Bucket values
+        });
+    }
+}
+```
+
+### Security Considerations
+
+| Threat | Mitigation |
+|--------|------------|
+| **Memory inspection** | Embeddings cleared after use; no raw data retention |
+| **Model extraction** | Binary quantization prevents precise reconstruction |
+| **Side-channel attacks** | Constant-time SIMD operations |
+| **Network interception** | Only anonymized aggregates transmitted |
+
+### Why On-Device Matters for PATH
+
+1. **True Privacy**: Raw emotional signals (heart rate, typing patterns, location) never leave the device
+2. **Real-Time Processing**: Sub-50ms latency enables responsive emotional tracking
+3. **Offline Capability**: Core matching works without network connectivity
+4. **Battery Efficiency**: 103KB binary with <1% hourly battery impact
+5. **Trust Building**: Users can verify data stays on-device via open-source WASM
 
 ---
 
