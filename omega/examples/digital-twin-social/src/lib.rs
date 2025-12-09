@@ -35,6 +35,7 @@ pub mod matching;
 pub mod aria;
 pub mod privacy;
 pub mod sensors;
+pub mod postgres;
 
 // Re-exports for convenience
 pub use types::*;
@@ -44,3 +45,4 @@ pub use matching::MatchingEngine;
 pub use aria::ARIASwarm;
 pub use privacy::ZeroKnowledgeLayer;
 pub use sensors::{KeyboardSensor, WearableSensor};
+pub use postgres::{PostgresBackend, PostgresConfig, PostgresError};

@@ -39,5 +39,18 @@ tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 async-trait = "0.1"
 rand = "0.8"
 
+# PostgreSQL with RuVector support
+sqlx = { version = "0.8", features = ["runtime-tokio", "postgres", "uuid", "chrono", "json"] }
+pgvector = { version = "0.4", features = ["sqlx"] }
+deadpool-postgres = "0.14"
+tokio-postgres = "0.7"
+
+# Configuration
+dotenvy = "0.15"
+
 [dev-dependencies]
 criterion = { version = "0.5", features = ["async_tokio"] }
+
+[features]
+default = []
+postgres = []  # Enable PostgreSQL backend
