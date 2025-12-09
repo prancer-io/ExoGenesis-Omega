@@ -1,0 +1,43 @@
+[package]
+name = "digital-twin-social"
+version = "1.0.0"
+edition = "2021"
+authors = ["ExoGenesis Omega Team"]
+license = "MIT"
+description = "Digital Twin Social Media Platform - Example use case demonstrating ExoGenesis Omega capabilities"
+readme = "README.md"
+keywords = ["digital-twin", "social-media", "ai", "personality", "emotional-intelligence"]
+categories = ["science", "algorithms"]
+
+[[bin]]
+name = "digital-twin-demo"
+path = "src/main.rs"
+
+[dependencies]
+# Omega Crates
+omega-core = { path = "../../crates/omega-core" }
+omega-agentdb = { path = "../../crates/omega-agentdb" }
+omega-memory = { path = "../../crates/omega-memory" }
+omega-loops = { path = "../../crates/omega-loops" }
+omega-meta-sona = { path = "../../crates/omega-meta-sona" }
+omega-runtime = { path = "../../crates/omega-runtime" }
+omega-persistence = { path = "../../crates/omega-persistence" }
+
+# Async Runtime
+tokio = { version = "1.35", features = ["full"] }
+
+# Serialization
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+
+# Utilities
+uuid = { version = "1.6", features = ["v4", "v7", "serde"] }
+chrono = { version = "0.4", features = ["serde"] }
+thiserror = "1.0"
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+async-trait = "0.1"
+rand = "0.8"
+
+[dev-dependencies]
+criterion = { version = "0.5", features = ["async_tokio"] }

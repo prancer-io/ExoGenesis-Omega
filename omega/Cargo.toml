@@ -8,6 +8,7 @@ members = [
     "crates/omega-meta-sona",
     "crates/omega-runtime",
     "crates/omega-persistence",
+    "examples/digital-twin-social",
 ]
 
 [workspace.package]
