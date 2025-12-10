@@ -11,6 +11,7 @@ members = [
     "crates/omega-snn",
     "crates/omega-attention",
     "crates/omega-consciousness",
+    "crates/omega-hippocampus",
 ]
 
 [workspace.package]
