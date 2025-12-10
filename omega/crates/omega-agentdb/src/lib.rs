@@ -3,8 +3,29 @@
 //!
 //! This is an in-memory implementation that mimics AgentDB's functionality
 //! for the ExoGenesis Omega cognitive architecture.
+//!
+//! ## Features
+//! - HNSW index for fast approximate nearest neighbor search
+//! - SIMD-accelerated distance computations
+//! - Self-learning GNN index with adaptive navigation
+//! - RuVector integration for advanced vector operations
+//!
+//! ## RuVector Integration
+//! - ruvector-core: HNSW with SIMD acceleration
+//! - ruvector-gnn: Self-learning graph neural networks
+//! - ruvector-graph: Cypher-like graph queries
 
 mod hnsw;
+pub mod gnn_index;
+pub mod ruvector_integration;
+pub mod simd_ops;
+
+pub use gnn_index::{GNNConfig, GNNIndex, GNNNode, GNNSearchResult, GNNStats};
+pub use ruvector_integration::{
+    GNNLayer, GNNStats as RuVectorGNNStats, GraphEdge, GraphQueryResult,
+    RuVectorConfig, RuVectorError, RuVectorIndex, RuVectorResult, SimdLevel, VectorEntry,
+};
+pub use simd_ops::DistanceMetric;
 
 use serde::{Deserialize, Serialize};
 use std::sync::Arc;

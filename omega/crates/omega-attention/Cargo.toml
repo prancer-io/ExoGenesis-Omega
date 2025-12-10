@@ -1,0 +1,31 @@
+[package]
+name = "omega-attention"
+description = "Attention mechanisms for ExoGenesis Omega - 39 attention types for brain-like selective processing"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+keywords = ["attention", "transformer", "flash-attention", "brain", "cognitive"]
+categories = ["science", "algorithms"]
+
+[dependencies]
+tokio.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+uuid.workspace = true
+chrono.workspace = true
+thiserror.workspace = true
+tracing.workspace = true
+async-trait.workspace = true
+
+# Attention-specific dependencies
+rand = "0.8"
+parking_lot = "0.12"
+ordered-float = "4.2"
+
+# RuVector attention (optional, provides 39 optimized attention mechanisms)
+ruvector-attention = { version = "0.1", optional = true }
+
+[dev-dependencies]
+tokio-test = "0.4"

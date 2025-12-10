@@ -1,0 +1,37 @@
+[package]
+name = "omega-brain"
+description = "Unified brain-like cognitive architecture integrating all Omega components"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[dependencies]
+# Core workspace dependencies
+tokio = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+uuid = { workspace = true }
+chrono = { workspace = true }
+thiserror = { workspace = true }
+tracing = { workspace = true }
+async-trait = { workspace = true }
+
+# Self-contained implementation - omega-brain provides its own
+# brain-like components without depending on other omega crates
+# to ensure independent compilation and testing
+
+# RuVector crates for runtime adaptation
+ruvector-sona = { version = "0.1", optional = true }
+
+# Additional dependencies
+parking_lot = "0.12"
+rand = "0.8"
+
+[features]
+default = []
+runtime-adaptation = ["ruvector-sona"]
+
+[dev-dependencies]
+tokio-test = "0.4"

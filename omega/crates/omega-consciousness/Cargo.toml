@@ -1,0 +1,28 @@
+[package]
+name = "omega-consciousness"
+description = "Consciousness substrate for ExoGenesis Omega - IIT, Free Energy Principle, and Global Workspace"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+keywords = ["consciousness", "iit", "free-energy", "phi", "global-workspace"]
+categories = ["science", "simulation", "algorithms"]
+
+[dependencies]
+tokio.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+uuid.workspace = true
+chrono.workspace = true
+thiserror.workspace = true
+tracing.workspace = true
+async-trait.workspace = true
+
+# Consciousness-specific dependencies
+rand = "0.8"
+parking_lot = "0.12"
+ordered-float = "4.2"
+
+[dev-dependencies]
+tokio-test = "0.4"

@@ -1,0 +1,32 @@
+[package]
+name = "omega-hippocampus"
+description = "Hippocampal memory system for ExoGenesis Omega - DG/CA3/CA1 circuits, pattern separation/completion, replay"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+keywords = ["hippocampus", "memory", "consolidation", "replay", "spatial"]
+categories = ["science", "simulation", "algorithms"]
+
+[dependencies]
+tokio.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+uuid.workspace = true
+chrono.workspace = true
+thiserror.workspace = true
+tracing.workspace = true
+async-trait.workspace = true
+
+# Hippocampus-specific dependencies
+rand = "0.8"
+rand_distr = "0.4"
+parking_lot = "0.12"
+ordered-float = "4.2"
+
+# Local dependencies
+omega-snn = { path = "../omega-snn" }
+
+[dev-dependencies]
+tokio-test = "0.4"

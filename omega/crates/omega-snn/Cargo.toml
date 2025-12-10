@@ -1,0 +1,34 @@
+[package]
+name = "omega-snn"
+description = "Spiking Neural Network substrate for ExoGenesis Omega - biologically-inspired neural dynamics"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+keywords = ["spiking", "neural-network", "stdp", "neuroscience", "brain"]
+categories = ["science", "simulation", "algorithms"]
+
+[dependencies]
+tokio.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+uuid.workspace = true
+chrono.workspace = true
+thiserror.workspace = true
+tracing.workspace = true
+async-trait.workspace = true
+
+# SNN-specific dependencies
+rand = "0.8"
+rand_distr = "0.4"
+parking_lot = "0.12"
+ordered-float = "4.2"
+
+[dev-dependencies]
+tokio-test = "0.4"
+criterion = "0.5"
+
+[[bench]]
+name = "snn_benchmarks"
+harness = false
