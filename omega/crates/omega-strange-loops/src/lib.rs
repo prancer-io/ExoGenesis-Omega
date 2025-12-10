@@ -276,7 +276,7 @@ impl StrangeLoopEngine {
     }
 
     /// Get mirror reflection
-    pub fn get_reflection(&self, input: &[f64]) -> Vec<f64> {
+    pub fn get_reflection(&mut self, input: &[f64]) -> Vec<f64> {
         self.mirror.reflect(input)
     }
 

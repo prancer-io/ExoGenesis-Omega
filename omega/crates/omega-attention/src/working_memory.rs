@@ -352,13 +352,14 @@ mod tests {
     #[test]
     fn test_input_gate() {
         let mut wm = WorkingMemory::new(7);
+        wm.input_gate.openness = 1.0;  // Full openness so value * 1.0 = value
         wm.input_gate.threshold = 0.5;
 
-        // Low importance - should fail
+        // Low importance - should fail (0.3 * 1.0 = 0.3 < 0.5)
         let item1 = WorkingMemoryItem::new(vec![1.0], 0.3);
         assert!(!wm.try_store(item1));
 
-        // High importance - should succeed
+        // High importance - should succeed (0.8 * 1.0 = 0.8 > 0.5)
         let item2 = WorkingMemoryItem::new(vec![2.0], 0.8);
         assert!(wm.try_store(item2));
     }

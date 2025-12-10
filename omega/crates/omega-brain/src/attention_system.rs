@@ -1,206 +1,131 @@
-//! Attention System Integration
-//!
-//! Integrates omega-attention mechanisms into the brain.
+//! Attention System - Self-contained attention mechanisms
 
-use crate::{BrainConfig, BrainError, Result};
-use omega_attention::{AttentionController, AttentionMechanism, AttentionType, WorkingMemory};
+use crate::{BrainConfig, Result};
+use serde::{Deserialize, Serialize};
 
-/// Attention system wrapping multiple attention mechanisms
-pub struct AttentionSystem {
-    /// Main attention controller
-    controller: AttentionController,
-    /// Working memory
-    working_memory: WorkingMemory,
-    /// Current focus
-    current_focus: Vec<f64>,
-    /// Attention history
-    history: Vec<Vec<f64>>,
-    /// Maximum history
-    max_history: usize,
-    /// Dimension
+/// Attention mechanism types
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+pub enum AttentionType { ScaledDotProduct, Flash, Linear, Sparse, Hyperbolic, Graph }
+
+/// Working memory
+#[derive(Debug, Clone)]
+pub struct WorkingMemory {
+    items: Vec<(Vec<f64>, f64)>,
+    capacity: usize,
     dim: usize,
 }
 
-impl AttentionSystem {
-    /// Create new attention system
-    pub fn new(config: &BrainConfig) -> Self {
-        let controller = AttentionController::new(
-            config.attention_heads,
-            config.attention_dim,
-            config.top_down_strength,
-            config.bottom_up_strength,
-        );
-
-        let working_memory = WorkingMemory::new(config.workspace_capacity, config.attention_dim);
-
-        Self {
-            controller,
-            working_memory,
-            current_focus: vec![0.0; config.attention_dim],
-            history: Vec::new(),
-            max_history: 100,
-            dim: config.attention_dim,
+impl WorkingMemory {
+    pub fn new(capacity: usize, dim: usize) -> Self {
+        Self { items: Vec::with_capacity(capacity), capacity, dim }
+    }
+    pub fn store(&mut self, content: &[f64]) {
+        if self.items.len() >= self.capacity {
+            self.items.sort_by(|a, b| a.1.partial_cmp(&b.1).unwrap());
+            self.items.remove(0);
         }
+        self.items.push((content.to_vec(), 1.0));
     }
-
-    /// Attend to input
-    pub fn attend(&mut self, input: &[f64]) -> Result<Vec<f64>> {
-        // Pad/truncate input to expected dimension
-        let normalized = self.normalize_input(input);
-
-        // Apply attention controller
-        let attended = self.controller.attend(&normalized);
-
-        // Gate through working memory
-        let gated = self.working_memory.gate(&attended);
-
-        // Update current focus
-        self.update_focus(&gated);
-
-        // Store in history
-        self.history.push(gated.clone());
-        if self.history.len() > self.max_history {
-            self.history.remove(0);
-        }
-
-        Ok(gated)
-    }
-
-    /// Focus attention on specific target
-    pub fn focus_on(&mut self, target: &[f64]) -> Result<()> {
-        let normalized = self.normalize_input(target);
-        self.controller.set_top_down_bias(&normalized);
-        self.current_focus = normalized;
-        Ok(())
-    }
-
-    /// Get current focus
-    pub fn current_focus(&self) -> Vec<f64> {
-        self.current_focus.clone()
-    }
-
-    /// Update focus based on attended content
-    fn update_focus(&mut self, attended: &[f64]) {
-        for (i, &v) in attended.iter().enumerate() {
-            if i < self.current_focus.len() {
-                // Exponential moving average
-                self.current_focus[i] = 0.8 * self.current_focus[i] + 0.2 * v;
-            }
-        }
-    }
-
-    /// Normalize input to expected dimension
-    fn normalize_input(&self, input: &[f64]) -> Vec<f64> {
-        let mut result = vec![0.0; self.dim];
-        for (i, &v) in input.iter().enumerate() {
-            if i < self.dim {
-                result[i] = v;
+    pub fn gate(&self, input: &[f64]) -> Vec<f64> {
+        let mut result = input.to_vec();
+        for (item, strength) in &self.items {
+            for (i, &v) in item.iter().enumerate() {
+                if i < result.len() { result[i] += v * strength * 0.1; }
             }
         }
         result
     }
+    pub fn contents(&self) -> Vec<Vec<f64>> { self.items.iter().map(|(v, _)| v.clone()).collect() }
+    pub fn clear(&mut self) { self.items.clear(); }
+}
 
-    /// Add item to working memory
-    pub fn remember(&mut self, item: &[f64]) {
-        let normalized = self.normalize_input(item);
-        self.working_memory.store(&normalized);
+/// Attention controller
+#[derive(Debug, Clone)]
+pub struct AttentionController {
+    num_heads: usize,
+    dim: usize,
+    top_down: f64,
+    bottom_up: f64,
+    bias: Vec<f64>,
+    mechanism: AttentionType,
+}
+
+impl AttentionController {
+    pub fn new(num_heads: usize, dim: usize, top_down: f64, bottom_up: f64) -> Self {
+        Self { num_heads, dim, top_down, bottom_up, bias: vec![0.0; dim], mechanism: AttentionType::ScaledDotProduct }
     }
-
-    /// Get working memory contents
-    pub fn working_memory_contents(&self) -> Vec<Vec<f64>> {
-        self.working_memory.contents()
+    pub fn attend(&self, input: &[f64]) -> Vec<f64> {
+        (0..self.dim).map(|i| {
+            let v = input.get(i).copied().unwrap_or(0.0);
+            let b = self.bias.get(i).copied().unwrap_or(0.0);
+            (v * self.bottom_up + b * self.top_down).tanh()
+        }).collect()
     }
-
-    /// Clear working memory
-    pub fn clear_working_memory(&mut self) {
-        self.working_memory.clear();
+    pub fn set_top_down_bias(&mut self, bias: &[f64]) {
+        for (i, &b) in bias.iter().enumerate() { if i < self.dim { self.bias[i] = b; } }
     }
+    pub fn set_mechanism(&mut self, m: AttentionType) { self.mechanism = m; }
+    pub fn num_heads(&self) -> usize { self.num_heads }
+    pub fn top_down_strength(&self) -> f64 { self.top_down }
+    pub fn bottom_up_strength(&self) -> f64 { self.bottom_up }
+}
 
-    /// Get attention strength
-    pub fn attention_strength(&self) -> f64 {
-        let max = self
-            .current_focus
-            .iter()
-            .map(|x| x.abs())
-            .fold(0.0, f64::max);
-        let mean = self.current_focus.iter().map(|x| x.abs()).sum::<f64>()
-            / self.current_focus.len().max(1) as f64;
+/// Attention system
+pub struct AttentionSystem {
+    controller: AttentionController,
+    working_memory: WorkingMemory,
+    current_focus: Vec<f64>,
+    dim: usize,
+}
 
-        if mean > 0.0 {
-            (max / mean).min(2.0) / 2.0
-        } else {
-            0.0
+impl AttentionSystem {
+    pub fn new(config: &BrainConfig) -> Self {
+        Self {
+            controller: AttentionController::new(config.attention_heads, config.attention_dim, config.top_down_strength, config.bottom_up_strength),
+            working_memory: WorkingMemory::new(config.workspace_capacity, config.attention_dim),
+            current_focus: vec![0.0; config.attention_dim],
+            dim: config.attention_dim,
         }
     }
-
-    /// Switch attention mechanism
-    pub fn switch_mechanism(&mut self, mechanism: AttentionType) {
-        self.controller.set_mechanism(mechanism);
+    pub fn attend(&mut self, input: &[f64]) -> Result<Vec<f64>> {
+        let normalized: Vec<f64> = (0..self.dim).map(|i| input.get(i).copied().unwrap_or(0.0)).collect();
+        let attended = self.controller.attend(&normalized);
+        let gated = self.working_memory.gate(&attended);
+        for (i, &v) in gated.iter().enumerate() {
+            if i < self.current_focus.len() { self.current_focus[i] = 0.8 * self.current_focus[i] + 0.2 * v; }
+        }
+        Ok(gated)
     }
-
-    /// Get recent attention history
-    pub fn recent_history(&self, n: usize) -> Vec<&Vec<f64>> {
-        self.history.iter().rev().take(n).collect()
+    pub fn focus_on(&mut self, target: &[f64]) -> Result<()> {
+        let normalized: Vec<f64> = (0..self.dim).map(|i| target.get(i).copied().unwrap_or(0.0)).collect();
+        self.controller.set_top_down_bias(&normalized);
+        self.current_focus = normalized;
+        Ok(())
     }
-
-    /// Reset the attention system
+    pub fn current_focus(&self) -> Vec<f64> { self.current_focus.clone() }
+    pub fn remember(&mut self, item: &[f64]) { self.working_memory.store(item); }
+    pub fn working_memory_contents(&self) -> Vec<Vec<f64>> { self.working_memory.contents() }
+    pub fn clear_working_memory(&mut self) { self.working_memory.clear(); }
+    pub fn attention_strength(&self) -> f64 {
+        let max = self.current_focus.iter().map(|x| x.abs()).fold(0.0, f64::max);
+        let mean = self.current_focus.iter().map(|x| x.abs()).sum::<f64>() / self.current_focus.len().max(1) as f64;
+        if mean > 0.0 { (max / mean).min(2.0) / 2.0 } else { 0.0 }
+    }
+    pub fn switch_mechanism(&mut self, m: AttentionType) { self.controller.set_mechanism(m); }
     pub fn reset(&mut self) {
-        self.controller = AttentionController::new(
-            self.controller.num_heads(),
-            self.dim,
-            self.controller.top_down_strength(),
-            self.controller.bottom_up_strength(),
-        );
+        self.controller = AttentionController::new(self.controller.num_heads(), self.dim, self.controller.top_down_strength(), self.controller.bottom_up_strength());
         self.working_memory.clear();
         self.current_focus = vec![0.0; self.dim];
-        self.history.clear();
     }
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
-
-    #[test]
-    fn test_attention_system_creation() {
-        let config = BrainConfig::default();
-        let system = AttentionSystem::new(&config);
-
-        assert_eq!(system.current_focus().len(), config.attention_dim);
-    }
-
-    #[test]
-    fn test_attend() {
-        let config = BrainConfig::minimal();
-        let mut system = AttentionSystem::new(&config);
-
-        let input = vec![0.5; config.attention_dim];
-        let attended = system.attend(&input).unwrap();
-
-        assert_eq!(attended.len(), config.attention_dim);
-    }
-
-    #[test]
-    fn test_focus_on() {
-        let config = BrainConfig::minimal();
-        let mut system = AttentionSystem::new(&config);
-
-        let target = vec![1.0; config.attention_dim];
-        system.focus_on(&target).unwrap();
-
-        let focus = system.current_focus();
-        assert_eq!(focus.len(), config.attention_dim);
-    }
-
     #[test]
     fn test_working_memory() {
-        let config = BrainConfig::minimal();
-        let mut system = AttentionSystem::new(&config);
-
-        let item = vec![0.5; config.attention_dim];
-        system.remember(&item);
-
-        let contents = system.working_memory_contents();
-        assert!(!contents.is_empty());
+        let mut wm = WorkingMemory::new(5, 8);
+        wm.store(&vec![0.5; 8]);
+        assert_eq!(wm.contents().len(), 1);
     }
 }

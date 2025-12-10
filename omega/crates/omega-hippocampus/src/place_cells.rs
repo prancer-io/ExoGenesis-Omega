@@ -323,13 +323,13 @@ impl HeadDirectionCell {
         }
     }
 
-    /// Compute activation for head direction
+    /// Compute activation for head direction using von Mises-like tuning
     pub fn compute(&mut self, direction: f64) -> f64 {
-        let diff = (direction - self.preferred_direction).sin().powi(2)
-            + (direction - self.preferred_direction).cos().powi(2)
-            - 1.0;
-        let angular_diff = (diff + 1.0).acos();
+        // Compute angular difference wrapped to [-PI, PI]
+        let diff = direction - self.preferred_direction;
+        let angular_diff = diff.sin().atan2(diff.cos());
 
+        // Gaussian tuning on angular difference
         self.activation = (-angular_diff.powi(2) / (2.0 * self.tuning_width.powi(2))).exp();
         self.activation
     }

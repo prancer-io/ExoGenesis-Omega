@@ -297,10 +297,15 @@ impl SpikingNetwork {
 
     /// Inject current into all neurons in a layer
     pub fn inject_layer_current(&mut self, layer_id: &LayerId, current: f64) {
-        if let Some(layer) = self.layers.get(layer_id) {
-            for neuron_id in &layer.neuron_ids {
-                self.inject_current(neuron_id.clone(), current);
-            }
+        // Collect neuron IDs first to avoid borrow conflict
+        let neuron_ids: Vec<NeuronId> = if let Some(layer) = self.layers.get(layer_id) {
+            layer.neuron_ids.clone()
+        } else {
+            return;
+        };
+
+        for neuron_id in neuron_ids {
+            self.inject_current(neuron_id, current);
         }
     }
 

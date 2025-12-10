@@ -165,7 +165,7 @@ impl Hippocampus {
         let dentate_gyrus = DentateGyrus::new(config.dg_size, config.dg_sparsity);
         let ca3 = CA3Network::new(config.ca3_size, config.dg_size, config.ca3_recurrence);
         let ca1 = CA1Layer::new(config.ca1_size, config.ca3_size);
-        let place_cells = SpatialMap::new(64, 64, 100); // 64x64 environment, 100 place cells
+        let place_cells = SpatialMap::new(64.0, 64.0, 100); // 64x64 environment, 100 place cells
         let replay = ReplayBuffer::new(config.replay_buffer_size);
 
         Self {

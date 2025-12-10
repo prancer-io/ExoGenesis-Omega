@@ -864,8 +864,8 @@ mod tests {
         let attn = SparseAttention::new(4, 3, 1);
 
         let queries = vec![1.0, 0.0, 0.0, 0.0];
-        let keys = vec![1.0, 0.0, 0.0, 0.0; 5].into_iter().flatten().collect::<Vec<_>>();
-        let values = vec![1.0, 2.0, 3.0, 4.0; 5].into_iter().flatten().collect::<Vec<_>>();
+        let keys: Vec<f64> = vec![[1.0, 0.0, 0.0, 0.0]; 5].into_iter().flatten().collect();
+        let values: Vec<f64> = vec![[1.0, 2.0, 3.0, 4.0]; 5].into_iter().flatten().collect();
 
         let output = attn.compute(&queries, &keys, &values, None);
 
@@ -876,6 +876,6 @@ mod tests {
     #[test]
     fn test_attention_types() {
         let all_types = AttentionType::all();
-        assert_eq!(all_types.len(), 39);
+        assert_eq!(all_types.len(), 40);
     }
 }

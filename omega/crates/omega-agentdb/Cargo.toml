@@ -19,6 +19,10 @@ chrono = { version = "0.4", features = ["serde"] }
 thiserror = "1.0"
 uuid = { version = "1.6", features = ["v4", "serde"] }
 ordered-float = "4.2"
+rand = "0.8"
+
+# HNSW index
+instant-distance = "0.6"
 
 # RuVector crates - advanced vector database components
 ruvector-core = "0.1"

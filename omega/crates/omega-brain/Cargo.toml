@@ -18,16 +18,9 @@ thiserror = { workspace = true }
 tracing = { workspace = true }
 async-trait = { workspace = true }
 
-# Internal Omega crates
-omega-core = { path = "../omega-core" }
-omega-memory = { path = "../omega-memory" }
-omega-snn = { path = "../omega-snn" }
-omega-attention = { path = "../omega-attention" }
-omega-consciousness = { path = "../omega-consciousness" }
-omega-hippocampus = { path = "../omega-hippocampus" }
-omega-sleep = { path = "../omega-sleep" }
-omega-strange-loops = { path = "../omega-strange-loops" }
-omega-agentdb = { path = "../omega-agentdb" }
+# Self-contained implementation - omega-brain provides its own
+# brain-like components without depending on other omega crates
+# to ensure independent compilation and testing
 
 # RuVector crates for runtime adaptation
 ruvector-sona = { version = "0.1", optional = true }

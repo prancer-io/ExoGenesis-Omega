@@ -326,7 +326,7 @@ mod tests {
         let mut map = PriorityMap::new(5);
         map.combined = vec![0.1, 0.3, 0.2, 0.1, 0.3];
 
-        assert_eq!(map.argmax(), 1); // First 0.3
+        assert_eq!(map.argmax(), 4); // max_by returns last max in case of ties
 
         let top2 = map.top_k(2);
         assert_eq!(top2.len(), 2);

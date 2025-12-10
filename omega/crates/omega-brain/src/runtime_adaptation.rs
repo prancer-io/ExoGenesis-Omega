@@ -319,6 +319,32 @@ pub struct ReasoningPattern {
     pub cluster_id: usize,
 }
 
+/// Cosine similarity (free function to avoid borrow conflicts)
+fn cosine_similarity(a: &[f64], b: &[f64]) -> f64 {
+    if a.len() != b.len() {
+        return 0.0;
+    }
+    let mut dot = 0.0;
+    let mut norm_a = 0.0;
+    let mut norm_b = 0.0;
+    for (&x, &y) in a.iter().zip(b.iter()) {
+        dot += x * y;
+        norm_a += x * x;
+        norm_b += y * y;
+    }
+    let denom = (norm_a * norm_b).sqrt();
+    if denom > 0.0 { dot / denom } else { 0.0 }
+}
+
+/// Euclidean distance (free function to avoid borrow conflicts)
+fn euclidean_distance(a: &[f64], b: &[f64]) -> f64 {
+    a.iter()
+        .zip(b.iter())
+        .map(|(&x, &y)| (x - y).powi(2))
+        .sum::<f64>()
+        .sqrt()
+}
+
 /// ReasoningBank using K-means++ clustering
 #[derive(Debug, Clone)]
 pub struct ReasoningBank {
@@ -367,7 +393,7 @@ impl ReasoningBank {
             .patterns
             .iter()
             .map(|p| {
-                let sim = self.cosine_similarity(query, &p.input);
+                let sim = cosine_similarity(query, &p.input);
                 (sim, p)
             })
             .collect();
@@ -393,13 +419,15 @@ impl ReasoningBank {
         let mut cluster_sums: Vec<Vec<f64>> = vec![vec![0.0; dim]; self.num_clusters];
         let mut cluster_counts: Vec<usize> = vec![0; self.num_clusters];
 
+        // Clone centroids to avoid borrow conflicts
+        let centroids_snapshot = self.centroids.clone();
+
         for pattern in &mut self.patterns {
             // Find nearest centroid
-            let nearest = self
-                .centroids
+            let nearest = centroids_snapshot
                 .iter()
                 .enumerate()
-                .map(|(i, c)| (i, self.euclidean_distance(&pattern.input, c)))
+                .map(|(i, c)| (i, euclidean_distance(&pattern.input, c)))
                 .min_by(|a, b| a.1.partial_cmp(&b.1).unwrap())
                 .map(|(i, _)| i)
                 .unwrap_or(0);
@@ -446,7 +474,7 @@ impl ReasoningBank {
                 .map(|p| {
                     self.centroids
                         .iter()
-                        .map(|c| self.euclidean_distance(&p.input, c))
+                        .map(|c| euclidean_distance(&p.input, c))
                         .fold(f64::INFINITY, f64::min)
                 })
                 .collect();
@@ -465,34 +493,6 @@ impl ReasoningBank {
                 self.centroids.push(vec![0.0; dim]);
             }
         }
-    }
-
-    fn cosine_similarity(&self, a: &[f64], b: &[f64]) -> f64 {
-        if a.len() != b.len() {
-            return 0.0;
-        }
-        let mut dot = 0.0;
-        let mut norm_a = 0.0;
-        let mut norm_b = 0.0;
-        for (&x, &y) in a.iter().zip(b.iter()) {
-            dot += x * y;
-            norm_a += x * x;
-            norm_b += y * y;
-        }
-        let denom = (norm_a * norm_b).sqrt();
-        if denom > 0.0 {
-            dot / denom
-        } else {
-            0.0
-        }
-    }
-
-    fn euclidean_distance(&self, a: &[f64], b: &[f64]) -> f64 {
-        a.iter()
-            .zip(b.iter())
-            .map(|(&x, &y)| (x - y).powi(2))
-            .sum::<f64>()
-            .sqrt()
     }
 
     /// Get pattern count

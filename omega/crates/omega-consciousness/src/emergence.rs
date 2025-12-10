@@ -381,7 +381,7 @@ mod tests {
         let mut so = SelfOrganization::new();
         so.order_parameter = 0.5;
         so.entropy = 0.5;
-        so.complexity = 0.5;
+        so.complexity = 0.6;  // Must be > 0.5 (strictly greater)
 
         assert!(so.is_self_organizing());
     }

@@ -14,7 +14,7 @@ use simsimd::SpatialSimilarity;
 #[inline]
 pub fn cosine_similarity_f32(a: &[f32], b: &[f32]) -> f32 {
     match f32::cosine(a, b) {
-        Some(distance) => 1.0 - distance,
+        Some(distance) => (1.0 - distance) as f32,
         None => 0.0,
     }
 }
@@ -24,7 +24,7 @@ pub fn cosine_similarity_f32(a: &[f32], b: &[f32]) -> f32 {
 #[inline]
 pub fn cosine_distance_f32(a: &[f32], b: &[f32]) -> f32 {
     match f32::cosine(a, b) {
-        Some(distance) => distance,
+        Some(distance) => distance as f32,
         None => 1.0,
     }
 }
@@ -33,7 +33,7 @@ pub fn cosine_distance_f32(a: &[f32], b: &[f32]) -> f32 {
 #[inline]
 pub fn l2_squared_f32(a: &[f32], b: &[f32]) -> f32 {
     match f32::sqeuclidean(a, b) {
-        Some(distance) => distance,
+        Some(distance) => distance as f32,
         None => f32::MAX,
     }
 }
@@ -48,7 +48,7 @@ pub fn l2_distance_f32(a: &[f32], b: &[f32]) -> f32 {
 #[inline]
 pub fn dot_product_f32(a: &[f32], b: &[f32]) -> f32 {
     match f32::dot(a, b) {
-        Some(product) => product,
+        Some(product) => product as f32,
         None => 0.0,
     }
 }
