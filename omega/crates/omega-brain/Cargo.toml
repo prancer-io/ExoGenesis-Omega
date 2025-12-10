@@ -1,0 +1,36 @@
+[package]
+name = "omega-brain"
+description = "Unified brain-like cognitive architecture integrating all Omega components"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[dependencies]
+# Core workspace dependencies
+tokio = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+uuid = { workspace = true }
+chrono = { workspace = true }
+thiserror = { workspace = true }
+tracing = { workspace = true }
+async-trait = { workspace = true }
+
+# Internal Omega crates
+omega-core = { path = "../omega-core" }
+omega-memory = { path = "../omega-memory" }
+omega-snn = { path = "../omega-snn" }
+omega-attention = { path = "../omega-attention" }
+omega-consciousness = { path = "../omega-consciousness" }
+omega-hippocampus = { path = "../omega-hippocampus" }
+omega-sleep = { path = "../omega-sleep" }
+omega-strange-loops = { path = "../omega-strange-loops" }
+
+# Additional dependencies
+parking_lot = "0.12"
+rand = "0.8"
+
+[dev-dependencies]
+tokio-test = "0.4"
