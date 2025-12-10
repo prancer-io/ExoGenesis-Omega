@@ -9,6 +9,7 @@ homepage.workspace = true
 documentation.workspace = true
 keywords.workspace = true
 categories.workspace = true
+readme = "README.md"
 description = "12-tier cosmic memory system with automatic consolidation (Instant → Omega)"
 
 [dependencies]

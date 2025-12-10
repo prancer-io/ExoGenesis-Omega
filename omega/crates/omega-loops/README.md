@@ -6,6 +6,8 @@
 
 7 temporal cognitive loops from Reflexive (1ms) to Transcendent (10y) for multi-scale intelligence processing.
 
+**Part of the [ExoGenesis-Omega](https://github.com/prancer-io/ExoGenesis-Omega) cognitive architecture.**
+
 ## Overview
 
 `omega-loops` implements a hierarchical system of 7 nested temporal loops that enable intelligence systems to operate coherently across vastly different timescales. From millisecond reflexes to decade-long transformations, each loop processes information at its natural temporal scale while coordinating with faster and slower loops.

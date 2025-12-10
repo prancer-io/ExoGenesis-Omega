@@ -6,6 +6,7 @@ edition.workspace = true
 authors.workspace = true
 license.workspace = true
 repository.workspace = true
+readme = "README.md"
 keywords = ["consciousness", "iit", "free-energy", "phi", "global-workspace"]
 categories = ["science", "simulation", "algorithms"]
 

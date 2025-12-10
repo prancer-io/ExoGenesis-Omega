@@ -9,6 +9,7 @@ homepage.workspace = true
 documentation.workspace = true
 keywords.workspace = true
 categories.workspace = true
+readme = "README.md"
 description = "Production runtime orchestrator integrating all ExoGenesis Omega subsystems with health monitoring"
 
 [dependencies]

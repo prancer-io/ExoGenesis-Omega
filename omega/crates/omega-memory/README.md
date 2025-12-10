@@ -6,6 +6,8 @@
 
 12-tier cosmic memory system with automatic consolidation spanning from instant (milliseconds) to omega (universal) timescales.
 
+**Part of the [ExoGenesis-Omega](https://github.com/prancer-io/ExoGenesis-Omega) cognitive architecture.**
+
 ## Overview
 
 `omega-memory` implements a revolutionary hierarchical memory architecture that spans 12 temporal tiers—from immediate sensory memory lasting milliseconds to cosmic memory operating at the scale of the universe's lifetime. The system automatically consolidates memories between tiers based on importance, recency, and access patterns, mimicking biological memory consolidation.

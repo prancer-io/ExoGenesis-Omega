@@ -6,6 +6,7 @@ edition.workspace = true
 authors.workspace = true
 license.workspace = true
 repository.workspace = true
+readme = "README.md"
 keywords = ["attention", "transformer", "flash-attention", "brain", "cognitive"]
 categories = ["science", "algorithms"]
 

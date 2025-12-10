@@ -6,6 +6,7 @@ edition.workspace = true
 authors.workspace = true
 license.workspace = true
 repository.workspace = true
+readme = "README.md"
 keywords = ["strange-loops", "self-reference", "meta-cognition", "consciousness", "hofstadter"]
 categories = ["science", "simulation", "algorithms"]
 

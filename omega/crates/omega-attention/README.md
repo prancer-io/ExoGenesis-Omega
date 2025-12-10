@@ -6,6 +6,8 @@
 
 Brain-like selective attention system with 40 attention mechanisms, working memory gating, and top-down/bottom-up processing.
 
+**Part of the [ExoGenesis-Omega](https://github.com/prancer-io/ExoGenesis-Omega) cognitive architecture.**
+
 ## Overview
 
 `omega-attention` implements a biologically-inspired attention system modeled after neuroscience research on selective attention and transformer architectures. It provides 40 attention mechanisms ranging from standard scaled dot-product attention to advanced hyperbolic, graph, and memory-augmented variants.

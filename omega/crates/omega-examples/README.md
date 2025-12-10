@@ -4,6 +4,8 @@
 
 Example applications demonstrating ExoGenesis Omega brain capabilities.
 
+**Part of the [ExoGenesis-Omega](https://github.com/prancer-io/ExoGenesis-Omega) cognitive architecture.**
+
 ## Overview
 
 This crate contains runnable examples that showcase the cognitive capabilities of the Omega Brain ecosystem. Each example demonstrates a different aspect of the system, from temporal loops to creative dream-based problem solving.

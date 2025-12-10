@@ -9,6 +9,7 @@ homepage.workspace = true
 documentation.workspace = true
 keywords.workspace = true
 categories.workspace = true
+readme = "README.md"
 description = "7 temporal cognitive loops from Reflexive (1ms) to Transcendent (10y) for multi-scale processing"
 
 [dependencies]

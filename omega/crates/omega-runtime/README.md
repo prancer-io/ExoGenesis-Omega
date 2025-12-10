@@ -6,6 +6,8 @@
 
 Production runtime orchestrator integrating all ExoGenesis Omega subsystems with health monitoring, circuit breakers, and graceful degradation.
 
+**Part of the [ExoGenesis-Omega](https://github.com/prancer-io/ExoGenesis-Omega) cognitive architecture.**
+
 ## Overview
 
 `omega-runtime` is the production-ready orchestration layer that brings together all ExoGenesis Omega components: AgentDB for vector storage, the 12-tier Memory system, 7 temporal Loops, and META-SONA for architecture evolution. It provides a unified, type-safe API with built-in reliability features for deploying AI systems at scale.

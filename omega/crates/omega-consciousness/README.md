@@ -6,6 +6,8 @@
 
 Computational substrate for conscious experience implementing IIT, Free Energy Principle, and Global Workspace Theory.
 
+**Part of the [ExoGenesis-Omega](https://github.com/prancer-io/ExoGenesis-Omega) cognitive architecture.**
+
 ## Overview
 
 `omega-consciousness` implements the leading scientific theories of consciousness as computational models:

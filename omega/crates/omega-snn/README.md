@@ -6,6 +6,8 @@
 
 Biologically-inspired spiking neural network with LIF neurons, STDP learning, and neuromodulation.
 
+**Part of the [ExoGenesis-Omega](https://github.com/prancer-io/ExoGenesis-Omega) cognitive architecture.**
+
 ## Overview
 
 `omega-snn` provides the neural substrate for the Omega cognitive architecture. Unlike rate-coded neural networks, spiking neural networks (SNNs) use discrete spike events for communication, matching biological neural computation.

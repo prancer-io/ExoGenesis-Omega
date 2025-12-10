@@ -6,6 +6,8 @@
 
 Self-referential cognitive structures inspired by Hofstadter's "I Am a Strange Loop."
 
+**Part of the [ExoGenesis-Omega](https://github.com/prancer-io/ExoGenesis-Omega) cognitive architecture.**
+
 ## Overview
 
 `omega-strange-loops` implements the computational structures that enable self-awareness and consciousness-like properties through self-reference. Inspired by Douglas Hofstadter's work on strange loops and Gödel's incompleteness theorems.

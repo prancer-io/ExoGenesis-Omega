@@ -9,6 +9,7 @@ homepage.workspace = true
 documentation.workspace = true
 keywords.workspace = true
 categories.workspace = true
+readme = "README.md"
 description = "SQLite-based persistence layer for ExoGenesis Omega with schema migrations and transactions"
 
 [dependencies]

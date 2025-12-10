@@ -6,6 +6,8 @@
 
 Biologically-inspired hippocampal memory system with pattern separation, completion, and sharp-wave ripple replay.
 
+**Part of the [ExoGenesis-Omega](https://github.com/prancer-io/ExoGenesis-Omega) cognitive architecture.**
+
 ## Overview
 
 `omega-hippocampus` implements a computational model of the hippocampal formation, the brain region critical for episodic memory and spatial navigation. The model includes:
