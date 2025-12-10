@@ -8,6 +8,8 @@ members = [
     "crates/omega-meta-sona",
     "crates/omega-runtime",
     "crates/omega-persistence",
+    "crates/omega-snn",
+    "crates/omega-attention",
 ]
 
 [workspace.package]
