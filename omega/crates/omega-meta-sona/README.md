@@ -401,6 +401,8 @@ Parallelization:
 - **[omega-agentdb](../omega-agentdb)** - Storage for architecture variants
 - **[omega-persistence](../omega-persistence)** - Persisting evolved architectures
 - **[omega-runtime](../omega-runtime)** - Runtime deployment of created intelligences
+- **[omega-brain](../omega-brain)** - Unified cognitive architecture
+- **[omega-snn](../omega-snn)** - Neural substrate for evolved architectures
 
 ## License
 

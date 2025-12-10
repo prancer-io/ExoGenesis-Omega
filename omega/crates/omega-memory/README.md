@@ -390,6 +390,8 @@ Memory system performance characteristics:
 - **[omega-loops](../omega-loops)** - Temporal loop integration
 - **[omega-meta-sona](../omega-meta-sona)** - Architecture evolution
 - **[omega-runtime](../omega-runtime)** - Runtime orchestration
+- **[omega-hippocampus](../omega-hippocampus)** - Hippocampal memory circuits
+- **[omega-sleep](../omega-sleep)** - Memory consolidation during sleep
 
 ## License
 

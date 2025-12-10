@@ -405,6 +405,8 @@ Memory usage: ~1KB per loop + cycle state
 - **[omega-meta-sona](../omega-meta-sona)** - Architecture evolution in transformative loop
 - **[omega-runtime](../omega-runtime)** - Production orchestration
 - **[omega-persistence](../omega-persistence)** - Loop state persistence
+- **[omega-brain](../omega-brain)** - Unified cognitive processing
+- **[omega-sleep](../omega-sleep)** - Sleep/wake cycle integration
 
 ## License
 

@@ -383,6 +383,8 @@ Key performance characteristics:
 - **[omega-loops](../omega-loops)** - Temporal loop orchestration
 - **[omega-meta-sona](../omega-meta-sona)** - Architecture evolution
 - **[omega-runtime](../omega-runtime)** - Production runtime
+- **[omega-brain](../omega-brain)** - Unified cognitive architecture
+- **[omega-hippocampus](../omega-hippocampus)** - Memory storage layer
 
 ## License
 

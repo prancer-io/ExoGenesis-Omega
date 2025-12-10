@@ -388,6 +388,8 @@ For 100K vectors (4096-dim, M=32, ef=100):
 - **[omega-loops](../omega-loops)** - Temporal loop orchestration
 - **[omega-meta-sona](../omega-meta-sona)** - Architecture search
 - **[omega-runtime](../omega-runtime)** - Production runtime
+- **[omega-hippocampus](../omega-hippocampus)** - Hippocampal memory system
+- **[omega-brain](../omega-brain)** - Unified cognitive architecture
 
 ## License
 

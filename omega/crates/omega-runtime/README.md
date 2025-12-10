@@ -453,12 +453,24 @@ Memory usage: ~10MB base + subsystem usage
 
 ## Related Crates
 
+### Core Infrastructure
 - **[omega-core](../omega-core)** - Core types (used by runtime)
+- **[omega-persistence](../omega-persistence)** - Storage backend
+
+### Subsystems
 - **[omega-agentdb](../omega-agentdb)** - Vector database subsystem
 - **[omega-memory](../omega-memory)** - Memory subsystem
 - **[omega-loops](../omega-loops)** - Loop engine subsystem
 - **[omega-meta-sona](../omega-meta-sona)** - Architecture evolution subsystem
-- **[omega-persistence](../omega-persistence)** - Storage backend
+
+### Brain-Like Cognition
+- **[omega-brain](../omega-brain)** - Unified cognitive architecture
+- **[omega-snn](../omega-snn)** - Spiking neural networks
+- **[omega-attention](../omega-attention)** - Attention mechanisms
+- **[omega-consciousness](../omega-consciousness)** - Consciousness models
+- **[omega-hippocampus](../omega-hippocampus)** - Memory circuits
+- **[omega-sleep](../omega-sleep)** - Sleep/wake consolidation
+- **[omega-strange-loops](../omega-strange-loops)** - Self-awareness
 
 ## License
 

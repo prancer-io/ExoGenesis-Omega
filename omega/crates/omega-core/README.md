@@ -313,11 +313,25 @@ All other Omega crates depend on `omega-core` for shared types and interfaces.
 
 ## Related Crates
 
+### Storage & Infrastructure
 - **[omega-persistence](../omega-persistence)** - SQLite-based persistence layer
 - **[omega-agentdb](../omega-agentdb)** - SIMD vector database with HNSW
+
+### Memory & Processing
 - **[omega-memory](../omega-memory)** - 12-tier memory implementation
 - **[omega-loops](../omega-loops)** - 7 temporal loop orchestration
 - **[omega-meta-sona](../omega-meta-sona)** - Self-optimizing architecture search
+
+### Brain-Like Cognition
+- **[omega-brain](../omega-brain)** - Unified cognitive architecture
+- **[omega-snn](../omega-snn)** - Spiking neural networks
+- **[omega-attention](../omega-attention)** - 40 attention mechanisms
+- **[omega-consciousness](../omega-consciousness)** - IIT, GWT, Free Energy
+- **[omega-hippocampus](../omega-hippocampus)** - Hippocampal memory
+- **[omega-sleep](../omega-sleep)** - Sleep/wake consolidation
+- **[omega-strange-loops](../omega-strange-loops)** - Self-referential cognition
+
+### Runtime
 - **[omega-runtime](../omega-runtime)** - Production runtime orchestrator
 
 ## License
