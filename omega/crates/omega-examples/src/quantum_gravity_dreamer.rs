@@ -734,10 +734,11 @@ impl QuantumGravityDreamer {
         desc
     }
 
-    fn solve(&mut self, problem: &Problem, max_cycles: usize, min_bridge_insights: usize) -> SolverResult {
+    fn solve_until_confident(&mut self, problem: &Problem, target_confidence: f64, max_cycles: usize) -> SolverResult {
         println!("╔══════════════════════════════════════════════════════════════════╗");
         println!("║     OMEGA BRAIN: QUANTUM GRAVITY DREAM SOLVER                    ║");
         println!("║     Attempting to Unify Quantum Mechanics & General Relativity   ║");
+        println!("║     Target Confidence: {:.0}%                                      ║", target_confidence * 100.0);
         println!("╚══════════════════════════════════════════════════════════════════╝\n");
 
         println!("Problem: {}\n", problem.description);
@@ -750,17 +751,18 @@ impl QuantumGravityDreamer {
         println!("Encoded {} concepts into dream network", problem.elements.len());
         println!("Encoded {} failed approaches to potentially invert\n", problem.failed_approaches.len());
 
-        // Phase 2: Dream cycles
+        // Phase 2: Dream cycles - keep going until confidence > target
         println!("═══ PHASE 2: ENTERING DREAM CYCLES ═══\n");
-        println!("Seeking insights that bridge Quantum Mechanics ↔ General Relativity...\n");
+        println!("Dreaming until confidence exceeds {:.0}%...\n", target_confidence * 100.0);
 
         let mut bridge_insights = 0;
         let mut cycle = 0;
+        let mut current_confidence = 0.0;
 
-        while cycle < max_cycles && bridge_insights < min_bridge_insights {
+        while cycle < max_cycles && current_confidence < target_confidence {
             cycle += 1;
 
-            let dream = self.dream(150); // Longer dreams for complex problem
+            let dream = self.dream(200); // Longer dreams for deeper exploration
 
             // Extract insights
             let insights = self.extract_insights(&dream, problem);
@@ -778,26 +780,61 @@ impl QuantumGravityDreamer {
 
             bridge_insights += new_bridges.len();
 
-            // Progress output
-            if cycle % 5 == 0 || !new_bridges.is_empty() {
-                println!("  Sleep Cycle {}/{}:", cycle, max_cycles);
-                println!("    Bizarreness: {:.2}", dream.bizarreness);
-                println!("    Insights this cycle: {}", insights.len());
-                println!("    Bridge insights (QM↔GR): {} (total: {})", new_bridges.len(), bridge_insights);
+            // Add insights with confidence boost for repeated discoveries
+            for mut insight in insights {
+                // Boost confidence for insights we've seen similar patterns to
+                let similar_count = self.all_insights.iter()
+                    .filter(|i| i.from == insight.from || i.to == insight.to)
+                    .count();
+                insight.confidence = (insight.confidence + similar_count as f64 * 0.05).min(1.0);
+                self.all_insights.push(insight);
+            }
 
-                if !new_bridges.is_empty() {
-                    for insight in &new_bridges {
-                        println!("      ★ {:?}: {} ↔ {}", insight.connection_type, insight.from, insight.to);
+            // Calculate current confidence from top insights
+            if !self.all_insights.is_empty() {
+                let mut ranked: Vec<_> = self.all_insights.iter()
+                    .map(|i| {
+                        let score = i.relevance * 0.3 + i.confidence * 0.4 +
+                            match i.connection_type {
+                                ConnectionType::Duality => 0.35,
+                                ConnectionType::Emergence => 0.30,
+                                ConnectionType::Holography => 0.30,
+                                _ => 0.15,
+                            };
+                        (i, score)
+                    })
+                    .collect();
+                ranked.sort_by(|a, b| b.1.partial_cmp(&a.1).unwrap());
+
+                let top_n = ranked.iter().take(10).collect::<Vec<_>>();
+                current_confidence = top_n.iter().map(|(i, _)| i.confidence).sum::<f64>() / top_n.len() as f64;
+            }
+
+            // Progress output every 5 cycles or on significant progress
+            if cycle % 5 == 0 || current_confidence > 0.85 {
+                println!("  Sleep Cycle {}/{}:", cycle, max_cycles);
+                println!("    Current Confidence: {:.1}% (target: {:.0}%)", current_confidence * 100.0, target_confidence * 100.0);
+                println!("    Total Insights: {}", self.all_insights.len());
+                println!("    Bridge insights (QM↔GR): {}", bridge_insights);
+
+                // Show top duality insights
+                let dualities: Vec<_> = self.all_insights.iter()
+                    .filter(|i| i.connection_type == ConnectionType::Duality)
+                    .take(3)
+                    .collect();
+                if !dualities.is_empty() {
+                    println!("    Top Dualities:");
+                    for d in dualities {
+                        println!("      ★ {} ↔ {} (conf: {:.1}%)", d.from, d.to, d.confidence * 100.0);
                     }
                 }
                 println!();
             }
 
-            self.all_insights.extend(insights);
-
-            // Check for breakthrough
-            if bridge_insights >= min_bridge_insights {
-                println!("\n  ✨ BREAKTHROUGH! Found {} bridge insights!\n", bridge_insights);
+            // Check for target confidence reached
+            if current_confidence >= target_confidence {
+                println!("\n  ✨ TARGET REACHED! Confidence: {:.1}% after {} dream cycles!\n",
+                    current_confidence * 100.0, cycle);
                 break;
             }
         }
@@ -805,7 +842,7 @@ impl QuantumGravityDreamer {
         // Phase 3: Synthesis
         println!("═══ PHASE 3: SYNTHESIZING SOLUTION ═══\n");
 
-        let solution = self.synthesize_solution(problem);
+        let solution = self.synthesize_solution_v2();
 
         SolverResult {
             dreams_generated: cycle,
@@ -813,6 +850,54 @@ impl QuantumGravityDreamer {
             bridge_insights,
             solution,
         }
+    }
+
+    fn synthesize_solution_v2(&self) -> Option<Solution> {
+        if self.all_insights.is_empty() {
+            return None;
+        }
+
+        // Find unique high-confidence insights by connection
+        let mut seen_connections = std::collections::HashSet::new();
+        let mut unique_insights = Vec::new();
+
+        let mut ranked: Vec<_> = self.all_insights.iter()
+            .map(|i| {
+                let score = i.relevance * 0.3 + i.confidence * 0.4 +
+                    match i.connection_type {
+                        ConnectionType::Duality => 0.35,
+                        ConnectionType::Emergence => 0.30,
+                        ConnectionType::Holography => 0.30,
+                        _ => 0.15,
+                    };
+                (i, score)
+            })
+            .collect();
+        ranked.sort_by(|a, b| b.1.partial_cmp(&a.1).unwrap());
+
+        for (insight, _) in ranked {
+            let key = format!("{}-{}-{:?}", insight.from, insight.to, insight.connection_type);
+            if !seen_connections.contains(&key) && unique_insights.len() < 10 {
+                seen_connections.insert(key);
+                unique_insights.push(insight.clone());
+            }
+        }
+
+        let top: Vec<_> = unique_insights.into_iter().take(5).collect();
+
+        let paradigm_shift = self.describe_paradigm_shift(&top);
+        let novelty = top.iter().map(|i| i.bizarreness).sum::<f64>() / top.len() as f64;
+        let confidence = top.iter().map(|i| i.confidence).sum::<f64>() / top.len() as f64;
+
+        let description = self.generate_solution_description(&top);
+
+        Some(Solution {
+            description,
+            key_insights: top,
+            novelty,
+            confidence,
+            paradigm_shift,
+        })
     }
 }
 
@@ -878,8 +963,8 @@ fn main() {
     let problem = quantum_gravity_problem();
     let mut solver = QuantumGravityDreamer::new();
 
-    // Run with up to 50 sleep cycles, seeking at least 10 bridge insights
-    let result = solver.solve(&problem, 50, 10);
+    // Keep dreaming until we reach 90% confidence (up to 100 cycles max)
+    let result = solver.solve_until_confident(&problem, 0.90, 100);
 
     result.print_report();
 
