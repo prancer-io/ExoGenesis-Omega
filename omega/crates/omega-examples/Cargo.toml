@@ -1,0 +1,41 @@
+[package]
+name = "omega-examples"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "Example applications demonstrating ExoGenesis Omega brain capabilities"
+readme = "README.md"
+
+[[bin]]
+name = "loops_demo"
+path = "src/loops_demo.rs"
+
+[[bin]]
+name = "dream_problem_solver"
+path = "src/dream_problem_solver.rs"
+
+[dependencies]
+# Core omega crates
+omega-core = { path = "../omega-core" }
+omega-loops = { path = "../omega-loops" }
+omega-brain = { path = "../omega-brain" }
+omega-snn = { path = "../omega-snn" }
+omega-attention = { path = "../omega-attention" }
+omega-consciousness = { path = "../omega-consciousness" }
+omega-hippocampus = { path = "../omega-hippocampus" }
+omega-sleep = { path = "../omega-sleep" }
+omega-strange-loops = { path = "../omega-strange-loops" }
+omega-memory = { path = "../omega-memory" }
+omega-meta-sona = { path = "../omega-meta-sona" }
+omega-runtime = { path = "../omega-runtime" }
+
+# External dependencies
+tokio = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+chrono = { workspace = true }
+tracing = { workspace = true }
+tracing-subscriber = { workspace = true }
+rand = { workspace = true }

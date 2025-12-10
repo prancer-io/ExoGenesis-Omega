@@ -15,6 +15,7 @@ members = [
     "crates/omega-sleep",
     "crates/omega-strange-loops",
     "crates/omega-brain",
+    "crates/omega-examples",
 ]
 
 [workspace.package]
@@ -36,4 +37,6 @@ uuid = { version = "1.6", features = ["v4", "v7", "serde"] }
 chrono = { version = "0.4", features = ["serde"] }
 thiserror = "1.0"
 tracing = "0.1"
+tracing-subscriber = "0.3"
 async-trait = "0.1"
+rand = "0.8"
