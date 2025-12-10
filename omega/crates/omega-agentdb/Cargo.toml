@@ -9,7 +9,7 @@ homepage.workspace = true
 documentation.workspace = true
 keywords.workspace = true
 categories.workspace = true
-description = "SIMD-optimized vector database with HNSW index for agent storage and skill management"
+description = "Advanced vector database with ruvector integration for agent storage and skill management"
 
 [dependencies]
 serde = { version = "1.0", features = ["derive"] }
@@ -18,8 +18,14 @@ tokio = { version = "1.35", features = ["full"] }
 chrono = { version = "0.4", features = ["serde"] }
 thiserror = "1.0"
 uuid = { version = "1.6", features = ["v4", "serde"] }
-instant-distance = "0.6"
 ordered-float = "4.2"
+
+# RuVector crates - advanced vector database components
+ruvector-core = "0.1"
+ruvector-gnn = "0.1"
+ruvector-graph = "0.1"
+
+# Keep simsimd for backward compatibility
 simsimd = "5.9"
 
 [dev-dependencies]

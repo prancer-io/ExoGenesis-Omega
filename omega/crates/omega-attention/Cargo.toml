@@ -24,5 +24,8 @@ rand = "0.8"
 parking_lot = "0.12"
 ordered-float = "4.2"
 
+# RuVector attention (optional, provides 39 optimized attention mechanisms)
+ruvector-attention = { version = "0.1", optional = true }
+
 [dev-dependencies]
 tokio-test = "0.4"

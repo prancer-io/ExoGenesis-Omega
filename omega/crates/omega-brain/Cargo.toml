@@ -27,10 +27,18 @@ omega-consciousness = { path = "../omega-consciousness" }
 omega-hippocampus = { path = "../omega-hippocampus" }
 omega-sleep = { path = "../omega-sleep" }
 omega-strange-loops = { path = "../omega-strange-loops" }
+omega-agentdb = { path = "../omega-agentdb" }
+
+# RuVector crates for runtime adaptation
+ruvector-sona = { version = "0.1", optional = true }
 
 # Additional dependencies
 parking_lot = "0.12"
 rand = "0.8"
+
+[features]
+default = []
+runtime-adaptation = ["ruvector-sona"]
 
 [dev-dependencies]
 tokio-test = "0.4"

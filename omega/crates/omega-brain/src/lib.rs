@@ -9,6 +9,7 @@
 //! - **Memory System** (omega-hippocampus): Pattern separation/completion, replay
 //! - **Sleep System** (omega-sleep): Consolidation during SWS/REM
 //! - **Self-Awareness** (omega-strange-loops): Meta-cognition, self-model
+//! - **Runtime Adaptation** (ruvector-sona inspired): LoRA, EWC++, ReasoningBank
 //!
 //! The cognitive cycle follows: Perception → Attention → Processing → Memory → Action
 
@@ -18,6 +19,7 @@ pub mod config;
 pub mod consciousness_core;
 pub mod memory_system;
 pub mod neural_substrate;
+pub mod runtime_adaptation;
 pub mod self_awareness;
 pub mod sleep_system;
 
@@ -27,6 +29,10 @@ pub use config::{BrainConfig, BrainMode};
 pub use consciousness_core::ConsciousnessCore;
 pub use memory_system::MemorySystem;
 pub use neural_substrate::NeuralSubstrate;
+pub use runtime_adaptation::{
+    AdaptationStats, EWCPlusPlus, LoRAAdapter, LoRAConfig, LoRARank,
+    ReasoningBank, ReasoningPattern, RuntimeAdaptation,
+};
 pub use self_awareness::SelfAwarenessSystem;
 pub use sleep_system::SleepSystem;
 
