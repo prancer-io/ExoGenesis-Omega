@@ -6,6 +6,7 @@ edition.workspace = true
 authors.workspace = true
 license.workspace = true
 repository.workspace = true
+readme = "README.md"
 keywords = ["hippocampus", "memory", "consolidation", "replay", "spatial"]
 categories = ["science", "simulation", "algorithms"]
 
@@ -26,7 +27,7 @@ parking_lot = "0.12"
 ordered-float = "4.2"
 
 # Local dependencies
-omega-snn = { path = "../omega-snn" }
+omega-snn = { version = "1.0.0", path = "../omega-snn" }
 
 [dev-dependencies]
 tokio-test = "0.4"

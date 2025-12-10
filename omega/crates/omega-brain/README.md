@@ -6,6 +6,8 @@
 
 Unified brain-like cognitive architecture integrating all Omega components into a coherent cognitive system.
 
+**Part of the [ExoGenesis-Omega](https://github.com/prancer-io/ExoGenesis-Omega) cognitive architecture.**
+
 ## Overview
 
 `omega-brain` is the central integration crate for the Omega cognitive architecture. It combines neural processing, attention, consciousness, memory, sleep, and self-awareness into a single unified system that processes information in a brain-like manner.

@@ -6,6 +6,8 @@
 
 SQLite-based persistence layer for ExoGenesis Omega with schema migrations and transactional storage.
 
+**Part of the [ExoGenesis-Omega](https://github.com/prancer-io/ExoGenesis-Omega) cognitive architecture.**
+
 ## Overview
 
 `omega-persistence` provides durable, high-performance storage for all ExoGenesis Omega components. Built on SQLite with bundled native library support, it offers zero-dependency deployment with ACID guarantees for memories, skills, architectures, intelligences, causal graphs, and vector embeddings.

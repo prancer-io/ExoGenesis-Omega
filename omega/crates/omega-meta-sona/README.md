@@ -6,6 +6,8 @@
 
 Self-Optimizing Neural Architecture (META-SONA) with evolutionary search, MCTS-based architecture discovery, and multi-objective fitness evaluation.
 
+**Part of the [ExoGenesis-Omega](https://github.com/prancer-io/ExoGenesis-Omega) cognitive architecture.**
+
 ## Overview
 
 `omega-meta-sona` is the intelligence design engine for ExoGenesis Omega. While SONA optimizes weights within a fixed architecture, META-SONA optimizes the architecture itself. It discovers, evaluates, and evolves cognitive architectures using Monte Carlo Tree Search (MCTS), Proximal Policy Optimization (PPO), and multi-objective fitness functions.

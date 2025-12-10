@@ -6,6 +6,8 @@
 
 Biologically-inspired sleep/wake cycle simulation with memory consolidation, circadian rhythms, and sleep architecture.
 
+**Part of the [ExoGenesis-Omega](https://github.com/prancer-io/ExoGenesis-Omega) cognitive architecture.**
+
 ## Overview
 
 `omega-sleep` implements the neuroscience of sleep for artificial cognitive systems. Sleep is essential for memory consolidation, synaptic homeostasis, and cognitive maintenance. This crate provides:

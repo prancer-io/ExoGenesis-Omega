@@ -6,6 +6,8 @@
 
 SIMD-optimized vector database with HNSW indexing for agent storage, skill management, and semantic search.
 
+**Part of the [ExoGenesis-Omega](https://github.com/prancer-io/ExoGenesis-Omega) cognitive architecture.**
+
 ## Overview
 
 `omega-agentdb` is a high-performance, in-memory vector database optimized for AI agent systems. It provides four specialized subsystems: vector storage with HNSW approximate nearest neighbor search, reflexion episode tracking for agent learning, causal graph analysis for action-outcome relationships, and semantic skill management.

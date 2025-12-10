@@ -9,6 +9,7 @@ homepage.workspace = true
 documentation.workspace = true
 keywords.workspace = true
 categories.workspace = true
+readme = "README.md"
 description = "Self-Optimizing Neural Architecture (META-SONA) with evolutionary search and fitness evaluation"
 
 [dependencies]

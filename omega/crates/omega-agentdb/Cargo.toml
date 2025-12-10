@@ -9,6 +9,7 @@ homepage.workspace = true
 documentation.workspace = true
 keywords.workspace = true
 categories.workspace = true
+readme = "README.md"
 description = "Advanced vector database with ruvector integration for agent storage and skill management"
 
 [dependencies]

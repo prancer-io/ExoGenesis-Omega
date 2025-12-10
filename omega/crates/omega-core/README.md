@@ -6,6 +6,8 @@
 
 Core types and traits for the ExoGenesis Omega universal intelligence orchestration system.
 
+**Part of the [ExoGenesis-Omega](https://github.com/prancer-io/ExoGenesis-Omega) cognitive architecture.**
+
 ## Overview
 
 `omega-core` provides the foundational abstractions for orchestrating intelligence at any scale—from millisecond reflexes to cosmic timescales spanning billions of years. This crate defines the core types, traits, and interfaces used by all other Omega components.
