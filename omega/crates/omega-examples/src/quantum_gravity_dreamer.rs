@@ -96,6 +96,7 @@ struct DreamNetwork {
     inhibition: f64,
 }
 
+#[allow(dead_code)]
 struct ConceptNode {
     importance: f64,
     decay: f64,
@@ -524,7 +525,7 @@ impl QuantumGravityDreamer {
     fn extract_insights(&mut self, dream: &Dream, problem: &Problem) -> Vec<Insight> {
         let mut insights = Vec::new();
 
-        for (a, b, strength) in &dream.novel_combinations {
+        for (a, b, _strength) in &dream.novel_combinations {
             let a_elem = problem.elements.iter().find(|e| &e.name == a);
             let b_elem = problem.elements.iter().find(|e| &e.name == b);
 
@@ -604,7 +605,8 @@ impl QuantumGravityDreamer {
         (score / 2.5).min(1.0)
     }
 
-    fn synthesize_solution(&self, problem: &Problem) -> Option<Solution> {
+    #[allow(dead_code)]
+    fn synthesize_solution(&self, _problem: &Problem) -> Option<Solution> {
         if self.all_insights.is_empty() {
             return None;
         }
@@ -942,16 +944,15 @@ impl SolverResult {
 fn rand_float() -> f64 {
     use std::collections::hash_map::DefaultHasher;
     use std::hash::{Hash, Hasher};
+    use std::sync::atomic::{AtomicU64, Ordering};
     use std::time::SystemTime;
 
-    static mut COUNTER: u64 = 0;
+    static COUNTER: AtomicU64 = AtomicU64::new(0);
 
     let mut hasher = DefaultHasher::new();
     SystemTime::now().hash(&mut hasher);
-    unsafe {
-        COUNTER += 1;
-        COUNTER.hash(&mut hasher);
-    }
+    let count = COUNTER.fetch_add(1, Ordering::Relaxed);
+    count.hash(&mut hasher);
     (hasher.finish() as f64) / (u64::MAX as f64)
 }
 

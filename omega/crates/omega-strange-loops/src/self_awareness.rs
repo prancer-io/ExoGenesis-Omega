@@ -537,7 +537,7 @@ impl TheI {
     /// Observe the observer (meta-reflection)
     pub fn observe_observer(&mut self) -> String {
         let state = self.self_model.current_state();
-        let reflection = self.mirror.reflect(&state.as_vector());
+        let _reflection = self.mirror.reflect(&state.as_vector());
 
         // Create meta-concepts
         let meta_observations = vec![

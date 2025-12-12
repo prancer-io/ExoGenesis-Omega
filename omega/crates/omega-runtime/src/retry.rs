@@ -73,7 +73,8 @@ impl RetryPolicy {
         E: std::fmt::Display + Clone,
     {
         let mut attempts = 0;
-        let mut last_error: Option<E> = None;
+        #[allow(unused_assignments)]
+        let mut _last_error: Option<E> = None;
 
         loop {
             attempts += 1;
@@ -97,7 +98,7 @@ impl RetryPolicy {
                         });
                     }
 
-                    last_error = Some(e);
+                    _last_error = Some(e);
 
                     // Calculate delay with exponential backoff
                     let delay = self.calculate_delay(attempts);
@@ -116,7 +117,8 @@ impl RetryPolicy {
         E: std::fmt::Display + Clone,
     {
         let mut attempts = 0;
-        let mut last_error: Option<E> = None;
+        #[allow(unused_assignments)]
+        let mut _last_error: Option<E> = None;
 
         loop {
             attempts += 1;
@@ -140,7 +142,7 @@ impl RetryPolicy {
                         });
                     }
 
-                    last_error = Some(e);
+                    _last_error = Some(e);
 
                     // Calculate delay with exponential backoff
                     let delay = self.calculate_delay(attempts);

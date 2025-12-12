@@ -110,7 +110,7 @@ impl SpikingLayer {
         for i in 0..self.output_size {
             let current: f64 = input.iter().take(self.input_size)
                 .enumerate().map(|(j, &x)| self.weights[i][j] * x).sum();
-            self.potentials[i] += (current - (self.potentials[i] + 70.0) * 0.05);
+            self.potentials[i] += current - (self.potentials[i] + 70.0) * 0.05;
             if self.potentials[i] > -55.0 {
                 spikes[i] = true;
                 self.potentials[i] = -75.0;

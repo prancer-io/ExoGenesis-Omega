@@ -412,6 +412,11 @@ impl OmegaBrain {
         *self.is_active.read()
     }
 
+    /// Get brain configuration
+    pub fn config(&self) -> &BrainConfig {
+        &self.config
+    }
+
     /// Reset the brain to initial state
     pub fn reset(&self) {
         {

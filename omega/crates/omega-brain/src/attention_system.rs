@@ -19,6 +19,7 @@ impl WorkingMemory {
     pub fn new(capacity: usize, dim: usize) -> Self {
         Self { items: Vec::with_capacity(capacity), capacity, dim }
     }
+    pub fn dim(&self) -> usize { self.dim }
     pub fn store(&mut self, content: &[f64]) {
         if self.items.len() >= self.capacity {
             self.items.sort_by(|a, b| a.1.partial_cmp(&b.1).unwrap());

@@ -54,7 +54,7 @@ impl Default for TimeOfDay {
 pub struct CircadianRhythm {
     /// Current time
     current_time: TimeOfDay,
-    /// Period (hours, ~24.2 for humans)
+    /// Period (hours, ~24.2 for humans, free-running period)
     period: f64,
     /// Phase offset (allows for chronotype differences)
     phase_offset: f64,
@@ -87,12 +87,25 @@ impl CircadianRhythm {
         self.update_markers();
     }
 
-    /// Advance time by minutes
+    /// Advance time by minutes (accounting for circadian period drift)
     pub fn advance(&mut self, minutes: f64) {
         let current_decimal = self.current_time.to_decimal();
-        let new_decimal = (current_decimal + minutes / 60.0) % 24.0;
+        // Apply period-based drift (if period != 24, time drifts)
+        let period_ratio = 24.0 / self.period;
+        let adjusted_minutes = minutes * period_ratio;
+        let new_decimal = (current_decimal + adjusted_minutes / 60.0) % 24.0;
         self.current_time = TimeOfDay::from_decimal(new_decimal);
         self.update_markers();
+    }
+
+    /// Get the circadian period
+    pub fn period(&self) -> f64 {
+        self.period
+    }
+
+    /// Set the circadian period (hours)
+    pub fn set_period(&mut self, period: f64) {
+        self.period = period.max(20.0).min(28.0); // Reasonable range
     }
 
     /// Update physiological markers

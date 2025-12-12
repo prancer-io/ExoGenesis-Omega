@@ -11,7 +11,7 @@
 use serde::{Deserialize, Serialize};
 use std::collections::VecDeque;
 
-use crate::{ConsciousnessError, Result};
+use crate::Result;
 
 /// Prediction error at a single level
 #[derive(Debug, Clone, Serialize, Deserialize)]

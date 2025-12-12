@@ -3,7 +3,7 @@
 //! The main processing loop that coordinates all brain components:
 //! Perception → Attention → Integration → Memory → Action
 
-use crate::{BrainConfig, BrainError, BrainMode, Result};
+use crate::{BrainConfig, BrainMode, Result};
 use serde::{Deserialize, Serialize};
 use std::collections::VecDeque;
 

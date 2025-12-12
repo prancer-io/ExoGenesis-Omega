@@ -113,7 +113,7 @@ pub struct RecursiveMirror {
     max_depth: usize,
     /// Reflections at each depth
     reflections: Vec<MirrorReflection>,
-    /// Distortion per level
+    /// Distortion per level (0.0-1.0)
     distortion_per_level: f64,
 }
 
@@ -134,7 +134,16 @@ impl RecursiveMirror {
         let mut current = input.to_vec();
 
         for depth in 0..self.max_depth {
-            let reflection = MirrorReflection::new(current.clone(), depth);
+            // Apply per-level distortion
+            let distorted: Vec<f64> = current.iter()
+                .enumerate()
+                .map(|(i, &x)| {
+                    let noise = (i as f64 * 0.1).sin() * self.distortion_per_level;
+                    x * (1.0 - self.distortion_per_level) + noise
+                })
+                .collect();
+
+            let reflection = MirrorReflection::new(distorted, depth);
             current = reflection.reflection.clone();
             self.reflections.push(reflection);
 
@@ -146,6 +155,16 @@ impl RecursiveMirror {
 
         // Return the final reflection
         current
+    }
+
+    /// Set distortion per level
+    pub fn set_distortion(&mut self, distortion: f64) {
+        self.distortion_per_level = distortion.max(0.0).min(1.0);
+    }
+
+    /// Get distortion per level
+    pub fn distortion_per_level(&self) -> f64 {
+        self.distortion_per_level
     }
 
     /// Get reflection at depth

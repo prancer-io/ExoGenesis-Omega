@@ -116,7 +116,7 @@ impl OmegaAPI {
     pub async fn trigger_loop(
         &self,
         loop_type: LoopType,
-        input: CycleInput,
+        _input: CycleInput,
     ) -> APIResult<CycleOutput> {
         if !self.runtime.is_running() {
             return Err(APIError::Runtime(crate::error::RuntimeError::NotRunning));

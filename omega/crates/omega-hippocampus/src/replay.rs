@@ -81,7 +81,7 @@ pub struct ReplayBuffer {
     events: VecDeque<ReplayEvent>,
     /// Maximum capacity
     capacity: usize,
-    /// Temperature for sampling
+    /// Temperature for sampling (higher = more random, lower = more greedy)
     temperature: f64,
     /// Minimum priority
     min_priority: f64,
@@ -135,7 +135,7 @@ impl ReplayBuffer {
         sampled
     }
 
-    /// Sample events by priority
+    /// Sample events by priority with temperature scaling
     pub fn sample_prioritized(&self, n: usize) -> Vec<ReplayEvent> {
         if self.events.is_empty() || self.total_priority <= 0.0 {
             return Vec::new();
@@ -144,12 +144,19 @@ impl ReplayBuffer {
         let mut rng = rand::thread_rng();
         let mut sampled = Vec::with_capacity(n);
 
+        // Apply temperature to priorities (higher temp = more uniform, lower = more greedy)
+        let scaled_priorities: Vec<f64> = self.events
+            .iter()
+            .map(|e| (e.priority.max(self.min_priority) / self.temperature).exp())
+            .collect();
+        let scaled_total: f64 = scaled_priorities.iter().sum();
+
         for _ in 0..n {
-            let target = rng.gen::<f64>() * self.total_priority;
+            let target = rng.gen::<f64>() * scaled_total;
             let mut cumsum = 0.0;
 
-            for event in &self.events {
-                cumsum += event.priority.max(self.min_priority);
+            for (event, &scaled_p) in self.events.iter().zip(scaled_priorities.iter()) {
+                cumsum += scaled_p;
                 if cumsum >= target {
                     sampled.push(event.clone());
                     break;
@@ -158,6 +165,16 @@ impl ReplayBuffer {
         }
 
         sampled
+    }
+
+    /// Set sampling temperature
+    pub fn set_temperature(&mut self, temperature: f64) {
+        self.temperature = temperature.max(0.01); // Prevent division by zero
+    }
+
+    /// Get current temperature
+    pub fn temperature(&self) -> f64 {
+        self.temperature
     }
 
     /// Sample a sequence (for sequence replay)

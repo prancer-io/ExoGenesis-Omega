@@ -1,6 +1,6 @@
 //! Example demonstrating the Omega Temporal Loops system
 
-use omega_loops::{LoopEngine, LoopCoordinator};
+use omega_loops::LoopEngine;
 use omega_core::{LoopType, CycleInput};
 use std::collections::HashMap;
 

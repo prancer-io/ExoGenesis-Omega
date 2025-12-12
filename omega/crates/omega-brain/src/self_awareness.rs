@@ -106,12 +106,14 @@ impl StrangeLoopEngine {
     }
     pub fn process(&mut self, input: &[f64]) -> std::result::Result<Vec<f64>, String> {
         self.loop_count += 1;
-        let output: Vec<f64> = input.iter().enumerate()
+        // Use dim to limit output size if needed
+        let output: Vec<f64> = input.iter().take(self.dim).enumerate()
             .map(|(i, &x)| x * (1.0 / (1 + i % self.config.max_depth) as f64))
             .collect();
         Ok(output)
     }
     pub fn loop_count(&self) -> usize { self.loop_count }
+    pub fn dim(&self) -> usize { self.dim }
     pub fn reset(&mut self) { self.loop_count = 0; }
 }
 

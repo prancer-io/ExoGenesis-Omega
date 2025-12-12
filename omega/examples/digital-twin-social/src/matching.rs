@@ -339,12 +339,10 @@ impl MatchingEngine {
         let compatibility_weight = 0.4;
         let prediction_weight = 0.6;
 
-        let prediction_score = (
-            prediction.satisfaction * 0.3
+        let prediction_score = prediction.satisfaction * 0.3
             + prediction.longevity * 0.25
             + prediction.growth_potential * 0.25
-            + (1.0 - prediction.conflict_risk) * 0.2
-        );
+            + (1.0 - prediction.conflict_risk) * 0.2;
 
         compatibility.overall * compatibility_weight
             + prediction_score * prediction_weight * prediction.confidence

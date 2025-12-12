@@ -2,7 +2,7 @@
 
 use crate::{
     cosmic::CosmicScaleMemory, individual::IndividualMemory, species::SpeciesMemory, Memory,
-    MemoryError, MemoryTier, Query, QueryBuilder,
+    MemoryError, MemoryTier, QueryBuilder,
 };
 use std::sync::Arc;
 use tokio::sync::RwLock;

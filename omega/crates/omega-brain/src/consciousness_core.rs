@@ -23,6 +23,7 @@ impl IITCalculator {
     pub fn new(dim: usize) -> Self {
         Self { dim, history: Vec::new() }
     }
+    pub fn dim(&self) -> usize { self.dim }
 
     pub fn compute_phi(&mut self, state: &[f64]) -> PhiResult {
         self.history.push(state.to_vec());
