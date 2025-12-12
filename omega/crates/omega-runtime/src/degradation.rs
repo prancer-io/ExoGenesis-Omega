@@ -238,7 +238,7 @@ impl DegradationManager {
         self.dependencies
             .write()
             .entry(depends_on.clone())
-            .or_insert_with(Vec::new)
+            .or_default()
             .push(feature.clone());
 
         debug!("Added dependency: {} depends on {}", feature, depends_on);

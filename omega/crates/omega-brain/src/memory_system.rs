@@ -58,8 +58,8 @@ impl Hippocampus {
         let mut best: Option<(&Memory, f64)> = None;
         for mem in self.patterns.values() {
             let sim = cosine_similarity(cue, &mem.pattern);
-            if sim > self.threshold {
-                if best.is_none() || sim > best.unwrap().1 { best = Some((mem, sim)); }
+            if sim > self.threshold && (best.is_none() || sim > best.unwrap().1) {
+                best = Some((mem, sim));
             }
         }
         best.map(|(m, _)| m.clone())

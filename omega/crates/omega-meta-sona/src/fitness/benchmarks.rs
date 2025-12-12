@@ -467,7 +467,7 @@ impl MemoryBenchmark {
             duration,
             details: format!(
                 "Throughput: {} @ 100, {} @ 1K, {} @ 10K ops/sec",
-                *throughputs.get(0).unwrap_or(&0.0) as i64,
+                *throughputs.first().unwrap_or(&0.0) as i64,
                 *throughputs.get(1).unwrap_or(&0.0) as i64,
                 *throughputs.get(2).unwrap_or(&0.0) as i64,
             ),

@@ -210,7 +210,7 @@ impl EntorhinalCortex {
                 let error = target_output[i] - self.layer2_output.get(i).copied().unwrap_or(0.0);
                 for (w, &x) in weights.iter_mut().zip(input.iter()) {
                     *w += learning_rate * error * x;
-                    *w = w.max(-2.0).min(2.0);
+                    *w = w.clamp(-2.0, 2.0);
                 }
             }
         }
@@ -225,7 +225,7 @@ impl EntorhinalCortex {
                 let error = target_input[i] - decoded[i];
                 for (w, &h) in weights.iter_mut().zip(hippo_output.iter()) {
                     *w += learning_rate * error * h;
-                    *w = w.max(-2.0).min(2.0);
+                    *w = w.clamp(-2.0, 2.0);
                 }
             }
         }

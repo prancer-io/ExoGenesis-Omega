@@ -59,7 +59,7 @@ impl RetryPolicy {
     }
 
     /// Create a retry policy with default configuration
-    pub fn default() -> Self {
+    pub fn with_default_config() -> Self {
         Self {
             config: RetryConfig::default(),
         }

@@ -1,5 +1,4 @@
 /// SQL schema constants for the ExoGenesis Omega persistence layer
-
 /// Schema for the memories table
 /// Stores hierarchical memory tiers with embeddings and metadata
 pub const MEMORIES_TABLE: &str = r#"

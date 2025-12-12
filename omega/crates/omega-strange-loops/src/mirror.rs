@@ -159,7 +159,7 @@ impl RecursiveMirror {
 
     /// Set distortion per level
     pub fn set_distortion(&mut self, distortion: f64) {
-        self.distortion_per_level = distortion.max(0.0).min(1.0);
+        self.distortion_per_level = distortion.clamp(0.0, 1.0);
     }
 
     /// Get distortion per level

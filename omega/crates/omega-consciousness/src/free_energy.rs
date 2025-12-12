@@ -98,7 +98,7 @@ impl HierarchyLevel {
         // Precision decreases when errors are large (uncertainty)
         let target_precision = 1.0 / (error_magnitude + 0.1);
         self.precision = 0.9 * self.precision + 0.1 * target_precision;
-        self.precision = self.precision.max(0.1).min(10.0);
+        self.precision = self.precision.clamp(0.1, 10.0);
     }
 }
 

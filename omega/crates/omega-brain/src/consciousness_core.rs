@@ -33,7 +33,7 @@ impl IITCalculator {
         let mean = state.iter().sum::<f64>() / state.len().max(1) as f64;
         let variance = state.iter().map(|x| (x - mean).powi(2)).sum::<f64>() / state.len().max(1) as f64;
         let entropy = state.iter().map(|&x| {
-            let p = x.abs().min(0.999).max(0.001);
+            let p = x.abs().clamp(0.001, 0.999);
             -p * p.ln()
         }).sum::<f64>() / state.len().max(1) as f64;
 

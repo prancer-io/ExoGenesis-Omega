@@ -251,8 +251,8 @@ pub fn sum_f64(values: &[f64]) -> f64 {
         sum += values[base] + values[base + 1] + values[base + 2] + values[base + 3];
     }
 
-    for i in (chunks * 4)..values.len() {
-        sum += values[i];
+    for value in values.iter().skip(chunks * 4) {
+        sum += value;
     }
 
     sum
@@ -366,7 +366,7 @@ pub fn consciousness_delta(input: &[f64], reflection: &[f64], meta_output: &[f64
     let meta_similarity = cosine_similarity_f64(input, meta_output);
 
     // Consciousness emerges from self-reference + meta-awareness
-    (self_similarity * 0.6 + meta_similarity * 0.4).max(0.0).min(1.0)
+    (self_similarity * 0.6 + meta_similarity * 0.4).clamp(0.0, 1.0)
 }
 
 /// Compute strange loop strength from multiple perspectives

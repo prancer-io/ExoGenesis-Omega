@@ -128,8 +128,8 @@ impl PhiComputer {
     pub fn new(dim: usize) -> Self {
         // Initialize with identity-like TPM (self-transitions)
         let mut tpm = vec![vec![0.0; dim]; dim];
-        for i in 0..dim {
-            tpm[i][i] = 1.0;
+        for (i, tpm_row) in tpm.iter_mut().enumerate() {
+            tpm_row[i] = 1.0;
         }
 
         Self {
@@ -275,8 +275,8 @@ impl PhiComputer {
         let alpha = 0.1;
 
         // Update TPM based on observed transition
-        for i in 0..self.dim {
-            for j in 0..self.dim {
+        for (i, tpm_row) in self.tpm.iter_mut().enumerate() {
+            for (j, tpm_elem) in tpm_row.iter_mut().enumerate() {
                 // Estimate transition probability from state i to state j
                 let observed = if self.previous_state[i] > 0.5 && self.current_state[j] > 0.5 {
                     1.0
@@ -284,14 +284,14 @@ impl PhiComputer {
                     0.0
                 };
 
-                self.tpm[i][j] = (1.0 - alpha) * self.tpm[i][j] + alpha * observed;
+                *tpm_elem = (1.0 - alpha) * *tpm_elem + alpha * observed;
             }
 
             // Normalize row
-            let row_sum: f64 = self.tpm[i].iter().sum();
+            let row_sum: f64 = tpm_row.iter().sum();
             if row_sum > 0.0 {
-                for j in 0..self.dim {
-                    self.tpm[i][j] /= row_sum;
+                for tpm_elem in tpm_row.iter_mut() {
+                    *tpm_elem /= row_sum;
                 }
             }
         }

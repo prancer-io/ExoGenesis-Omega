@@ -292,7 +292,9 @@ impl MCTS {
             let expanded = self.expand(selected)?;
 
             // 3. Simulation - random rollout to terminal state
-            let value = self.simulate(&expanded.read().state).await;
+            // Clone state before await to avoid holding lock across await point
+            let state = expanded.read().state.clone();
+            let value = self.simulate(&state).await;
 
             // 4. Backpropagation - update values up the tree
             self.backpropagate(expanded, value);

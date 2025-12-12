@@ -278,7 +278,7 @@ impl MetaCognition {
         let evaluation = ThoughtEvaluation {
             clarity: 1.0 - variance.min(1.0),
             relevance: mean.abs().min(1.0),
-            confidence: (1.0 - variance).max(0.0).min(1.0),
+            confidence: (1.0 - variance).clamp(0.0, 1.0),
             continue_thinking: variance < 0.5,
         };
 

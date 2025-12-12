@@ -161,7 +161,7 @@ impl EmergenceDetector {
         self.self_org.order_parameter = 1.0 - variance.min(1.0);
 
         // Entropy: distribution of state values
-        let mut bins = vec![0.0; 10];
+        let mut bins = [0.0; 10];
         for &x in state {
             let bin = ((x.abs() * 9.0).min(9.0) as usize).min(9);
             bins[bin] += 1.0;

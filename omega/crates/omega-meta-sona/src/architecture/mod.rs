@@ -35,6 +35,12 @@ pub struct Parameters {
     pub values: std::collections::HashMap<String, f64>,
 }
 
+impl Default for Parameters {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl Parameters {
     pub fn new() -> Self {
         Self {
@@ -93,6 +99,12 @@ impl ArchitectureNode {
 pub struct ComputationalGraph {
     pub nodes: Vec<ArchitectureNode>,
     pub edges: Vec<Connection>,
+}
+
+impl Default for ComputationalGraph {
+    fn default() -> Self {
+        Self::new()
+    }
 }
 
 impl ComputationalGraph {

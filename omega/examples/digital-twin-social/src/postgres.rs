@@ -492,8 +492,7 @@ impl PostgresBackend {
         let context_json = signal
             .context
             .as_ref()
-            .map(|c| serde_json::to_value(c).ok())
-            .flatten();
+            .and_then(|c| serde_json::to_value(c).ok());
 
         sqlx::query(
             r#"
@@ -569,8 +568,7 @@ impl PostgresBackend {
         let emotional_tone_json = conversation
             .emotional_tone
             .as_ref()
-            .map(|e| serde_json::to_value(e).ok())
-            .flatten();
+            .and_then(|e| serde_json::to_value(e).ok());
 
         let embedding = if !conversation.message_embedding.is_empty() {
             Some(Vector::from(conversation.message_embedding.clone()))

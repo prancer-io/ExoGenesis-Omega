@@ -283,10 +283,11 @@ impl ARIASwarm {
         let mut result = message.to_string();
 
         // Add acknowledgment of emotion if appropriate
-        if context.emotional_state.valence < -0.3 {
-            if !result.starts_with("I") && !result.starts_with("That") {
-                result = format!("I hear you. {}", result);
-            }
+        if context.emotional_state.valence < -0.3
+            && !result.starts_with("I")
+            && !result.starts_with("That")
+        {
+            result = format!("I hear you. {}", result);
         }
 
         result

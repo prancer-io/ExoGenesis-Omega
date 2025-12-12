@@ -152,7 +152,7 @@ impl AttentionController {
         let mut relevance = vec![0.0; n];
 
         // Compute similarity to goals
-        for i in 0..n {
+        for (i, rel) in relevance.iter_mut().enumerate().take(n) {
             let start = i * self.config.dim;
             let end = (start + self.config.dim).min(input.len());
             let item = &input[start..end];
@@ -163,8 +163,8 @@ impl AttentionController {
             let mut norm_goals = 0.0;
 
             for (j, &x) in item.iter().enumerate() {
-                if j < goals.len() {
-                    dot += x * goals[j];
+                if let Some(&g) = goals.get(j) {
+                    dot += x * g;
                 }
                 norm_item += x * x;
             }
@@ -176,13 +176,13 @@ impl AttentionController {
             norm_goals = norm_goals.sqrt();
 
             if norm_item > 0.0 && norm_goals > 0.0 {
-                relevance[i] = (dot / (norm_item * norm_goals) + 1.0) / 2.0; // Normalize to [0,1]
+                *rel = (dot / (norm_item * norm_goals) + 1.0) / 2.0; // Normalize to [0,1]
             }
 
             // Boost if matches current focus
             if let Some(ref focus) = self.focus {
                 let focus_sim = Self::cosine_similarity(item, focus);
-                relevance[i] = (relevance[i] + focus_sim) / 2.0;
+                *rel = (*rel + focus_sim) / 2.0;
             }
         }
 

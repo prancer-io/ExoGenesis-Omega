@@ -87,7 +87,7 @@ impl UserKeyPair {
 }
 
 /// Local emotional state that never leaves device
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct LocalEmotionalState {
     /// Raw emotional readings
     pub raw_emotions: Vec<EmotionalReading>,
@@ -95,16 +95,6 @@ pub struct LocalEmotionalState {
     pub private_reflections: Vec<PrivateReflection>,
     /// Sensitive contexts
     pub sensitive_contexts: Vec<SensitiveContext>,
-}
-
-impl Default for LocalEmotionalState {
-    fn default() -> Self {
-        Self {
-            raw_emotions: Vec::new(),
-            private_reflections: Vec::new(),
-            sensitive_contexts: Vec::new(),
-        }
-    }
 }
 
 /// A raw emotional reading (stays on device)
@@ -243,18 +233,18 @@ impl ZeroKnowledgeLayer {
         let mut delta = vec![0.0f32; 128];
 
         // Encode emotional state into abstract dimensions
-        for i in 0..32 {
-            delta[i] = v * (1.0 - i as f32 / 32.0);
+        for (i, item) in delta.iter_mut().enumerate().take(32) {
+            *item = v * (1.0 - i as f32 / 32.0);
         }
-        for i in 32..64 {
-            delta[i] = a * (1.0 - (i - 32) as f32 / 32.0);
+        for (i, item) in delta.iter_mut().enumerate().skip(32).take(32) {
+            *item = a * (1.0 - (i - 32) as f32 / 32.0);
         }
-        for i in 64..96 {
-            delta[i] = d * (1.0 - (i - 64) as f32 / 32.0);
+        for (i, item) in delta.iter_mut().enumerate().skip(64).take(32) {
+            *item = d * (1.0 - (i - 64) as f32 / 32.0);
         }
         // Remaining dimensions are derived features
-        for i in 96..128 {
-            delta[i] = (v + a + d) / 3.0 * (1.0 - (i - 96) as f32 / 32.0);
+        for (i, item) in delta.iter_mut().enumerate().skip(96) {
+            *item = (v + a + d) / 3.0 * (1.0 - (i - 96) as f32 / 32.0);
         }
 
         delta

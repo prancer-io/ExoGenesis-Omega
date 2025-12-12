@@ -32,14 +32,17 @@ impl RuntimeState {
     /// Check if a state transition is valid
     pub fn can_transition_to(&self, target: RuntimeState) -> bool {
         use RuntimeState::*;
-        match (self, target) {
-            (Uninitialized, Initializing) => true,
-            (Initializing, Running) | (Initializing, Stopped) => true,
-            (Running, Paused) | (Running, ShuttingDown) => true,
-            (Paused, Running) | (Paused, ShuttingDown) => true,
-            (ShuttingDown, Stopped) => true,
-            _ => false,
-        }
+        matches!(
+            (self, target),
+            (Uninitialized, Initializing)
+                | (Initializing, Running)
+                | (Initializing, Stopped)
+                | (Running, Paused)
+                | (Running, ShuttingDown)
+                | (Paused, Running)
+                | (Paused, ShuttingDown)
+                | (ShuttingDown, Stopped)
+        )
     }
 
     /// Get a human-readable description of the state

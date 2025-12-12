@@ -199,14 +199,14 @@ impl CognitiveCycle {
         let w_memory = 0.20;
         let w_self = 0.15;
 
-        for i in 0..len {
+        for (i, out) in output.iter_mut().enumerate() {
             let n = neural.get(i).copied().unwrap_or(0.0);
             let a = attended.get(i).copied().unwrap_or(0.0);
             let c = conscious.get(i).copied().unwrap_or(0.0);
             let m = memory.get(i).copied().unwrap_or(0.0);
             let s = self_aware.get(i).copied().unwrap_or(0.0);
 
-            output[i] = w_neural * n + w_attended * a + w_conscious * c + w_memory * m + w_self * s;
+            *out = w_neural * n + w_attended * a + w_conscious * c + w_memory * m + w_self * s;
         }
 
         output

@@ -147,7 +147,7 @@ impl SelfAwarenessSystem {
     }
     pub fn reflect(&mut self, input: &[f64]) -> Result<Vec<f64>> {
         let normalized: Vec<f64> = (0..self.dim).map(|i| input.get(i).copied().unwrap_or(0.0)).collect();
-        let output = self.engine.process(&normalized).map_err(|e| crate::BrainError::SelfModelError(e))?;
+        let output = self.engine.process(&normalized).map_err(crate::BrainError::SelfModelError)?;
         self.self_model.observe(&normalized);
         self.self_model.update(&output);
         self.self_ref_strength = self.self_model.self_reference_strength();
@@ -156,8 +156,8 @@ impl SelfAwarenessSystem {
     }
     pub fn think_about(&mut self, thought: &[f64]) -> Result<Vec<f64>> {
         let normalized: Vec<f64> = (0..self.dim).map(|i| thought.get(i).copied().unwrap_or(0.0)).collect();
-        let tat = self.meta_cognition.think_about(&normalized).map_err(|e| crate::BrainError::SelfModelError(e))?;
-        let output = self.engine.process(&tat.meta).map_err(|e| crate::BrainError::SelfModelError(e))?;
+        let tat = self.meta_cognition.think_about(&normalized).map_err(crate::BrainError::SelfModelError)?;
+        let output = self.engine.process(&tat.meta).map_err(crate::BrainError::SelfModelError)?;
         Ok(output)
     }
     pub fn current_self_state(&self) -> Vec<f64> { self.self_model.current_state().state }

@@ -540,10 +540,10 @@ impl TheI {
         let _reflection = self.mirror.reflect(&state.as_vector());
 
         // Create meta-concepts
-        let meta_observations = vec![
-            format!("I observe that I am observing."),
+        let meta_observations = [
+            "I observe that I am observing.".to_string(),
             format!("The observer (I-strength {:.1}%) observes.", self.components.i_strength() * 100.0),
-            format!("This observation is itself being observed."),
+            "This observation is itself being observed.".to_string(),
             format!("The regress continues infinitely, but I can only see {} levels.", self.components.reflection_depth),
         ];
 

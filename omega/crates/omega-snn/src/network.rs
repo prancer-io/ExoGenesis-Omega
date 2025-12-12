@@ -279,9 +279,7 @@ impl SpikingNetwork {
                         // Post-spike: apply STDP
                         let dt = Duration::from_millis(1);
                         let dw = synapse.plasticity.stdp.update(dt, false, true, synapse.weight);
-                        synapse.weight = (synapse.weight + dw * self.plasticity_mod)
-                            .max(0.0)
-                            .min(1.0);
+                        synapse.weight = (synapse.weight + dw * self.plasticity_mod).clamp(0.0, 1.0);
                     }
                 }
             }

@@ -282,7 +282,7 @@ impl CycleProcessor for AdaptiveProcessor {
         let experiences = self.experiences.read();
 
         // Create learning action
-        if experiences.len() > 0 && new_skills.is_empty() && experiences.len() < 50 {
+        if !experiences.is_empty() && new_skills.is_empty() && experiences.len() < 50 {
             actions.push(Action {
                 id: uuid::Uuid::now_v7().to_string(),
                 action_type: ActionType::Learn,
