@@ -14,7 +14,7 @@ use tracing::{trace, warn};
 pub struct ReflexiveProcessor {
     /// Pattern -> Response mappings (pre-compiled for speed)
     reflexes: RwLock<HashMap<String, serde_json::Value>>,
-    /// Pattern matching threshold
+    /// Pattern matching confidence threshold (0.0 - 1.0)
     threshold: f64,
     /// Target latency
     target_latency_ms: u128,
@@ -72,8 +72,20 @@ impl ReflexiveProcessor {
             let value_str = value.to_string().to_lowercase();
 
             for (pattern, response) in reflexes.iter() {
-                if value_str.contains(pattern) || key.to_lowercase().contains(pattern) {
-                    return Some((pattern.clone(), 1.0, response.clone()));
+                // Calculate match confidence based on pattern coverage
+                let confidence = if value_str.contains(pattern) {
+                    // Exact substring match in value
+                    1.0
+                } else if key.to_lowercase().contains(pattern) {
+                    // Key match is slightly less confident
+                    0.9
+                } else {
+                    0.0
+                };
+
+                // Only return if confidence meets threshold
+                if confidence >= self.threshold {
+                    return Some((pattern.clone(), confidence, response.clone()));
                 }
             }
         }

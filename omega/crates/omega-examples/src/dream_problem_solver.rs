@@ -27,8 +27,6 @@
 //! 5. **Synthesis**: Apply dream insights to original problem
 
 use std::collections::{HashMap, HashSet};
-use std::f64::consts::PI;
-use std::time::Duration;
 
 // ============================================================================
 // CORE TYPES
@@ -195,6 +193,7 @@ pub struct DreamNeuralNetwork {
     prefrontal_inhibition: f64,
 }
 
+#[allow(dead_code)]
 struct ConceptNode {
     embedding: Vec<f64>,
     base_activation: f64,
@@ -341,7 +340,7 @@ impl DreamGenerator {
         }
 
         // Also encode failed approaches (to potentially invert them)
-        for (i, approach) in problem.failed_approaches.iter().enumerate() {
+        for (i, _approach) in problem.failed_approaches.iter().enumerate() {
             let name = format!("failed_{}", i);
             self.network.encode(&name, vec![0.0; 32], 0.3);
         }
@@ -391,7 +390,7 @@ impl DreamGenerator {
 
         // Novel combinations
         let novel_combinations: Vec<_> = all_novel_associations.iter()
-            .filter(|(a, b, s)| *s > 0.4)
+            .filter(|(_a, _b, s)| *s > 0.4)
             .map(|(a, b, _)| (a.clone(), b.clone()))
             .collect();
 

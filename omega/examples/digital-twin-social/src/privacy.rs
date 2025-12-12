@@ -27,6 +27,7 @@ pub enum PrivacyError {
 /// - Servers can compute compatibility without seeing actual data
 pub struct ZeroKnowledgeLayer {
     /// User's encryption keys (would be hardware-backed in production)
+    #[allow(dead_code)]
     user_keys: UserKeyPair,
     /// Local emotional state (never leaves device)
     local_state: LocalEmotionalState,
@@ -64,6 +65,7 @@ pub struct UserKeyPair {
     /// Public key for encryption
     pub public_key: Vec<u8>,
     /// Private key for decryption (never shared)
+    #[allow(dead_code)]
     private_key: Vec<u8>,
     /// Key generation timestamp
     pub created_at: chrono::DateTime<Utc>,

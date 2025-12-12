@@ -27,6 +27,7 @@ impl DeliberativeProcessor {
 
     /// Multi-step reasoning process
     async fn reason(&self, data: &HashMap<String, serde_json::Value>, context: &str) -> ReasoningChain {
+        let start = Instant::now();
         let mut chain = ReasoningChain::new();
 
         // Step 1: Parse the problem
@@ -45,6 +46,11 @@ impl DeliberativeProcessor {
             confidence: 0.9,
         });
 
+        // Check time budget before continuing
+        if start.elapsed() >= self.time_budget || chain.steps.len() >= self.max_depth {
+            return chain;
+        }
+
         // Step 2: Generate hypotheses
         let hypotheses = self.generate_hypotheses(&chain.steps[0].output, &entities);
         chain.add_step(ReasoningStep {
@@ -53,6 +59,11 @@ impl DeliberativeProcessor {
             output: serde_json::json!({ "hypotheses": hypotheses }),
             confidence: 0.75,
         });
+
+        // Check time budget before continuing
+        if start.elapsed() >= self.time_budget || chain.steps.len() >= self.max_depth {
+            return chain;
+        }
 
         // Step 3: Evaluate hypotheses
         let evaluations: Vec<_> = hypotheses.iter().map(|h| {
@@ -71,6 +82,11 @@ impl DeliberativeProcessor {
             output: serde_json::json!({ "evaluations": evaluations }),
             confidence: 0.8,
         });
+
+        // Check time budget before continuing
+        if start.elapsed() >= self.time_budget || chain.steps.len() >= self.max_depth {
+            return chain;
+        }
 
         // Step 4: Select best hypothesis
         let best = evaluations.iter()
@@ -336,6 +352,7 @@ impl CycleProcessor for DeliberativeProcessor {
             "steps": chain.steps.iter().map(|s| &s.name).collect::<Vec<_>>(),
             "step_details": chain.steps.iter().map(|s| serde_json::json!({
                 "name": s.name,
+                "input": s.input,
                 "confidence": s.confidence,
                 "output": s.output,
             })).collect::<Vec<_>>(),

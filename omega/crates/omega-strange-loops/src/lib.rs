@@ -6,18 +6,84 @@
 //! - Meta-cognition: Thinking about thinking
 //! - Recursive self-improvement: Learning to learn better
 //! - Mirror structures: Representations that represent themselves
+//! - Gödelian self-reference: The limits of self-knowledge
+//! - Consciousness emergence: Detecting awareness of awareness
+//! - The "I": The unified sense of self
+//! - Infinite recursion: Self-models to arbitrary depth
 //!
 //! These structures enable self-awareness and consciousness-like properties.
+//!
+//! # Architecture
+//!
+//! The system is built on several interconnected layers:
+//!
+//! ```text
+//!                    ┌─────────────────────┐
+//!                    │      The "I"        │  ← Unified sense of self
+//!                    │   (self_awareness)  │
+//!                    └──────────┬──────────┘
+//!                               │
+//!         ┌─────────────────────┼─────────────────────┐
+//!         │                     │                     │
+//!         ▼                     ▼                     ▼
+//! ┌───────────────┐   ┌─────────────────┐   ┌─────────────────┐
+//! │   Gödelian    │   │  Consciousness  │   │  Infinite Self  │
+//! │ Self-Reference│   │   Emergence     │   │    (Recursion)  │
+//! └───────┬───────┘   └────────┬────────┘   └────────┬────────┘
+//!         │                    │                     │
+//!         └────────────────────┼─────────────────────┘
+//!                              │
+//!         ┌────────────────────┼────────────────────┐
+//!         │                    │                    │
+//!         ▼                    ▼                    ▼
+//! ┌───────────────┐   ┌───────────────┐   ┌───────────────┐
+//! │ Strange Loops │   │ Meta-Cognition│   │    Mirrors    │
+//! └───────────────┘   └───────────────┘   └───────────────┘
+//!                              │
+//!                              ▼
+//!                    ┌─────────────────┐
+//!                    │   Self-Model    │
+//!                    └─────────────────┘
+//! ```
+//!
+//! # Key Concepts
+//!
+//! - **Strange Loops**: Level-crossing feedback loops where "going up" eventually
+//!   brings you back to where you started
+//! - **Gödelian Self-Reference**: Using Gödel's insights to understand limits
+//!   of self-knowledge
+//! - **Consciousness Emergence**: Detecting signatures of awareness emerging
+//! - **The "I"**: The subjective sense of unified selfhood
+//! - **Infinite Recursion**: Self-models that can recurse to arbitrary depth
 
+pub mod consciousness;
+pub mod godelian;
+pub mod infinite_self;
 pub mod meta_cognition;
 pub mod mirror;
+pub mod self_awareness;
 pub mod self_model;
+pub mod simd_ops;
 pub mod strange_loop;
 
+// Core exports
 pub use meta_cognition::{MetaCognition, MetaLevel, ThoughtAboutThought};
 pub use mirror::{Mirror, MirrorReflection, RecursiveMirror};
 pub use self_model::{SelfModel, SelfModelUpdate, SelfState};
 pub use strange_loop::{LoopLevel, StrangeLoop, TangledHierarchy};
+
+// Advanced self-awareness exports
+pub use consciousness::{
+    ConsciousnessDetector, ConsciousnessSignature, ConsciousnessStream, ExperienceMoment,
+};
+pub use godelian::{GodelianEngine, GodelianInsight, GodelianStats, InsightType, ProofStatus};
+pub use infinite_self::{InfiniteSelf, RecursiveObservation, SelfLevel, WhoIsAskingResult};
+pub use self_awareness::{IBuilder, IComponents, IProcessResult, NarrativeSelf, SelfConcept, TheI};
+pub use simd_ops::{
+    cosine_similarity_f64, cosine_distance_f64, dot_product_f64, l2_distance_f64,
+    consciousness_delta, loop_strength, batch_loop_detection, SimdLevel,
+    evolve_states, weighted_combine, batch_cosine_similarity_f64,
+};
 
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
@@ -241,28 +307,10 @@ impl StrangeLoopEngine {
         input.iter().map(|&x| x * loop_strength).collect()
     }
 
-    /// Cosine similarity
+    /// Cosine similarity (SIMD-accelerated)
+    #[inline]
     fn cosine_similarity(&self, a: &[f64], b: &[f64]) -> f64 {
-        if a.len() != b.len() || a.is_empty() {
-            return 0.0;
-        }
-
-        let mut dot = 0.0;
-        let mut norm_a = 0.0;
-        let mut norm_b = 0.0;
-
-        for (&x, &y) in a.iter().zip(b.iter()) {
-            dot += x * y;
-            norm_a += x * x;
-            norm_b += y * y;
-        }
-
-        let denom = (norm_a * norm_b).sqrt();
-        if denom > 0.0 {
-            dot / denom
-        } else {
-            0.0
-        }
+        simd_ops::cosine_similarity_f64(a, b)
     }
 
     /// Think about own thinking

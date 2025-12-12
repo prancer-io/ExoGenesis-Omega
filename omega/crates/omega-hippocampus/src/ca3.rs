@@ -181,7 +181,7 @@ impl CA3Network {
         let max_iterations = 100;
         let convergence_threshold = 0.001;
 
-        for iter in 0..max_iterations {
+        for _iter in 0..max_iterations {
             let prev_energy = self.compute_energy();
 
             // Zero out mossy input (completion phase)
@@ -303,6 +303,47 @@ impl CA3Network {
         // Hopfield capacity ~0.14N
         (0.14 * self.neurons.len() as f64) as usize
     }
+
+    /// Get connection probability
+    pub fn connection_probability(&self) -> f64 {
+        self.connection_prob
+    }
+
+    /// Get network statistics
+    pub fn stats(&self) -> CA3Stats {
+        let active = self.neurons.iter().filter(|n| n.activation.abs() > 0.1).count();
+        let total_weight: f64 = self.weights.iter()
+            .flat_map(|row| row.iter())
+            .map(|w| w.abs())
+            .sum();
+        let avg_weight = total_weight / (self.neurons.len() * self.neurons.len()) as f64;
+
+        CA3Stats {
+            size: self.neurons.len(),
+            pattern_count: self.pattern_count,
+            connection_prob: self.connection_prob,
+            active_neurons: active,
+            avg_weight_magnitude: avg_weight,
+            capacity: self.capacity(),
+        }
+    }
+}
+
+/// CA3 network statistics
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct CA3Stats {
+    /// Network size
+    pub size: usize,
+    /// Number of stored patterns
+    pub pattern_count: usize,
+    /// Connection probability
+    pub connection_prob: f64,
+    /// Currently active neurons
+    pub active_neurons: usize,
+    /// Average weight magnitude
+    pub avg_weight_magnitude: f64,
+    /// Theoretical capacity
+    pub capacity: usize,
 }
 
 impl Default for CA3Network {

@@ -155,7 +155,7 @@ impl AdaptiveProcessor {
     }
 
     /// Update skill performance based on usage
-    fn update_skill(&self, skill_name: &str, success: bool) {
+    pub fn update_skill(&self, skill_name: &str, success: bool) {
         let mut skills = self.skills.write();
 
         if let Some(skill) = skills.iter_mut().find(|s| s.name == skill_name) {
@@ -199,6 +199,20 @@ impl CycleProcessor for AdaptiveProcessor {
                 format!("Stored experience with reward {:.2}", reward),
                 0.7
             ));
+        }
+
+        // Check if this is skill feedback to update skill performance
+        if let Some(feedback) = input.data.get("skill_feedback") {
+            if let Some(skill_name) = feedback.get("skill").and_then(|s| s.as_str()) {
+                let success = feedback.get("success").and_then(|s| s.as_bool()).unwrap_or(false);
+                self.update_skill(skill_name, success);
+
+                insights_vec.push(ProcessorInsight::new(
+                    "skill_updated",
+                    format!("Updated skill '{}' with feedback: {}", skill_name, if success { "success" } else { "failure" }),
+                    0.8
+                ));
+            }
         }
 
         // Check if we should consolidate learning
@@ -288,8 +302,23 @@ impl CycleProcessor for AdaptiveProcessor {
             success: true,
         };
 
+        // Calculate experience statistics using timestamp and next_state
+        let recent_experiences: Vec<_> = experiences.iter()
+            .filter(|e| e.timestamp.elapsed().map(|d| d.as_secs() < 3600).unwrap_or(false))
+            .collect();
+        let avg_reward = if !experiences.is_empty() {
+            experiences.iter().map(|e| e.reward).sum::<f64>() / experiences.len() as f64
+        } else {
+            0.0
+        };
+        let has_state_transitions = experiences.iter()
+            .any(|e| !e.next_state.is_null());
+
         results.insert("learning_status".to_string(), serde_json::json!({
             "experiences_stored": experiences.len(),
+            "recent_experiences": recent_experiences.len(),
+            "avg_reward": avg_reward,
+            "has_state_transitions": has_state_transitions,
             "skills_learned": skills.len(),
             "new_skills_this_cycle": new_skills.len(),
             "learning_rate": self.learning_rate,
@@ -304,9 +333,13 @@ impl CycleProcessor for AdaptiveProcessor {
                 .sorted_by(|a, b| b.success_rate.partial_cmp(&a.success_rate).unwrap())
                 .take(5)
                 .map(|s| serde_json::json!({
+                    "id": s.id,
                     "name": s.name,
                     "success_rate": s.success_rate,
                     "usage_count": s.usage_count,
+                    "pattern_size": s.pattern.len(),
+                    "created_at": s.created_at.duration_since(std::time::UNIX_EPOCH)
+                        .map(|d| d.as_secs()).unwrap_or(0),
                 }))
                 .collect::<Vec<_>>()
         ));

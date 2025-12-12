@@ -72,18 +72,23 @@ impl FitnessEvaluator {
     /// Evaluate architecture fitness across all dimensions
     pub async fn evaluate(
         &self,
-        _architecture: &Architecture,
+        architecture: &Architecture,
     ) -> Result<FitnessScore, EvaluationError> {
         // Run the comprehensive benchmark suite
         let suite_result = self.benchmark_suite.run().await
             .map_err(|e| EvaluationError::EvaluationFailed(e.to_string()))?;
 
-        // Extract scores from benchmark results
-        let capability = suite_result.capability;
-        let efficiency = suite_result.efficiency;
-        let alignment = suite_result.alignment;
-        let novelty = suite_result.novelty;
-        let overall = suite_result.overall;
+        // Extract scores from benchmark results, combining with architecture-specific evaluation
+        let capability = (suite_result.capability + self.evaluate_capability(architecture).await?) / 2.0;
+        let efficiency = (suite_result.efficiency + self.evaluate_efficiency(architecture).await?) / 2.0;
+        let alignment = (suite_result.alignment + self.evaluate_alignment(architecture).await?) / 2.0;
+        let novelty = (suite_result.novelty + self.evaluate_novelty(architecture).await?) / 2.0;
+
+        // Compute weighted overall score using the stored weights
+        let overall = self.capability_weight * capability
+            + self.efficiency_weight * efficiency
+            + self.alignment_weight * alignment
+            + self.novelty_weight * novelty;
 
         // Compute confidence based on variance of component scores
         let scores = vec![capability, efficiency, alignment, novelty];

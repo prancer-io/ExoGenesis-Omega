@@ -9,7 +9,6 @@ use serde::{Deserialize, Serialize};
 use std::time::Duration;
 
 use crate::neuron::NeuronId;
-use crate::spike_train::Spike;
 
 /// Unique identifier for a synapse
 pub type SynapseId = String;

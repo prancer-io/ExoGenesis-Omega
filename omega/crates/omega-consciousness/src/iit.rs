@@ -8,7 +8,6 @@
 //! Based on Tononi et al. (2016) - "Integrated Information Theory"
 
 use serde::{Deserialize, Serialize};
-use std::collections::HashMap;
 
 use crate::{ConsciousnessError, Result};
 
@@ -168,7 +167,7 @@ impl PhiComputer {
         let whole_info = self.compute_whole_information();
 
         // 2. Find minimum information partition
-        let (mip, min_partition_info) = self.find_mip();
+        let (_mip, min_partition_info) = self.find_mip();
 
         // 3. Phi = whole - min_partition
         self.current_phi = (whole_info - min_partition_info).max(0.0);

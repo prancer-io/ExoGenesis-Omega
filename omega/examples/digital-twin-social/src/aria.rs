@@ -8,7 +8,6 @@ use crate::types::*;
 use async_trait::async_trait;
 use chrono::Utc;
 use omega_agentdb::{AgentDB, ReflexionEpisode};
-use serde::Serialize;
 use std::collections::HashMap;
 use std::sync::Arc;
 use thiserror::Error;

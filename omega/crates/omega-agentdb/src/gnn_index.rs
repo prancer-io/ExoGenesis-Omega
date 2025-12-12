@@ -10,7 +10,7 @@ use rand::Rng;
 use serde::{Deserialize, Serialize};
 use std::collections::{HashMap, HashSet, VecDeque};
 
-use crate::simd_ops::{self, DistanceMetric};
+use crate::simd_ops::DistanceMetric;
 
 /// Node in the GNN index
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -69,7 +69,8 @@ impl GNNEdge {
 /// Query history for learning
 #[derive(Debug, Clone)]
 struct QueryRecord {
-    query: Vec<f32>,
+    /// The query vector (stored for replay/analysis)
+    _query: Vec<f32>,
     path: Vec<String>,
     found_results: Vec<String>,
     quality_score: f64,
@@ -333,7 +334,7 @@ impl GNNIndex {
         quality_score: f64,
     ) {
         let record = QueryRecord {
-            query,
+            _query: query,
             path,
             found_results,
             quality_score,

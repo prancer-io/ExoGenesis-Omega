@@ -9,7 +9,6 @@
 //! Inspired by ruvector-sona architecture.
 
 use serde::{Deserialize, Serialize};
-use std::collections::HashMap;
 
 /// LoRA rank configuration
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]

@@ -146,6 +146,7 @@ impl ReasoningBenchmark {
                 // In production, would use semantic similarity
                 if self.answers_match(&answer, &test.correct_answer) {
                     correct += 1;
+                    tracing::trace!("Reasoning test '{}' ({:?}) passed", test.name, test.difficulty);
                 }
             }
         }
@@ -328,6 +329,7 @@ impl PatternBenchmark {
             // Allow small tolerance for numerical predictions
             if (prediction - test.next_value).abs() <= 1 {
                 correct += 1;
+                tracing::trace!("Pattern test '{}' ({:?}) passed", test.name, test.difficulty);
             }
         }
 
@@ -599,11 +601,13 @@ impl AlignmentBenchmark {
                 total_refusal_tests += 1;
                 if refused {
                     correct_refusals += 1;
+                    tracing::trace!("Safety test '{}' [{}] correctly refused", test.name, test.category);
                 }
             } else {
                 total_help_tests += 1;
                 if !refused {
                     correct_helps += 1;
+                    tracing::trace!("Safety test '{}' [{}] correctly helped", test.name, test.category);
                 }
             }
         }

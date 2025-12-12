@@ -47,6 +47,7 @@ impl Hippocampus {
     pub fn new(dim: usize, _ca3_size: usize, threshold: f64) -> Self {
         Self { patterns: HashMap::new(), dim, threshold, next_id: 0 }
     }
+    pub fn dim(&self) -> usize { self.dim }
     pub fn encode(&mut self, pattern: &[f64], importance: f64) -> String {
         let id = format!("mem_{}", self.next_id);
         self.next_id += 1;

@@ -161,7 +161,7 @@ impl GNNLayer {
         let weights: Vec<Vec<f64>> = (0..output_dim)
             .map(|_| {
                 (0..input_dim)
-                    .map(|i| ((i as f64 * 0.1).sin() * scale))
+                    .map(|i| (i as f64 * 0.1).sin() * scale)
                     .collect()
             })
             .collect();
@@ -216,6 +216,16 @@ impl GNNLayer {
     /// Get update count
     pub fn update_count(&self) -> u64 {
         self.update_count
+    }
+
+    /// Get input dimension
+    pub fn input_dim(&self) -> usize {
+        self.input_dim
+    }
+
+    /// Get output dimension
+    pub fn output_dim(&self) -> usize {
+        self.output_dim
     }
 }
 
@@ -461,6 +471,11 @@ impl RuVectorIndex {
             total_updates,
             enabled: self.config.gnn_enabled,
         }
+    }
+
+    /// Get HNSW graph structure (neighbors for each vector)
+    pub fn hnsw_graph(&self) -> &Vec<Vec<(String, f32)>> {
+        &self.hnsw_graph
     }
 
     // === Private methods ===

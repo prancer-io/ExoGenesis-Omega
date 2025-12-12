@@ -7,7 +7,7 @@ use parking_lot::RwLock;
 use std::collections::HashMap;
 use std::error::Error;
 use std::time::Instant;
-use tracing::trace;
+use tracing::{trace, warn};
 
 /// Reactive processor for pattern recognition
 /// Target latency: ~100ms
@@ -16,7 +16,7 @@ pub struct ReactiveProcessor {
     patterns: RwLock<Vec<Pattern>>,
     /// Similarity threshold
     threshold: f64,
-    /// Target latency
+    /// Target latency in milliseconds
     target_latency_ms: u128,
 }
 
@@ -227,6 +227,15 @@ impl CycleProcessor for ReactiveProcessor {
         };
 
         let latency = start.elapsed();
+
+        // Warn if we exceeded target latency
+        if latency.as_millis() > self.target_latency_ms {
+            warn!(
+                "Reactive processor exceeded target latency: {}ms > {}ms",
+                latency.as_millis(),
+                self.target_latency_ms
+            );
+        }
 
         let metrics = ProcessorMetrics {
             latency,

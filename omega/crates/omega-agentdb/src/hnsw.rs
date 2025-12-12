@@ -76,6 +76,7 @@ impl HnswIndex {
     }
 
     /// Inserts multiple points in batch
+    #[allow(dead_code)]
     pub fn insert_batch(&mut self, points: Vec<VectorPoint>) {
         for point in points {
             self.ids.push(point.id.clone());
@@ -155,6 +156,7 @@ impl HnswIndex {
     }
 
     /// Returns true if the index is empty
+    #[allow(dead_code)]
     pub fn is_empty(&self) -> bool {
         self.points.is_empty()
     }
@@ -162,6 +164,7 @@ impl HnswIndex {
 
 /// Search result from HNSW query
 #[derive(Debug, Clone)]
+#[allow(dead_code)]
 pub struct SearchResult {
     pub id: String,
     pub distance: f32,
