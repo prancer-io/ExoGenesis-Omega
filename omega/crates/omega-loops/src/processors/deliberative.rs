@@ -230,7 +230,7 @@ impl DeliberativeProcessor {
         // Add some randomness to simulate uncertainty
         score += (rand::random::<f64>() - 0.5) * 0.2;
 
-        score.min(1.0).max(0.0)
+        score.clamp(0.0, 1.0)
     }
 
     fn find_evidence(&self, hypothesis: &str, entities: &[String], supporting: bool) -> Vec<String> {
@@ -240,10 +240,8 @@ impl DeliberativeProcessor {
             if hypothesis.contains(entity) {
                 if supporting {
                     evidence.push(format!("Entity '{}' present in hypothesis", entity));
-                } else {
-                    if rand::random::<f64>() < 0.3 {
-                        evidence.push(format!("Entity '{}' may have alternative interpretations", entity));
-                    }
+                } else if rand::random::<f64>() < 0.3 {
+                    evidence.push(format!("Entity '{}' may have alternative interpretations", entity));
                 }
             }
         }

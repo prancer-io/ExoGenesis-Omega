@@ -105,7 +105,7 @@ impl CircadianRhythm {
 
     /// Set the circadian period (hours)
     pub fn set_period(&mut self, period: f64) {
-        self.period = period.max(20.0).min(28.0); // Reasonable range
+        self.period = period.clamp(20.0, 28.0); // Reasonable range
     }
 
     /// Update physiological markers
@@ -139,7 +139,7 @@ impl CircadianRhythm {
         // High melatonin = high sleep drive
         // Low temperature = high sleep drive
         let melatonin_drive = self.melatonin;
-        let temp_drive = (-self.temperature_deviation + 0.5).max(0.0).min(1.0);
+        let temp_drive = (-self.temperature_deviation + 0.5).clamp(0.0, 1.0);
 
         (melatonin_drive * 0.6 + temp_drive * 0.4).min(1.0)
     }

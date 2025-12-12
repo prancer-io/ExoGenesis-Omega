@@ -263,8 +263,8 @@ impl SpatialMap {
             let step_x = self.width / resolution as f64;
             let step_y = self.height / resolution as f64;
 
-            for iy in 0..resolution {
-                for ix in 0..resolution {
+            for (iy, row) in map.iter_mut().enumerate().take(resolution) {
+                for (ix, val) in row.iter_mut().enumerate().take(resolution) {
                     let x = ix as f64 * step_x + step_x / 2.0;
                     let y = iy as f64 * step_y + step_y / 2.0;
 
@@ -273,7 +273,7 @@ impl SpatialMap {
                     let dist_sq = dx * dx + dy * dy;
                     let sigma_sq = cell.radius * cell.radius;
 
-                    map[iy][ix] = cell.peak_rate * (-dist_sq / (2.0 * sigma_sq)).exp();
+                    *val = cell.peak_rate * (-dist_sq / (2.0 * sigma_sq)).exp();
                 }
             }
         }

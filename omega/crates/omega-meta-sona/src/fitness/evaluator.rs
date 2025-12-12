@@ -166,7 +166,7 @@ impl FitnessEvaluator {
         // Map variance [0, 0.25] to confidence [1.0, 0.5]
         let confidence = 1.0 - (variance * 2.0).min(0.5);
 
-        confidence.max(0.5).min(1.0)
+        confidence.clamp(0.5, 1.0)
     }
 }
 

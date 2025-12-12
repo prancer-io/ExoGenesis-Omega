@@ -206,11 +206,11 @@ impl AttentionMechanism for ScaledDotProductAttention {
 
         // Weighted sum of values
         let mut attended_values = vec![0.0; self.dim];
-        for i in 0..n {
+        for (i, &weight) in attention_weights.iter().enumerate().take(n) {
             let val_start = i * self.dim;
             for (j, av) in attended_values.iter_mut().enumerate().take(self.dim) {
                 if val_start + j < values.len() {
-                    *av += attention_weights[i] * values[val_start + j];
+                    *av += weight * values[val_start + j];
                 }
             }
         }
@@ -279,7 +279,7 @@ impl AttentionMechanism for FlashAttention {
         // Flash attention processes in blocks for memory efficiency
         // Use block_size to determine processing chunks
         let n = keys.len() / self.dim;
-        let num_blocks = (n + self.block_size - 1) / self.block_size;
+        let num_blocks = n.div_ceil(self.block_size);
 
         // For CPU simulation with small inputs, use standard attention
         // For large inputs, we would process block by block
@@ -458,16 +458,16 @@ impl AttentionMechanism for SparseAttention {
         let mut sparse_mask = vec![false; n];
 
         // Global tokens always attend
-        for i in 0..self.global_tokens.min(n) {
-            sparse_mask[i] = true;
+        for mask in sparse_mask.iter_mut().take(self.global_tokens.min(n)) {
+            *mask = true;
         }
 
         // Local window around query position (assume query is for last position)
         let query_pos = n - 1;
         let start = query_pos.saturating_sub(self.window_size / 2);
         let end = (query_pos + self.window_size / 2 + 1).min(n);
-        for i in start..end {
-            sparse_mask[i] = true;
+        for mask in sparse_mask.iter_mut().skip(start).take(end - start) {
+            *mask = true;
         }
 
         // Use standard attention with sparse mask
@@ -565,11 +565,11 @@ impl AttentionMechanism for HyperbolicAttention {
 
         // Weighted sum of values
         let mut attended_values = vec![0.0; self.dim];
-        for i in 0..n {
+        for (i, &weight) in attention_weights.iter().enumerate().take(n) {
             let val_start = i * self.dim;
             for (j, av) in attended_values.iter_mut().enumerate().take(self.dim) {
                 if val_start + j < values.len() {
-                    *av += attention_weights[i] * values[val_start + j];
+                    *av += weight * values[val_start + j];
                 }
             }
         }
@@ -713,11 +713,11 @@ impl AttentionMechanism for GraphAttention {
 
         // Weighted sum
         let mut attended_values = vec![0.0; self.dim];
-        for i in 0..n {
+        for (i, &weight) in attention_weights.iter().enumerate().take(n) {
             let val_start = i * self.dim;
             for (j, av) in attended_values.iter_mut().enumerate().take(self.dim) {
                 if val_start + j < values.len() {
-                    *av += attention_weights[i] * values[val_start + j];
+                    *av += weight * values[val_start + j];
                 }
             }
         }

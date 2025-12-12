@@ -107,13 +107,13 @@ impl SpikingLayer {
 
     pub fn forward(&mut self, input: &[f64]) -> Vec<bool> {
         let mut spikes = vec![false; self.output_size];
-        for i in 0..self.output_size {
+        for (i, (potential, spike)) in self.potentials.iter_mut().zip(spikes.iter_mut()).enumerate() {
             let current: f64 = input.iter().take(self.input_size)
                 .enumerate().map(|(j, &x)| self.weights[i][j] * x).sum();
-            self.potentials[i] += current - (self.potentials[i] + 70.0) * 0.05;
-            if self.potentials[i] > -55.0 {
-                spikes[i] = true;
-                self.potentials[i] = -75.0;
+            *potential += current - (*potential + 70.0) * 0.05;
+            if *potential > -55.0 {
+                *spike = true;
+                *potential = -75.0;
             }
         }
         spikes

@@ -83,7 +83,7 @@ impl CA1Neuron {
         let error = target - self.activation;
         for (w, &x) in self.schaffer_weights.iter_mut().zip(ca3_input.iter()) {
             *w += learning_rate * error * x;
-            *w = w.max(-2.0).min(2.0);
+            *w = w.clamp(-2.0, 2.0);
         }
     }
 

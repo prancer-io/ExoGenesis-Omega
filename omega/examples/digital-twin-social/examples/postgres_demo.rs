@@ -19,6 +19,7 @@
 use digital_twin_social::postgres::*;
 use digital_twin_social::*;
 use uuid::Uuid;
+use chrono::Utc;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {

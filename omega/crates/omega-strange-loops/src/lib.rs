@@ -268,12 +268,12 @@ impl StrangeLoopEngine {
 
         // 5. Combine outputs
         let mut output = Vec::with_capacity(input.len());
-        for i in 0..input.len() {
+        for (i, &input_val) in input.iter().enumerate() {
             let meta = meta_output.get(i).copied().unwrap_or(0.0);
             let refl = reflection.get(i).copied().unwrap_or(0.0);
             let loop_val = loop_contribution.get(i).copied().unwrap_or(0.0);
 
-            output.push(input[i] * 0.4 + meta * 0.3 + refl * 0.2 + loop_val * 0.1);
+            output.push(input_val * 0.4 + meta * 0.3 + refl * 0.2 + loop_val * 0.1);
         }
 
         // 6. Self-reference: feed output back to self-model

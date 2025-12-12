@@ -109,7 +109,7 @@ impl LoRAAdapter {
         }
 
         // Compute A * x
-        let rank = self.matrix_a.first().map(|r| r.len()).unwrap_or(0);
+        let rank = self.matrix_a.first().map_or(0, |r| r.len());
         let mut intermediate = vec![0.0; rank];
         for (i, row) in self.matrix_a.iter().enumerate() {
             if i < input.len() {
@@ -177,7 +177,7 @@ impl LoRAAdapter {
                 for (j, b) in row.iter_mut().enumerate() {
                     if j < error.len() {
                         // Simplified gradient
-                        let grad = error[j] * self.matrix_a.get(0).and_then(|r| r.get(i)).copied().unwrap_or(0.0);
+                        let grad = error[j] * self.matrix_a.first().and_then(|r| r.get(i)).copied().unwrap_or(0.0);
                         *b += self.config.learning_rate * grad;
                     }
                 }
@@ -285,8 +285,8 @@ impl EWCPlusPlus {
     /// Compute EWC penalty
     pub fn penalty(&self, current_weights: &[f64]) -> f64 {
         let mut penalty = 0.0;
-        for i in 0..self.fisher.len().min(current_weights.len()) {
-            let diff = current_weights[i] - self.optimal_weights[i];
+        for (i, (&current_w, &optimal_w)) in current_weights.iter().zip(self.optimal_weights.iter()).enumerate().take(self.fisher.len()) {
+            let diff = current_w - optimal_w;
             penalty += self.fisher[i] * diff * diff;
         }
         0.5 * self.lambda * penalty
@@ -414,12 +414,12 @@ impl ReasoningBank {
             self.initialize_centroids_kmeans_pp(dim);
         }
 
+        // Clone centroids to avoid borrow conflicts
+        let centroids_snapshot = self.centroids.clone();
+
         // Assign patterns to clusters and update centroids
         let mut cluster_sums: Vec<Vec<f64>> = vec![vec![0.0; dim]; self.num_clusters];
         let mut cluster_counts: Vec<usize> = vec![0; self.num_clusters];
-
-        // Clone centroids to avoid borrow conflicts
-        let centroids_snapshot = self.centroids.clone();
 
         for pattern in &mut self.patterns {
             // Find nearest centroid

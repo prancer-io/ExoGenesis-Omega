@@ -353,14 +353,13 @@ impl AgentDB {
         let mut paths: Vec<Vec<String>> = Vec::new();
         let mut current_path: Vec<String> = vec![start.to_string()];
 
-        self.dfs_causal_path(&edges, start, end, &mut current_path, &mut paths, max_depth);
+        Self::dfs_causal_path(&edges, start, end, &mut current_path, &mut paths, max_depth);
 
         Ok(paths)
     }
 
     // Helper for DFS path finding
     fn dfs_causal_path(
-        &self,
         edges: &[CausalEdge],
         current: &str,
         target: &str,
@@ -380,7 +379,7 @@ impl AgentDB {
         for edge in edges.iter().filter(|e| e.cause == current) {
             if !path.contains(&edge.effect) {
                 path.push(edge.effect.clone());
-                self.dfs_causal_path(edges, &edge.effect, target, path, paths, max_depth);
+                Self::dfs_causal_path(edges, &edge.effect, target, path, paths, max_depth);
                 path.pop();
             }
         }

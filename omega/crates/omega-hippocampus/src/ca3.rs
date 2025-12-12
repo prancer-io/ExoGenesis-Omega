@@ -101,10 +101,10 @@ impl CA3Network {
 
         // Initialize recurrent weights (sparse)
         let mut weights = vec![vec![0.0; size]; size];
-        for i in 0..size {
-            for j in 0..size {
+        for (i, row) in weights.iter_mut().enumerate().take(size) {
+            for (j, w) in row.iter_mut().enumerate().take(size) {
                 if i != j && rng.gen::<f64>() < connection_prob {
-                    weights[i][j] = normal.sample(&mut rng);
+                    *w = normal.sample(&mut rng);
                 }
             }
         }
@@ -224,8 +224,8 @@ impl CA3Network {
 
         for i in 0..n {
             self.neurons[i].recurrent_input = 0.0;
-            for j in 0..n {
-                self.neurons[i].recurrent_input += self.weights[i][j] * activations[j];
+            for (j, &activation) in activations.iter().enumerate().take(n) {
+                self.neurons[i].recurrent_input += self.weights[i][j] * activation;
             }
         }
 
@@ -247,7 +247,7 @@ impl CA3Network {
                         self.learning_rate * pattern[i] * pattern[j] / self.neurons.len() as f64;
 
                     // Weight bounds
-                    self.weights[i][j] = self.weights[i][j].max(-1.0).min(1.0);
+                    self.weights[i][j] = self.weights[i][j].clamp(-1.0, 1.0);
                 }
             }
         }

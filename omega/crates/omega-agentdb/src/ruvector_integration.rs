@@ -521,7 +521,7 @@ impl RuVectorIndex {
 
         // Aggregate to single score
         let score = current.iter().sum::<f64>() / current.len().max(1) as f64;
-        score.max(0.0).min(1.0)
+        score.clamp(0.0, 1.0)
     }
 
     fn update_hnsw_connections(&mut self, _id: &str) -> Result<()> {

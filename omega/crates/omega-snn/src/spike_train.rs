@@ -301,7 +301,7 @@ impl SpikeBuffer {
     pub fn add_spike(&mut self, neuron_id: NeuronId, time: Duration) {
         self.current_time = time;
 
-        let entry = self.spikes.entry(neuron_id).or_insert_with(Vec::new);
+        let entry = self.spikes.entry(neuron_id).or_default();
         entry.push(time);
 
         // Prune old spikes

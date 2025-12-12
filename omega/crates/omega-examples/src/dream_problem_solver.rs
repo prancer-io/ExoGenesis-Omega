@@ -200,8 +200,8 @@ struct ConceptNode {
     decay_rate: f64,
 }
 
-impl DreamNeuralNetwork {
-    pub fn new() -> Self {
+impl Default for DreamNeuralNetwork {
+    fn default() -> Self {
         Self {
             concepts: HashMap::new(),
             associations: HashMap::new(),
@@ -209,6 +209,12 @@ impl DreamNeuralNetwork {
             noise_level: 0.1,
             prefrontal_inhibition: 1.0,
         }
+    }
+}
+
+impl DreamNeuralNetwork {
+    pub fn new() -> Self {
+        Self::default()
     }
 
     /// Encode a concept into the network
@@ -317,13 +323,19 @@ pub struct DreamGenerator {
     dream_id_counter: u64,
 }
 
-impl DreamGenerator {
-    pub fn new() -> Self {
+impl Default for DreamGenerator {
+    fn default() -> Self {
         Self {
             network: DreamNeuralNetwork::new(),
             problem_elements: Vec::new(),
             dream_id_counter: 0,
         }
+    }
+}
+
+impl DreamGenerator {
+    pub fn new() -> Self {
+        Self::default()
     }
 
     /// Prepare for dreaming about a problem
@@ -422,8 +434,10 @@ impl DreamGenerator {
             if r < 0.7 { TransformationType::Literal } else { TransformationType::Visualized }
         } else if bizarreness < 0.6 {
             if r < 0.5 { TransformationType::Symbolic } else { TransformationType::Condensed }
+        } else if r < 0.3 {
+            TransformationType::Displaced
         } else {
-            if r < 0.3 { TransformationType::Displaced } else { TransformationType::Condensed }
+            TransformationType::Condensed
         }
     }
 
@@ -454,13 +468,14 @@ impl DreamGenerator {
 // ============================================================================
 
 /// Extracts actionable insights from dreams
+#[derive(Default)]
 pub struct InsightExtractor {
     insight_id_counter: u64,
 }
 
 impl InsightExtractor {
     pub fn new() -> Self {
-        Self { insight_id_counter: 0 }
+        Self::default()
     }
 
     /// Extract insights from a dream
@@ -499,26 +514,26 @@ impl InsightExtractor {
 
         // Also look for inversions (if failed approaches appeared transformed)
         for element in &dream.elements {
-            if element.original_concept.starts_with("failed_") {
-                if element.transformation_type == TransformationType::Displaced {
-                    // Failed approach appeared in disguise - potential inversion insight
-                    self.insight_id_counter += 1;
-                    insights.push(Insight {
-                        id: format!("insight_{}", self.insight_id_counter),
-                        association: Association {
-                            from: element.original_concept.clone(),
-                            to: "inverted_approach".to_string(),
-                            connection_type: ConnectionType::Inversion,
-                            bridge: vec![0.0; 32],
-                            strength: element.activation,
-                        },
-                        source_dream_id: dream.id.clone(),
-                        bizarreness: dream.bizarreness,
-                        relevance: 0.7,
-                        confidence: 0.5,
-                        timestamp: current_timestamp(),
-                    });
-                }
+            if element.original_concept.starts_with("failed_")
+                && element.transformation_type == TransformationType::Displaced
+            {
+                // Failed approach appeared in disguise - potential inversion insight
+                self.insight_id_counter += 1;
+                insights.push(Insight {
+                    id: format!("insight_{}", self.insight_id_counter),
+                    association: Association {
+                        from: element.original_concept.clone(),
+                        to: "inverted_approach".to_string(),
+                        connection_type: ConnectionType::Inversion,
+                        bridge: vec![0.0; 32],
+                        strength: element.activation,
+                    },
+                    source_dream_id: dream.id.clone(),
+                    bizarreness: dream.bizarreness,
+                    relevance: 0.7,
+                    confidence: 0.5,
+                    timestamp: current_timestamp(),
+                });
             }
         }
 
@@ -556,6 +571,7 @@ impl InsightExtractor {
 // ============================================================================
 
 /// Synthesizes solutions from insights
+#[derive(Default)]
 pub struct SolutionSynthesizer;
 
 impl SolutionSynthesizer {
@@ -675,8 +691,8 @@ pub struct DreamProblemSolver {
     all_insights: Vec<Insight>,
 }
 
-impl DreamProblemSolver {
-    pub fn new() -> Self {
+impl Default for DreamProblemSolver {
+    fn default() -> Self {
         Self {
             dream_generator: DreamGenerator::new(),
             insight_extractor: InsightExtractor::new(),
@@ -684,6 +700,12 @@ impl DreamProblemSolver {
             all_dreams: Vec::new(),
             all_insights: Vec::new(),
         }
+    }
+}
+
+impl DreamProblemSolver {
+    pub fn new() -> Self {
+        Self::default()
     }
 
     /// Solve a problem using dream incubation

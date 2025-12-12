@@ -149,7 +149,7 @@ impl TangledHierarchy {
     fn process_level(
         &mut self,
         level: usize,
-        current: &mut Vec<f64>,
+        current: &mut [f64],
         visited: &mut [bool],
         path: &mut Vec<usize>,
     ) {

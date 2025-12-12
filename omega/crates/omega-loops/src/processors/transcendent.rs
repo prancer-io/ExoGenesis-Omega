@@ -14,6 +14,12 @@ impl TranscendentProcessor {
     }
 }
 
+impl Default for TranscendentProcessor {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 #[async_trait]
 impl CycleProcessor for TranscendentProcessor {
     async fn process(&mut self, input: CycleInput) -> Result<CycleOutput, Box<dyn Error>> {

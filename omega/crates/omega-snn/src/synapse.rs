@@ -183,8 +183,8 @@ impl ShortTermPlasticity {
         }
 
         // Clamp values
-        self.facilitation = self.facilitation.max(1.0).min(5.0);
-        self.depression = self.depression.max(0.1).min(1.0);
+        self.facilitation = self.facilitation.clamp(1.0, 5.0);
+        self.depression = self.depression.clamp(0.1, 1.0);
     }
 
     /// Get effective transmission coefficient

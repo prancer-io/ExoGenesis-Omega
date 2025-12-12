@@ -148,14 +148,14 @@ pub struct LIFNeuron {
 impl LIFNeuron {
     /// Create a new LIF neuron
     pub fn new(id: NeuronId, neuron_type: NeuronType, params: LIFParams) -> Self {
-        let mut state = NeuronState::default();
-        state.membrane_potential = params.v_rest;
-
         Self {
             id,
             neuron_type,
+            state: NeuronState {
+                membrane_potential: params.v_rest,
+                ..Default::default()
+            },
             params,
-            state,
         }
     }
 

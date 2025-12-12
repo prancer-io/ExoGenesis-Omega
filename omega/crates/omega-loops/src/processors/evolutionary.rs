@@ -14,6 +14,12 @@ impl EvolutionaryProcessor {
     }
 }
 
+impl Default for EvolutionaryProcessor {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 #[async_trait]
 impl CycleProcessor for EvolutionaryProcessor {
     async fn process(&mut self, input: CycleInput) -> Result<CycleOutput, Box<dyn Error>> {

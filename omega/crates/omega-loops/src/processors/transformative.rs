@@ -14,6 +14,12 @@ impl TransformativeProcessor {
     }
 }
 
+impl Default for TransformativeProcessor {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 #[async_trait]
 impl CycleProcessor for TransformativeProcessor {
     async fn process(&mut self, input: CycleInput) -> Result<CycleOutput, Box<dyn Error>> {

@@ -34,7 +34,7 @@ impl DreamContent {
         let mut rng = rand::thread_rng();
 
         // Sample some memories for dream content
-        let num_elements = rng.gen_range(2..=memories.len().min(5).max(2));
+        let num_elements = rng.gen_range(2..=memories.len().clamp(2, 5));
         let mut memory_elements = Vec::new();
 
         for _ in 0..num_elements {
@@ -132,7 +132,7 @@ impl REMSleep {
 
         // Theta power fluctuates
         self.theta_power = 0.5 + 0.3 * (self.time_in_rem * 0.1).sin() + rng.gen_range(-0.1..0.1);
-        self.theta_power = self.theta_power.max(0.0).min(1.0);
+        self.theta_power = self.theta_power.clamp(0.0, 1.0);
 
         // PGO activity bursts
         if rng.gen::<f64>() < 0.1 {

@@ -161,8 +161,8 @@ impl SalienceComputer {
         let intensity = self.compute_intensity(input);
 
         // Combine features
-        for i in 0..n {
-            salience[i] = self.config.novelty_weight * novelty.get(i).copied().unwrap_or(0.0)
+        for (i, sal) in salience.iter_mut().enumerate().take(n) {
+            *sal = self.config.novelty_weight * novelty.get(i).copied().unwrap_or(0.0)
                 + self.config.contrast_weight * contrast.get(i).copied().unwrap_or(0.0)
                 + self.config.change_weight * change.get(i).copied().unwrap_or(0.0)
                 + self.config.intensity_weight * intensity.get(i).copied().unwrap_or(0.0);
@@ -204,8 +204,8 @@ impl SalienceComputer {
         map.feature_scores[3] = intensity.clone();
 
         // Combine
-        for i in 0..n {
-            map.scores[i] = self.config.novelty_weight * novelty[i]
+        for (i, score) in map.scores.iter_mut().enumerate().take(n) {
+            *score = self.config.novelty_weight * novelty[i]
                 + self.config.contrast_weight * contrast[i]
                 + self.config.change_weight * change[i]
                 + self.config.intensity_weight * intensity[i];
@@ -237,13 +237,13 @@ impl SalienceComputer {
         }
 
         let mut novelty = Vec::with_capacity(n);
-        for i in 0..n {
+        for (i, &inp) in input.iter().enumerate().take(n) {
             let mean = self.running_mean[i];
             let var = self.running_var[i].max(0.01); // Avoid division by zero
             let std = var.sqrt();
 
             // Z-score as novelty measure
-            let z = (input[i] - mean).abs() / std;
+            let z = (inp - mean).abs() / std;
             novelty.push((z / 3.0).min(1.0)); // Normalize, cap at 3 std
         }
 
@@ -260,21 +260,23 @@ impl SalienceComputer {
         }
 
         // Compute local contrast (difference from neighbors)
-        for i in 0..n {
+        for (i, &inp) in input.iter().enumerate().take(n) {
             let mut neighbor_sum = 0.0;
             let mut neighbor_count = 0;
 
             // Look at neighbors (window of 3)
-            for j in i.saturating_sub(1)..=(i + 1).min(n - 1) {
+            let range_start = i.saturating_sub(1);
+            let range_end = (i + 1).min(n - 1);
+            for (j, &neighbor) in input.iter().enumerate().take(range_end + 1).skip(range_start) {
                 if j != i {
-                    neighbor_sum += input[j];
+                    neighbor_sum += neighbor;
                     neighbor_count += 1;
                 }
             }
 
             if neighbor_count > 0 {
                 let neighbor_mean = neighbor_sum / neighbor_count as f64;
-                contrast[i] = (input[i] - neighbor_mean).abs();
+                contrast[i] = (inp - neighbor_mean).abs();
             }
         }
 
@@ -334,10 +336,10 @@ impl SalienceComputer {
         } else {
             // Exponential moving average
             let alpha = 0.1;
-            for i in 0..n {
+            for (i, &inp) in input.iter().enumerate().take(n) {
                 let old_mean = self.running_mean[i];
-                let new_mean = alpha * input[i] + (1.0 - alpha) * old_mean;
-                let delta = input[i] - old_mean;
+                let new_mean = alpha * inp + (1.0 - alpha) * old_mean;
+                let delta = inp - old_mean;
                 let new_var = (1.0 - alpha) * (self.running_var[i] + alpha * delta * delta);
 
                 self.running_mean[i] = new_mean;

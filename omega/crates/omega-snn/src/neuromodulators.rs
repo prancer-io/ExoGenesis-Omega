@@ -121,7 +121,7 @@ impl Neuromodulator for DopamineState {
     }
 
     fn set_tonic(&mut self, level: f64) {
-        self.tonic = level.max(0.0).min(1.0);
+        self.tonic = level.clamp(0.0, 1.0);
     }
 }
 
@@ -195,7 +195,7 @@ impl Neuromodulator for NorepinephrineState {
     }
 
     fn set_tonic(&mut self, level: f64) {
-        self.tonic = level.max(0.0).min(1.0);
+        self.tonic = level.clamp(0.0, 1.0);
     }
 }
 
@@ -262,7 +262,7 @@ impl Neuromodulator for SerotoninState {
     }
 
     fn set_tonic(&mut self, level: f64) {
-        self.tonic = level.max(0.0).min(1.0);
+        self.tonic = level.clamp(0.0, 1.0);
     }
 }
 
@@ -338,7 +338,7 @@ impl Neuromodulator for AcetylcholineState {
     }
 
     fn set_tonic(&mut self, level: f64) {
-        self.tonic = level.max(0.0).min(1.0);
+        self.tonic = level.clamp(0.0, 1.0);
     }
 }
 
