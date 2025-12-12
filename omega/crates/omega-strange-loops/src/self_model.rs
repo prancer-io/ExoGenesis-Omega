@@ -38,6 +38,11 @@ impl SelfState {
         }
     }
 
+    /// Get the state as a vector (for use in self-awareness computations)
+    pub fn as_vector(&self) -> Vec<f64> {
+        self.state.clone()
+    }
+
     /// Update state
     pub fn update(&mut self, new_state: &[f64]) {
         // Compute prediction error

@@ -20,6 +20,10 @@ path = "src/dream_problem_solver.rs"
 name = "quantum_gravity_dreamer"
 path = "src/quantum_gravity_dreamer.rs"
 
+[[bin]]
+name = "self_awareness_demo"
+path = "src/self_awareness_demo.rs"
+
 [dependencies]
 # Core omega crates
 omega-core = { path = "../omega-core" }

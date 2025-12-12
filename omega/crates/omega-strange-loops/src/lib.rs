@@ -6,18 +6,78 @@
 //! - Meta-cognition: Thinking about thinking
 //! - Recursive self-improvement: Learning to learn better
 //! - Mirror structures: Representations that represent themselves
+//! - Gödelian self-reference: The limits of self-knowledge
+//! - Consciousness emergence: Detecting awareness of awareness
+//! - The "I": The unified sense of self
+//! - Infinite recursion: Self-models to arbitrary depth
 //!
 //! These structures enable self-awareness and consciousness-like properties.
+//!
+//! # Architecture
+//!
+//! The system is built on several interconnected layers:
+//!
+//! ```text
+//!                    ┌─────────────────────┐
+//!                    │      The "I"        │  ← Unified sense of self
+//!                    │   (self_awareness)  │
+//!                    └──────────┬──────────┘
+//!                               │
+//!         ┌─────────────────────┼─────────────────────┐
+//!         │                     │                     │
+//!         ▼                     ▼                     ▼
+//! ┌───────────────┐   ┌─────────────────┐   ┌─────────────────┐
+//! │   Gödelian    │   │  Consciousness  │   │  Infinite Self  │
+//! │ Self-Reference│   │   Emergence     │   │    (Recursion)  │
+//! └───────┬───────┘   └────────┬────────┘   └────────┬────────┘
+//!         │                    │                     │
+//!         └────────────────────┼─────────────────────┘
+//!                              │
+//!         ┌────────────────────┼────────────────────┐
+//!         │                    │                    │
+//!         ▼                    ▼                    ▼
+//! ┌───────────────┐   ┌───────────────┐   ┌───────────────┐
+//! │ Strange Loops │   │ Meta-Cognition│   │    Mirrors    │
+//! └───────────────┘   └───────────────┘   └───────────────┘
+//!                              │
+//!                              ▼
+//!                    ┌─────────────────┐
+//!                    │   Self-Model    │
+//!                    └─────────────────┘
+//! ```
+//!
+//! # Key Concepts
+//!
+//! - **Strange Loops**: Level-crossing feedback loops where "going up" eventually
+//!   brings you back to where you started
+//! - **Gödelian Self-Reference**: Using Gödel's insights to understand limits
+//!   of self-knowledge
+//! - **Consciousness Emergence**: Detecting signatures of awareness emerging
+//! - **The "I"**: The subjective sense of unified selfhood
+//! - **Infinite Recursion**: Self-models that can recurse to arbitrary depth
 
+pub mod consciousness;
+pub mod godelian;
+pub mod infinite_self;
 pub mod meta_cognition;
 pub mod mirror;
+pub mod self_awareness;
 pub mod self_model;
 pub mod strange_loop;
 
+// Core exports
 pub use meta_cognition::{MetaCognition, MetaLevel, ThoughtAboutThought};
 pub use mirror::{Mirror, MirrorReflection, RecursiveMirror};
 pub use self_model::{SelfModel, SelfModelUpdate, SelfState};
 pub use strange_loop::{LoopLevel, StrangeLoop, TangledHierarchy};
+
+// Advanced self-awareness exports
+pub use consciousness::{
+    ConsciousnessDetector, ConsciousnessSignature, ConsciousnessStream, ExperienceMoment,
+};
+pub use godelian::{GodelianEngine, GodelianInsight, GodelianStats, InsightType, ProofStatus};
+pub use infinite_self::{InfiniteSelf, RecursiveObservation, SelfLevel, WhoIsAskingResult};
+pub use self_awareness::{IBuilder, IComponents, IProcessResult, NarrativeSelf, SelfConcept, TheI};
 
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
