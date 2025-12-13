@@ -36,6 +36,10 @@ path = "src/bin/mindscape_explorer.rs"
 name = "creative_dream_incubator"
 path = "src/bin/creative_dream_incubator.rs"
 
+[[example]]
+name = "synesthesia_demo"
+path = "examples/synesthesia_demo.rs"
+
 [dependencies]
 # Core omega crates
 omega-core = { path = "../omega-core" }
@@ -51,6 +55,7 @@ omega-memory = { path = "../omega-memory" }
 omega-meta-sona = { path = "../omega-meta-sona" }
 omega-runtime = { path = "../omega-runtime" }
 omega-mindscape = { path = "../omega-mindscape" }
+omega-synesthesia = { path = "../omega-synesthesia" }
 
 # External dependencies
 tokio = { workspace = true }
