@@ -44,6 +44,10 @@ path = "examples/synesthesia_demo.rs"
 name = "synesthesia_simulation"
 path = "examples/synesthesia_simulation.rs"
 
+[[example]]
+name = "synesthesia_visualizer"
+path = "examples/synesthesia_visualizer.rs"
+
 [dependencies]
 # Core omega crates
 omega-core = { path = "../omega-core" }
