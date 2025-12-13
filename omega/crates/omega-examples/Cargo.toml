@@ -32,6 +32,10 @@ path = "src/project_ouroboros.rs"
 name = "mindscape_explorer"
 path = "src/bin/mindscape_explorer.rs"
 
+[[bin]]
+name = "creative_dream_incubator"
+path = "src/bin/creative_dream_incubator.rs"
+
 [dependencies]
 # Core omega crates
 omega-core = { path = "../omega-core" }
