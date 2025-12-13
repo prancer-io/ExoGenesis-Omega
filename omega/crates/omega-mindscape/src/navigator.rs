@@ -86,6 +86,8 @@ impl NavigationPath {
 /// Virtual place cell for mindscape navigation
 #[derive(Debug, Clone)]
 struct VirtualPlaceCell {
+    /// Cell identifier (for debugging/future use)
+    #[allow(dead_code)]
     id: usize,
     center: Position3D,
     radius: f64,

@@ -195,7 +195,9 @@ impl StrangeLoopObserver {
             0.0
         };
 
-        ObservationLevel::new(depth, description, observer_state)
+        let mut level = ObservationLevel::new(depth, description, observer_state);
+        level.similarity_to_previous = similarity_to_previous;
+        level
     }
 
     /// Transform state for a given observation level

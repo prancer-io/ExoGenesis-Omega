@@ -241,12 +241,8 @@ impl DreamExplorer {
         let mut rng = rand::thread_rng();
 
         // Find target in memory pool
-        let target_idx = self.memory_pool.iter()
-            .position(|(label, _)| label == target);
-
-        if target_idx.is_none() {
-            return None;
-        }
+        let _target_idx = self.memory_pool.iter()
+            .position(|(label, _)| label == target)?;
 
         // Directed dream - higher chance of finding connections to target
         let mut memory_fragments = vec![target.to_string()];
@@ -395,7 +391,7 @@ mod tests {
         explorer.add_memory("other".to_string(), vec![0.3; 64]);
 
         // Non-lucid search
-        let vision1 = explorer.search_for("target");
+        let _vision1 = explorer.search_for("target");
 
         // Become lucid
         explorer.become_lucid();

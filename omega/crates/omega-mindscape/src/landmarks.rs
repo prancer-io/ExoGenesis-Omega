@@ -142,10 +142,10 @@ impl MemoryLandmark {
         let mut norm_a = 0.0;
         let mut norm_b = 0.0;
 
-        for i in 0..min_len {
-            dot += self.embedding[i] * other_embedding[i];
-            norm_a += self.embedding[i] * self.embedding[i];
-            norm_b += other_embedding[i] * other_embedding[i];
+        for (a, b) in self.embedding.iter().zip(other_embedding.iter()).take(min_len) {
+            dot += a * b;
+            norm_a += a * a;
+            norm_b += b * b;
         }
 
         let denom = (norm_a.sqrt() * norm_b.sqrt()).max(1e-10);

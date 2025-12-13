@@ -342,12 +342,6 @@ impl MindscapeExplorer {
             MindscapeError::MemoryNotFound(target.to_string())
         })?;
 
-        // Get current position
-        let current_pos = {
-            let nav = self.navigator.read();
-            nav.current_position()
-        };
-
         // Calculate path
         let path = {
             let mut nav = self.navigator.write();
@@ -605,11 +599,6 @@ impl MindscapeExplorer {
 
     /// Measure consciousness at current location
     pub fn measure_consciousness(&self) -> Result<f64> {
-        let current_pos = {
-            let nav = self.navigator.read();
-            nav.current_position()
-        };
-
         // Get nearby memories to calculate integrated information
         let nearby = self.look_around(10);
 
