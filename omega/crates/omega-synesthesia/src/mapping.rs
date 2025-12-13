@@ -51,7 +51,7 @@ pub struct SpatialMoment {
 }
 
 /// Hint for what shape to generate
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum ShapeHint {
     /// Smooth, rounded shapes
     Organic,

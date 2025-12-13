@@ -68,6 +68,15 @@ pub mod geometry;
 pub mod materials;
 pub mod export;
 
+// Enhanced modules
+pub mod analysis;
+pub mod biome;
+pub mod lod;
+pub mod animation;
+pub mod navigation;
+pub mod textures;
+pub mod lights;
+
 pub use audio::{AudioAnalyzer, AudioSource, AudioFrame, SpectralData, TestSignalType};
 pub use features::{MusicalFeatures, FeatureExtractor, EmotionalValence};
 pub use mapping::{SpatialMapper, MappingConfig, Coordinate3D};
@@ -76,6 +85,15 @@ pub use genre::{Genre, GenreStyle, StylePreset};
 pub use geometry::{MeshGenerator, Primitive, ProceduralMesh};
 pub use materials::{MaterialPalette, SynMaterial, TextureType};
 pub use export::{GltfExporter, ExportConfig};
+
+// Enhanced exports
+pub use analysis::{OnsetDetector, BeatTracker, ChromaAnalyzer, MfccCalculator};
+pub use biome::{Biome, BiomeType, BiomeGenerator};
+pub use lod::{LodSystem, LodLevel, LodConfig, InstanceManager};
+pub use animation::{AnimationClip, AnimationChannel, AnimationGenerator};
+pub use navigation::{NavigationPath, PathWaypoint, PathGenerator, NavMesh};
+pub use textures::{TextureGenerator, TextureData, TextureAtlas};
+pub use lights::{SynLight, LightType, LightGenerator, LightManager};
 
 use omega_mindscape::MindscapeExplorer;
 use parking_lot::RwLock;

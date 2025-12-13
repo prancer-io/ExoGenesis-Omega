@@ -21,6 +21,7 @@ hound = "3.5"
 # 3D and rendering
 glam = "0.29"
 gltf = "1.4"
+image = "0.25"
 
 # Serialization
 serde = { workspace = true }
