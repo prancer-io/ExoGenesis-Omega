@@ -28,6 +28,10 @@ path = "src/self_awareness_demo.rs"
 name = "project_ouroboros"
 path = "src/project_ouroboros.rs"
 
+[[bin]]
+name = "mindscape_explorer"
+path = "src/bin/mindscape_explorer.rs"
+
 [dependencies]
 # Core omega crates
 omega-core = { path = "../omega-core" }
@@ -42,6 +46,7 @@ omega-strange-loops = { path = "../omega-strange-loops" }
 omega-memory = { path = "../omega-memory" }
 omega-meta-sona = { path = "../omega-meta-sona" }
 omega-runtime = { path = "../omega-runtime" }
+omega-mindscape = { path = "../omega-mindscape" }
 
 # External dependencies
 tokio = { workspace = true }
