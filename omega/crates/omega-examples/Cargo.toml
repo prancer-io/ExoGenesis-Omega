@@ -40,6 +40,10 @@ path = "src/bin/creative_dream_incubator.rs"
 name = "synesthesia_demo"
 path = "examples/synesthesia_demo.rs"
 
+[[example]]
+name = "synesthesia_simulation"
+path = "examples/synesthesia_simulation.rs"
+
 [dependencies]
 # Core omega crates
 omega-core = { path = "../omega-core" }
