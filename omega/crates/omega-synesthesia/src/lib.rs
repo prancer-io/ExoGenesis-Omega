@@ -80,7 +80,7 @@ pub mod lights;
 pub use audio::{AudioAnalyzer, AudioSource, AudioFrame, SpectralData, TestSignalType};
 pub use features::{MusicalFeatures, FeatureExtractor, EmotionalValence};
 pub use mapping::{SpatialMapper, MappingConfig, Coordinate3D};
-pub use world::{SynesthesiaWorld, WorldChunk, WorldElement};
+pub use world::{SynesthesiaWorld, WorldChunk, WorldElement, ElementType};
 pub use genre::{Genre, GenreStyle, StylePreset};
 pub use geometry::{MeshGenerator, Primitive, ProceduralMesh};
 pub use materials::{MaterialPalette, SynMaterial, TextureType};
