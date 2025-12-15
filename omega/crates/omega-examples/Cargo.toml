@@ -13,10 +13,6 @@ name = "loops_demo"
 path = "src/loops_demo.rs"
 
 [[bin]]
-name = "dream_problem_solver"
-path = "src/dream_problem_solver.rs"
-
-[[bin]]
 name = "quantum_gravity_dreamer"
 path = "src/quantum_gravity_dreamer.rs"
 
