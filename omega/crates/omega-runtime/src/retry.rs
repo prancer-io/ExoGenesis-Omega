@@ -252,6 +252,12 @@ impl RetryPolicy {
     }
 }
 
+impl Default for RetryPolicy {
+    fn default() -> Self {
+        Self::with_default_config()
+    }
+}
+
 /// Builder for retry configuration
 pub struct RetryConfigBuilder {
     config: RetryConfig,
