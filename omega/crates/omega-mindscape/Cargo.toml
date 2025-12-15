@@ -1,0 +1,32 @@
+[package]
+name = "omega-mindscape"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "Mindscape Explorer - Navigate through memories as a traversable spatial world"
+keywords = ["ai", "consciousness", "memory", "navigation", "dreams"]
+categories = ["science", "algorithms"]
+
+[dependencies]
+omega-core = { path = "../omega-core" }
+omega-hippocampus = { path = "../omega-hippocampus" }
+omega-strange-loops = { path = "../omega-strange-loops" }
+omega-memory = { path = "../omega-memory" }
+omega-sleep = { path = "../omega-sleep" }
+omega-consciousness = { path = "../omega-consciousness" }
+omega-brain = { path = "../omega-brain" }
+
+tokio = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+uuid = { workspace = true }
+chrono = { workspace = true }
+thiserror = { workspace = true }
+tracing = { workspace = true }
+rand = { workspace = true }
+parking_lot = "0.12"
+
+[dev-dependencies]
+tokio-test = "0.4"

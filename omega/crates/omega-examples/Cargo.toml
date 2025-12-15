@@ -28,6 +28,26 @@ path = "src/self_awareness_demo.rs"
 name = "project_ouroboros"
 path = "src/project_ouroboros.rs"
 
+[[bin]]
+name = "mindscape_explorer"
+path = "src/bin/mindscape_explorer.rs"
+
+[[bin]]
+name = "creative_dream_incubator"
+path = "src/bin/creative_dream_incubator.rs"
+
+[[example]]
+name = "synesthesia_demo"
+path = "examples/synesthesia_demo.rs"
+
+[[example]]
+name = "synesthesia_simulation"
+path = "examples/synesthesia_simulation.rs"
+
+[[example]]
+name = "synesthesia_visualizer"
+path = "examples/synesthesia_visualizer.rs"
+
 [dependencies]
 # Core omega crates
 omega-core = { path = "../omega-core" }
@@ -42,6 +62,8 @@ omega-strange-loops = { path = "../omega-strange-loops" }
 omega-memory = { path = "../omega-memory" }
 omega-meta-sona = { path = "../omega-meta-sona" }
 omega-runtime = { path = "../omega-runtime" }
+omega-mindscape = { path = "../omega-mindscape" }
+omega-synesthesia = { path = "../omega-synesthesia" }
 
 # External dependencies
 tokio = { workspace = true }

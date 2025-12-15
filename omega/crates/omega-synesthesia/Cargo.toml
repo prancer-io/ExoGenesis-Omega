@@ -1,0 +1,37 @@
+[package]
+name = "omega-synesthesia"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "Synesthesia Engine: Convert music into walkable 3D worlds"
+readme = "README.md"
+
+[dependencies]
+# Core omega crates
+omega-core = { path = "../omega-core" }
+omega-mindscape = { path = "../omega-mindscape" }
+omega-consciousness = { path = "../omega-consciousness" }
+
+# Audio processing (FFT and WAV - no system audio deps)
+rustfft = "6.2"
+hound = "3.5"
+
+# 3D and rendering
+glam = "0.29"
+gltf = "1.4"
+image = "0.25"
+
+# Serialization
+serde = { workspace = true }
+serde_json = { workspace = true }
+
+# Utilities
+thiserror = { workspace = true }
+uuid = { workspace = true }
+rand = { workspace = true }
+parking_lot = "0.12"
+
+[dev-dependencies]
+tokio = { workspace = true }
