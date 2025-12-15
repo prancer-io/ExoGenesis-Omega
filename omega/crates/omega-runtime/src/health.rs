@@ -345,6 +345,12 @@ impl HealthMonitor {
     }
 }
 
+impl Default for HealthMonitor {
+    fn default() -> Self {
+        Self::with_default_config()
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

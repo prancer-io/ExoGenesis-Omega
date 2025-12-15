@@ -268,6 +268,7 @@ mod tests {
     #[test]
     fn test_advance_time() {
         let mut rhythm = CircadianRhythm::new();
+        rhythm.set_period(24.0); // Use standard 24h for precise time test
         rhythm.set_time(TimeOfDay::new(8, 0));
 
         rhythm.advance(90.0); // 1.5 hours

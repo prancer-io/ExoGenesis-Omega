@@ -1,0 +1,38 @@
+# Seeds for failure cases proptest has generated in the past. It is
+# automatically read and these particular cases re-run before any
+# novel cases are generated.
+#
+# It is recommended to check this file in to source control so that
+# everyone who runs the test benefits from these saved cases.
+cc 60af4ff2aa01e88cc1c645f7a7b753ea0c30d37206c43643f8a1d9f356001720 # shrinks to store_count = 9
+cc 036445c7f9f8b34747621c1b8b50357cccdef0f2878b661b8fdd07fd55220c09 # shrinks to text = "lwmororanqdzn"
+cc 437b3208e41b1ca8310761266ef956321084e5361dd897b9cbf75a192e781e77 # shrinks to count = 41
+cc d22d97bed975b63307c66de695502b54db356c2cc23281ffa73da80ee0b8f50e # shrinks to text = "4 v ox1 ", importance = 0.5756529480620451
+cc 44eb8058aa31a518ac215600dcd9b3e728186345a2f2f4f8d68d102fd3dbcbd6 # shrinks to tier_idx = 7
+cc 376c8fda58b0c6e77fad895974c832293cea938ca4cc61d5fc2d29b2b90d1afc # shrinks to _dummy = 0
+cc b8ea91b6ed3c1cffd42759710e5acb34bdf6c19fbf1fc62fbdd3296df6644fcb # shrinks to tier_idx = 0
+cc 7b39fad4ecaa182ea82e19521cd25fb06d3bc5dbc2c60d21ad611418067d5eb8 # shrinks to store_count = 14
+cc 785462efe015f10b97e53f92dc3328adac1811e49ed0fc2fd95ec6c4b06270f2 # shrinks to count = 27
+cc 213b4423728843c9576132f85aef34d1edd0365e8dffca392239b030fd409bd5 # shrinks to text = "weuxcxva"
+cc e70402c967569b2800b8e46e32265a758dfa0ce1becf3707eebeb5cc387ff176 # shrinks to text = "uaJFxY8 m ", importance = 0.987348874486781
+cc fa4e03bcf9448decfb6e83a5f8e77a363fd68cf515c2a311519d6720882c2f64 # shrinks to tier_idx = 5
+cc daefed266a425fcec378de69c7babef3cb0813ff6fa6b6c86df8c9850f89914d # shrinks to text = " p 2Vt 8O X", embedding_len = 17
+cc 6ba160be8f79c94b45c5c2eb627bed20abd51e6f9964eac34f34e7a78038eae3 # shrinks to text = "OgABBf", importance = 0.9828970095801214
+cc d85d41a42ba554c8146d76e01e782451865c89394966caca1d3ce6f00bede7b5 # shrinks to tier_idx = 7
+cc 7b15da7b85b8af9e02fd598769d050812cf49549d5027297939ae01acafb33fe # shrinks to importance = 0.6204319190944854
+cc ffcad4d6534c4980ccfaeadf185b57912997628e82f571897b5221b12c120470 # shrinks to count = 45
+cc 44a9fadc1e80ff20e65e2e3899f08792e90318a6b91d28eafe46ca784680e941 # shrinks to importance = 0.5069616358105662
+cc b9b57eb8a78d3a8d733a6dd280b9eb9591615d454534e7e97071c6bf3fba1849 # shrinks to _dummy = 0
+cc 26d69954f702ab3f214786b5d5ca69366b5319186774aeebca30e7b1cad136b1 # shrinks to text = "aaaaa"
+cc d7f9dcea67384cc1614aa56b8e1595811a29584d30c05e3866153d808932c462 # shrinks to text = "0  00AAAAa", embedding_len = 5
+cc 4fd8ff3ebdcd9e854d76006012222ee25136748d9cf4e3f11a74bd735da25833 # shrinks to importance = 0.9226688098525972
+cc 04406792914884c9a8827b23d69dff6583a340d7b790c099641991585afb962d # shrinks to text = "E 0p ", importance = 0.45081071799323497
+cc 75a1d027a1f1ae031f1a9c837baa4e9b6888f4dc53809c28c6a81f190a2de533 # shrinks to text = "iieonri"
+cc cdafcc02bc859a5a8d56b605c9978c2d0327e246f8737e83c16eb6b53e7a9185 # shrinks to tier_idx = 6
+cc f0e02377e9fb404e1dee6a54f77ae055704f237dd2e229bd6669a9dd2b4cb53e # shrinks to count = 25
+cc 59087fdc583010b5c247c77a2a2f5fb6f2f6e6d37a2c9a1c1585d004b516d72a # shrinks to importance = 0.858182836925636
+cc 4e39c726b4a14e10ee090a81c54b297441436b86132e6a1c21ce3dbd87d52757 # shrinks to text = "RbZj7", importance = 0.10464349174100795
+cc d9631b5f1833f3f52131d3d708c537ef92690266a52acb864d6fcb7aee57fc72 # shrinks to text = "cs6texGGc25", embedding_len = 15
+cc 986d51102ceb78b11dc8e258f3f7091840c619f54615fef791116475af2aeff6 # shrinks to tier_idx = 4
+cc 46b13d3229c6fdf9181ab0b493248daf67d39848b2344e38b9ad5727a6c3aa69 # shrinks to text = "bonagfolhujd"
+cc 84a291bc619e4480d5a3d31dd1fe37a4df95e6756db647cf0b711ca85adccff6 # shrinks to store_count = 20

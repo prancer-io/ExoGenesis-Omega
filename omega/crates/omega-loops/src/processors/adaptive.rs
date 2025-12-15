@@ -330,7 +330,7 @@ impl CycleProcessor for AdaptiveProcessor {
 
         results.insert("top_skills".to_string(), serde_json::json!(
             skills.iter()
-                .sorted_by(|a, b| b.success_rate.partial_cmp(&a.success_rate).unwrap())
+                .sorted_by(|a, b| b.success_rate.partial_cmp(&a.success_rate).unwrap_or(std::cmp::Ordering::Equal))
                 .take(5)
                 .map(|s| serde_json::json!({
                     "id": s.id,

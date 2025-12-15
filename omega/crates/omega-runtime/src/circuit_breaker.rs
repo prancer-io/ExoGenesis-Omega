@@ -79,6 +79,11 @@ impl CircuitBreaker {
         }
     }
 
+    /// Create a circuit breaker with default configuration
+    pub fn with_default_config() -> Self {
+        Self::new(CircuitBreakerConfig::default())
+    }
+
     /// Execute an operation with circuit breaker protection
     pub async fn call<F, T, E>(&self, operation: F) -> Result<T, CircuitBreakerError>
     where
@@ -250,6 +255,12 @@ impl CircuitBreaker {
     /// Get time since last failure
     pub fn time_since_last_failure(&self) -> Option<Duration> {
         self.last_failure.read().map(|instant| instant.elapsed())
+    }
+}
+
+impl Default for CircuitBreaker {
+    fn default() -> Self {
+        Self::with_default_config()
     }
 }
 

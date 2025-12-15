@@ -25,3 +25,6 @@ async-trait.workspace = true
 parking_lot = "0.12"
 rand = "0.8"
 itertools = "0.12"
+
+[dev-dependencies]
+proptest.workspace = true

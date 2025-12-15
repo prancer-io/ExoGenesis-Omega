@@ -93,7 +93,7 @@ impl DeliberativeProcessor {
             .max_by(|a, b| {
                 let score_a = a["score"].as_f64().unwrap_or(0.0);
                 let score_b = b["score"].as_f64().unwrap_or(0.0);
-                score_a.partial_cmp(&score_b).unwrap()
+                score_a.partial_cmp(&score_b).unwrap_or(std::cmp::Ordering::Equal)
             });
 
         let best_score = best.as_ref().and_then(|b| b["score"].as_f64()).unwrap_or(0.0);
