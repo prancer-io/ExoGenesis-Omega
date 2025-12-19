@@ -76,6 +76,7 @@ pub mod intuition;
 pub mod telepathy;
 pub mod orchestrator;
 pub mod synapse;
+pub mod dream_cinema;
 
 pub use collective::{
     CollectiveConsciousness, CollectiveConfig, ConsciousnessNode,
@@ -109,6 +110,11 @@ pub use synapse::{
     SynapseFusion, SynapseConfig, FusionMind, FusionState,
     EmergentCreation, CreationType, ResonanceEvent, FusionMetrics,
     NeuralJamSession, JamType, GAMMA_FREQUENCY,
+};
+pub use dream_cinema::{
+    DreamCinema, CinemaConfig, DreamFilm, CinematicScene,
+    DreamCharacter, PlotTwist, Setting, Atmosphere,
+    Archetype, Emotion, Genre, CreativeRole, ProductionState,
 };
 
 use thiserror::Error;

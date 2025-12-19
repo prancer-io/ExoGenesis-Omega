@@ -252,6 +252,11 @@ impl DreamSolver {
         self.forbidden_connections.insert((from, to));
     }
 
+    /// Get all forbidden connections
+    pub fn get_forbidden_connections(&self) -> impl Iterator<Item = &(String, String)> {
+        self.forbidden_connections.iter()
+    }
+
     /// Step the dream solver
     pub fn step(&mut self, dt: Duration) -> Option<DreamInsight> {
         // Update timing
