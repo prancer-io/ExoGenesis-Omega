@@ -6,10 +6,15 @@
 //! ## Features
 //!
 //! - **Leaky Integrate-and-Fire (LIF) Neurons**: Biologically plausible neuron model
+//! - **Izhikevich Neurons**: Rich firing patterns (RS, FS, IB, CH, LTS, TC, RZ)
 //! - **Spike-Timing Dependent Plasticity (STDP)**: Hebbian learning based on spike timing
 //! - **Neuromodulation**: Dopamine, norepinephrine, serotonin, acetylcholine
 //! - **Short-Term Plasticity**: Synaptic facilitation and depression
 //! - **Population Coding**: Sparse distributed representations
+//! - **Network Topologies**: Small-world and local grid connectivity
+//! - **Event-Driven Processing**: Efficient spike-based computation
+//! - **Meta-Cognition**: Attention gating, sparsity tracking, synchrony detection
+//! - **Meta-Plasticity**: Learning rate adaptation based on activity history
 //!
 //! ## Architecture
 //!
@@ -51,6 +56,7 @@ pub mod network;
 pub mod spike_train;
 pub mod population;
 pub mod encoding;
+pub mod meta_cognition;
 
 pub use neuron::{
     SpikingNeuron, NeuronId, NeuronState, NeuronType,
@@ -79,6 +85,12 @@ pub use encoding::{
     // Spike encoding methods
     RateEncoder, TemporalEncoder, TemporalEncodingType,
     DeltaEncoder, PopulationEncoder, SparseSpikes, MultiEncoder,
+};
+pub use meta_cognition::{
+    // Meta-cognitive mechanisms
+    AttentionGate, SparsityTracker, MetaPlasticity, MetaPlasticityStats,
+    SynchronyDetector, TemporalCoherence, WinnerTakeAll,
+    MetaCognitiveController, MetaCognitiveMetrics,
 };
 
 use std::time::Duration;
