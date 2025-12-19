@@ -3,7 +3,7 @@
 //! Implements biologically-inspired neuron models including:
 //! - Leaky Integrate-and-Fire (LIF)
 //! - Adaptive LIF with spike-frequency adaptation
-//! - Izhikevich model (future)
+//! - Izhikevich model with 7 firing patterns (RS, FS, IB, CH, LTS, TC, RZ)
 
 use serde::{Deserialize, Serialize};
 use std::time::Duration;
@@ -328,6 +328,347 @@ impl SpikingNeuron for AdaptiveLIFNeuron {
     }
 }
 
+// ============================================================================
+// IZHIKEVICH NEURON MODEL
+// ============================================================================
+
+/// Izhikevich neuron firing patterns
+///
+/// Each pattern corresponds to different combinations of the (a, b, c, d) parameters
+/// that reproduce behaviors observed in biological neurons.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
+pub enum IzhikevichType {
+    /// Regular Spiking (RS) - Most common excitatory cortical neurons
+    /// Slow spike-frequency adaptation
+    RegularSpiking,
+    /// Fast Spiking (FS) - Inhibitory interneurons (basket cells)
+    /// High-frequency non-adapting firing
+    FastSpiking,
+    /// Intrinsically Bursting (IB) - Initial burst followed by regular spiking
+    /// Layer 5 pyramidal neurons
+    IntrinsicallyBursting,
+    /// Chattering (CH) - Fast rhythmic bursting
+    /// Some layer 2/3 pyramidal cells
+    Chattering,
+    /// Low-Threshold Spiking (LTS) - Inhibitory with rebound burst
+    /// Martinotti cells
+    LowThresholdSpiking,
+    /// Thalamo-Cortical (TC) - Two distinct firing modes
+    /// Thalamic relay neurons
+    ThalamoCortical,
+    /// Resonator (RZ) - Subthreshold oscillations
+    /// Some interneurons
+    Resonator,
+}
+
+impl IzhikevichType {
+    /// Get the canonical (a, b, c, d) parameters for this firing type
+    pub fn params(&self) -> IzhikevichParams {
+        match self {
+            IzhikevichType::RegularSpiking => IzhikevichParams {
+                a: 0.02,
+                b: 0.2,
+                c: -65.0,
+                d: 8.0,
+            },
+            IzhikevichType::FastSpiking => IzhikevichParams {
+                a: 0.1,
+                b: 0.2,
+                c: -65.0,
+                d: 2.0,
+            },
+            IzhikevichType::IntrinsicallyBursting => IzhikevichParams {
+                a: 0.02,
+                b: 0.2,
+                c: -55.0,
+                d: 4.0,
+            },
+            IzhikevichType::Chattering => IzhikevichParams {
+                a: 0.02,
+                b: 0.2,
+                c: -50.0,
+                d: 2.0,
+            },
+            IzhikevichType::LowThresholdSpiking => IzhikevichParams {
+                a: 0.02,
+                b: 0.25,
+                c: -65.0,
+                d: 2.0,
+            },
+            IzhikevichType::ThalamoCortical => IzhikevichParams {
+                a: 0.02,
+                b: 0.25,
+                c: -65.0,
+                d: 0.05,
+            },
+            IzhikevichType::Resonator => IzhikevichParams {
+                a: 0.1,
+                b: 0.26,
+                c: -65.0,
+                d: 2.0,
+            },
+        }
+    }
+
+    /// Whether this neuron type is typically excitatory
+    pub fn is_excitatory(&self) -> bool {
+        matches!(
+            self,
+            IzhikevichType::RegularSpiking
+                | IzhikevichType::IntrinsicallyBursting
+                | IzhikevichType::Chattering
+                | IzhikevichType::ThalamoCortical
+        )
+    }
+}
+
+/// Parameters for Izhikevich neuron model
+///
+/// The model equations are:
+/// ```text
+/// dv/dt = 0.04*v² + 5*v + 140 - u + I
+/// du/dt = a*(b*v - u)
+///
+/// if v >= 30 mV: v = c, u = u + d
+/// ```
+#[derive(Debug, Clone, Copy, Serialize, Deserialize)]
+pub struct IzhikevichParams {
+    /// Time scale of recovery variable (0.02-0.1)
+    /// Smaller = slower recovery
+    pub a: f64,
+    /// Sensitivity of recovery to subthreshold membrane potential (0.2-0.26)
+    pub b: f64,
+    /// After-spike reset value of membrane potential (-65 to -50 mV)
+    pub c: f64,
+    /// After-spike reset increment of recovery variable (0.05-8.0)
+    pub d: f64,
+}
+
+impl Default for IzhikevichParams {
+    fn default() -> Self {
+        // Default to Regular Spiking
+        IzhikevichType::RegularSpiking.params()
+    }
+}
+
+/// Izhikevich neuron state
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct IzhikevichState {
+    /// Membrane potential (mV)
+    pub v: f64,
+    /// Recovery variable
+    pub u: f64,
+    /// Whether in refractory period (brief, for numerical stability)
+    pub refractory: bool,
+    /// Time since last spike
+    pub time_since_spike: Duration,
+    /// Input current accumulator
+    pub input_current: f64,
+}
+
+impl Default for IzhikevichState {
+    fn default() -> Self {
+        Self {
+            v: -65.0,                              // Resting potential
+            u: -65.0 * 0.2,                        // b * v_rest
+            refractory: false,
+            time_since_spike: Duration::from_secs(1000),
+            input_current: 0.0,
+        }
+    }
+}
+
+/// Izhikevich neuron - captures 20+ biological firing patterns
+///
+/// This model provides a good balance between biological realism and
+/// computational efficiency. It can reproduce most known firing patterns
+/// of cortical neurons with only 4 parameters.
+///
+/// # Example
+/// ```ignore
+/// use omega_snn::neuron::{IzhikevichNeuron, IzhikevichType, NeuronType};
+///
+/// let neuron = IzhikevichNeuron::new(
+///     "n1".to_string(),
+///     NeuronType::Excitatory,
+///     IzhikevichType::RegularSpiking,
+/// );
+/// ```
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct IzhikevichNeuron {
+    id: NeuronId,
+    neuron_type: NeuronType,
+    izh_type: IzhikevichType,
+    params: IzhikevichParams,
+    izh_state: IzhikevichState,
+    /// Standard neuron state for compatibility
+    state: NeuronState,
+}
+
+impl IzhikevichNeuron {
+    /// Create a new Izhikevich neuron with a specific firing type
+    pub fn new(id: NeuronId, neuron_type: NeuronType, izh_type: IzhikevichType) -> Self {
+        let params = izh_type.params();
+        let izh_state = IzhikevichState {
+            v: params.c,
+            u: params.b * params.c,
+            ..Default::default()
+        };
+
+        Self {
+            id,
+            neuron_type,
+            izh_type,
+            params,
+            izh_state,
+            state: NeuronState {
+                membrane_potential: params.c,
+                ..Default::default()
+            },
+        }
+    }
+
+    /// Create with custom parameters
+    pub fn with_params(
+        id: NeuronId,
+        neuron_type: NeuronType,
+        params: IzhikevichParams,
+    ) -> Self {
+        let izh_state = IzhikevichState {
+            v: params.c,
+            u: params.b * params.c,
+            ..Default::default()
+        };
+
+        Self {
+            id,
+            neuron_type,
+            izh_type: IzhikevichType::RegularSpiking, // Custom params
+            params,
+            izh_state,
+            state: NeuronState {
+                membrane_potential: params.c,
+                ..Default::default()
+            },
+        }
+    }
+
+    /// Get the Izhikevich firing type
+    pub fn izh_type(&self) -> IzhikevichType {
+        self.izh_type
+    }
+
+    /// Get the Izhikevich parameters
+    pub fn izh_params(&self) -> &IzhikevichParams {
+        &self.params
+    }
+
+    /// Get the recovery variable
+    pub fn recovery(&self) -> f64 {
+        self.izh_state.u
+    }
+
+    /// Get the Izhikevich-specific state
+    pub fn izh_state(&self) -> &IzhikevichState {
+        &self.izh_state
+    }
+}
+
+impl SpikingNeuron for IzhikevichNeuron {
+    fn id(&self) -> &NeuronId {
+        &self.id
+    }
+
+    fn neuron_type(&self) -> NeuronType {
+        self.neuron_type
+    }
+
+    fn state(&self) -> &NeuronState {
+        &self.state
+    }
+
+    fn state_mut(&mut self) -> &mut NeuronState {
+        &mut self.state
+    }
+
+    fn step(&mut self, dt: Duration) -> bool {
+        let dt_ms = dt.as_secs_f64() * 1000.0;
+
+        // Skip if refractory (brief period for numerical stability)
+        if self.izh_state.refractory {
+            self.izh_state.refractory = false;
+            self.izh_state.time_since_spike += dt;
+            self.izh_state.input_current = 0.0;
+            return false;
+        }
+
+        let v = self.izh_state.v;
+        let u = self.izh_state.u;
+        let i = self.izh_state.input_current;
+
+        // Izhikevich dynamics with half-step Euler for stability
+        // dv/dt = 0.04*v² + 5*v + 140 - u + I
+        // du/dt = a*(b*v - u)
+
+        // First half-step
+        let dv1 = 0.04 * v * v + 5.0 * v + 140.0 - u + i;
+        let v_half = v + 0.5 * dt_ms * dv1;
+
+        // Second half-step
+        let dv2 = 0.04 * v_half * v_half + 5.0 * v_half + 140.0 - u + i;
+        self.izh_state.v += dt_ms * dv2;
+
+        // Recovery variable (single Euler step)
+        let du = self.params.a * (self.params.b * v - u);
+        self.izh_state.u += dt_ms * du;
+
+        // Update time
+        self.izh_state.time_since_spike += dt;
+
+        // Clear input current
+        self.izh_state.input_current = 0.0;
+
+        // Synchronize with standard state
+        self.state.membrane_potential = self.izh_state.v;
+        self.state.time_since_spike = self.izh_state.time_since_spike;
+
+        // Check for spike (threshold at 30mV)
+        if self.izh_state.v >= 30.0 {
+            // Reset
+            self.izh_state.v = self.params.c;
+            self.izh_state.u += self.params.d;
+            self.izh_state.refractory = true;
+            self.izh_state.time_since_spike = Duration::ZERO;
+
+            self.state.membrane_potential = self.params.c;
+            self.state.time_since_spike = Duration::ZERO;
+            self.state.refractory = true;
+            self.state.refractory_remaining = Duration::from_micros(500); // Brief
+
+            return true;
+        }
+
+        false
+    }
+
+    fn receive_input(&mut self, current: f64) {
+        self.izh_state.input_current += current;
+        self.state.input_current += current;
+    }
+
+    fn reset(&mut self) {
+        self.izh_state = IzhikevichState {
+            v: self.params.c,
+            u: self.params.b * self.params.c,
+            ..Default::default()
+        };
+        self.state = NeuronState {
+            membrane_potential: self.params.c,
+            ..Default::default()
+        };
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -409,5 +750,179 @@ mod tests {
 
         // Adaptation should have changed
         // (depends on parameters and whether spike occurred)
+    }
+
+    // ========================================================================
+    // IZHIKEVICH NEURON TESTS
+    // ========================================================================
+
+    #[test]
+    fn test_izhikevich_creation() {
+        let neuron = IzhikevichNeuron::new(
+            "izh1".to_string(),
+            NeuronType::Excitatory,
+            IzhikevichType::RegularSpiking,
+        );
+
+        assert_eq!(neuron.id(), "izh1");
+        assert_eq!(neuron.neuron_type(), NeuronType::Excitatory);
+        assert_eq!(neuron.izh_type(), IzhikevichType::RegularSpiking);
+    }
+
+    #[test]
+    fn test_izhikevich_regular_spiking() {
+        let mut neuron = IzhikevichNeuron::new(
+            "rs".to_string(),
+            NeuronType::Excitatory,
+            IzhikevichType::RegularSpiking,
+        );
+
+        let dt = Duration::from_micros(500); // 0.5ms steps
+        let mut spike_count = 0;
+
+        // Inject constant current and run for 100ms
+        for _ in 0..200 {
+            neuron.receive_input(10.0);
+            if neuron.step(dt) {
+                spike_count += 1;
+            }
+        }
+
+        assert!(spike_count > 0, "Regular spiking neuron should fire with input");
+    }
+
+    #[test]
+    fn test_izhikevich_fast_spiking() {
+        let mut fs_neuron = IzhikevichNeuron::new(
+            "fs".to_string(),
+            NeuronType::Inhibitory,
+            IzhikevichType::FastSpiking,
+        );
+        let mut rs_neuron = IzhikevichNeuron::new(
+            "rs".to_string(),
+            NeuronType::Excitatory,
+            IzhikevichType::RegularSpiking,
+        );
+
+        let dt = Duration::from_micros(500);
+        let mut fs_spikes = 0;
+        let mut rs_spikes = 0;
+
+        // Same input, compare firing rates
+        for _ in 0..200 {
+            fs_neuron.receive_input(15.0);
+            rs_neuron.receive_input(15.0);
+
+            if fs_neuron.step(dt) {
+                fs_spikes += 1;
+            }
+            if rs_neuron.step(dt) {
+                rs_spikes += 1;
+            }
+        }
+
+        // Fast-spiking should fire at higher rate with same input
+        assert!(
+            fs_spikes >= rs_spikes,
+            "Fast-spiking should fire at similar or higher rate"
+        );
+    }
+
+    #[test]
+    fn test_izhikevich_bursting() {
+        let mut neuron = IzhikevichNeuron::new(
+            "ib".to_string(),
+            NeuronType::Excitatory,
+            IzhikevichType::IntrinsicallyBursting,
+        );
+
+        let dt = Duration::from_micros(500);
+        let mut spike_times = Vec::new();
+
+        // Inject strong current
+        for t in 0..400 {
+            neuron.receive_input(12.0);
+            if neuron.step(dt) {
+                spike_times.push(t);
+            }
+        }
+
+        assert!(!spike_times.is_empty(), "IB neuron should spike");
+
+        // Check for initial burst (multiple spikes close together)
+        if spike_times.len() >= 2 {
+            let isi = spike_times[1] - spike_times[0];
+            // Initial bursting should have short ISIs
+            assert!(isi < 20, "IB should have short initial ISI (burst)");
+        }
+    }
+
+    #[test]
+    fn test_izhikevich_all_types() {
+        let types = [
+            IzhikevichType::RegularSpiking,
+            IzhikevichType::FastSpiking,
+            IzhikevichType::IntrinsicallyBursting,
+            IzhikevichType::Chattering,
+            IzhikevichType::LowThresholdSpiking,
+            IzhikevichType::ThalamoCortical,
+            IzhikevichType::Resonator,
+        ];
+
+        for izh_type in types {
+            let neuron = IzhikevichNeuron::new(
+                format!("{:?}", izh_type),
+                NeuronType::Excitatory,
+                izh_type,
+            );
+
+            let params = neuron.izh_params();
+
+            // Verify parameters are in valid ranges
+            assert!(params.a > 0.0 && params.a <= 0.2);
+            assert!(params.b > 0.0 && params.b <= 0.3);
+            assert!(params.c >= -70.0 && params.c <= -45.0);
+            assert!(params.d >= 0.0 && params.d <= 10.0);
+        }
+    }
+
+    #[test]
+    fn test_izhikevich_reset() {
+        let mut neuron = IzhikevichNeuron::new(
+            "reset_test".to_string(),
+            NeuronType::Excitatory,
+            IzhikevichType::RegularSpiking,
+        );
+
+        // Inject current and step
+        let dt = Duration::from_millis(1);
+        for _ in 0..50 {
+            neuron.receive_input(15.0);
+            neuron.step(dt);
+        }
+
+        // State should have changed
+        let v_before = neuron.izh_state().v;
+
+        // Reset
+        neuron.reset();
+
+        // Should be back to initial state
+        assert_eq!(neuron.izh_state().v, neuron.izh_params().c);
+        assert_ne!(v_before, neuron.izh_state().v);
+    }
+
+    #[test]
+    fn test_izhikevich_excitatory_types() {
+        // Verify excitatory classification
+        assert!(IzhikevichType::RegularSpiking.is_excitatory());
+        assert!(IzhikevichType::IntrinsicallyBursting.is_excitatory());
+        assert!(IzhikevichType::Chattering.is_excitatory());
+        assert!(IzhikevichType::ThalamoCortical.is_excitatory());
+
+        // Inhibitory types
+        assert!(!IzhikevichType::FastSpiking.is_excitatory());
+        assert!(!IzhikevichType::LowThresholdSpiking.is_excitatory());
+        assert!(!IzhikevichType::Resonator.is_excitatory());
     }
 }

@@ -50,10 +50,13 @@ pub mod neuromodulators;
 pub mod network;
 pub mod spike_train;
 pub mod population;
+pub mod encoding;
 
 pub use neuron::{
     SpikingNeuron, NeuronId, NeuronState, NeuronType,
     LIFNeuron, LIFParams, AdaptiveLIFNeuron,
+    // Izhikevich neuron model
+    IzhikevichNeuron, IzhikevichParams, IzhikevichType, IzhikevichState,
 };
 pub use synapse::{
     Synapse, SynapseId, SynapticPlasticity,
@@ -63,9 +66,20 @@ pub use neuromodulators::{
     NeuromodulatorSystem, Neuromodulator, NeuromodulatorType,
     DopamineState, NorepinephrineState, SerotoninState, AcetylcholineState,
 };
-pub use network::{SpikingNetwork, NetworkConfig, Layer, LayerId};
-pub use spike_train::{SpikeTrain, Spike, SpikeAnalysis};
+pub use network::{
+    SpikingNetwork, NetworkConfig, Layer, LayerId, LayerType,
+    // Network topologies
+    Topology, SmallWorldBuilder, LocalGridBuilder,
+    // Event-driven processing
+    EventQueue, SpikeEvent,
+};
+pub use spike_train::{SpikeTrain, Spike, SpikeAnalysis, SpikeBuffer};
 pub use population::{NeuralPopulation, PopulationActivity, SparseCode};
+pub use encoding::{
+    // Spike encoding methods
+    RateEncoder, TemporalEncoder, TemporalEncodingType,
+    DeltaEncoder, PopulationEncoder, SparseSpikes, MultiEncoder,
+};
 
 use std::time::Duration;
 use thiserror::Error;
