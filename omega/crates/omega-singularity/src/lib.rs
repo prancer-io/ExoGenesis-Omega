@@ -75,6 +75,7 @@ pub mod emotional;
 pub mod intuition;
 pub mod telepathy;
 pub mod orchestrator;
+pub mod synapse;
 
 pub use collective::{
     CollectiveConsciousness, CollectiveConfig, ConsciousnessNode,
@@ -103,6 +104,11 @@ pub use telepathy::{
 pub use orchestrator::{
     Singularity, SingularityConfig, SingularityState,
     SingularityMetrics, AwakeningLevel,
+};
+pub use synapse::{
+    SynapseFusion, SynapseConfig, FusionMind, FusionState,
+    EmergentCreation, CreationType, ResonanceEvent, FusionMetrics,
+    NeuralJamSession, JamType, GAMMA_FREQUENCY,
 };
 
 use thiserror::Error;
