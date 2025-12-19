@@ -1,0 +1,38 @@
+[package]
+name = "omega-synesthesia-streaming"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "Real-time audio streaming for omega-synesthesia with <25ms latency"
+readme = "README.md"
+
+[dependencies]
+# Core omega crates
+omega-core = { path = "../omega-core" }
+omega-synesthesia = { path = "../omega-synesthesia" }
+
+# Real-time audio streaming (optional - requires system audio libraries)
+cpal = { version = "0.15", optional = true }  # Cross-platform audio I/O
+ringbuf = "0.4"  # Lock-free SPSC ring buffer
+
+# Audio processing (FFT for spectral analysis)
+rustfft = "6.2"
+realfft = "3.3"  # Optimized real-valued FFT
+
+# Utilities
+thiserror = { workspace = true }
+parking_lot = "0.12"
+crossbeam-channel = "0.5"
+
+# Async runtime
+tokio = { workspace = true }
+
+[dev-dependencies]
+criterion = "0.5"  # Benchmarking
+hound = "3.5"  # WAV file testing
+
+[features]
+default = []  # No audio input by default (requires system libs)
+audio-input = ["cpal"]  # Enable real-time audio input from microphone/system

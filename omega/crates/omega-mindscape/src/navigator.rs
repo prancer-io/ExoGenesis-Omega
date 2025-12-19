@@ -86,7 +86,7 @@ impl NavigationPath {
 /// Virtual place cell for mindscape navigation
 #[derive(Debug, Clone)]
 struct VirtualPlaceCell {
-    id: usize,
+    _id: usize,  // Reserved for future place cell identification
     center: Position3D,
     radius: f64,
     activation: f64,
@@ -95,7 +95,7 @@ struct VirtualPlaceCell {
 impl VirtualPlaceCell {
     fn new(id: usize, center: Position3D, radius: f64) -> Self {
         Self {
-            id,
+            _id: id,
             center,
             radius,
             activation: 0.0,

@@ -342,8 +342,8 @@ impl MindscapeExplorer {
             MindscapeError::MemoryNotFound(target.to_string())
         })?;
 
-        // Get current position
-        let current_pos = {
+        // Get current position (for potential logging/debugging)
+        let _current_pos = {
             let nav = self.navigator.read();
             nav.current_position()
         };
@@ -605,7 +605,7 @@ impl MindscapeExplorer {
 
     /// Measure consciousness at current location
     pub fn measure_consciousness(&self) -> Result<f64> {
-        let current_pos = {
+        let _current_pos = {
             let nav = self.navigator.read();
             nav.current_position()
         };

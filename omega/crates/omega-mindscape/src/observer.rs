@@ -188,8 +188,8 @@ impl StrangeLoopObserver {
         // Each level transforms the previous state
         let observer_state = self.transform_state(depth, state, previous);
 
-        // Calculate similarity to previous level
-        let similarity_to_previous = if let Some(prev) = previous {
+        // Calculate similarity to previous level (for future analysis)
+        let _similarity_to_previous = if let Some(prev) = previous {
             self.cosine_similarity(&observer_state, prev)
         } else {
             0.0

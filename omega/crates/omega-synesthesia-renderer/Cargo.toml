@@ -1,0 +1,37 @@
+[package]
+name = "omega-synesthesia-renderer"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "GPU-accelerated real-time renderer for omega-synesthesia worlds"
+readme = "README.md"
+
+[dependencies]
+# Core omega crates
+omega-core = { path = "../omega-core" }
+omega-synesthesia = { path = "../omega-synesthesia" }
+
+# GPU rendering (wgpu - WebGPU standard)
+wgpu = "0.19"
+winit = "0.29"  # Cross-platform window creation
+pollster = "0.3"  # Simple async executor for wgpu
+
+# 3D math and rendering
+glam = "0.29"
+bytemuck = { version = "1.14", features = ["derive"] }
+
+# Asset loading
+gltf = "1.4"
+image = "0.25"
+
+# Utilities
+thiserror = { workspace = true }
+parking_lot = "0.12"
+
+# Async runtime
+tokio = { workspace = true }
+
+[dev-dependencies]
+env_logger = "0.11"

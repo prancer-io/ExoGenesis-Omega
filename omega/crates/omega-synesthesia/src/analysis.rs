@@ -280,7 +280,7 @@ pub struct ChromaAnalyzer {
     /// Reference frequency for A4
     reference_freq: f32,
     /// Number of bins per octave
-    bins_per_octave: usize,
+    _bins_per_octave: usize,  // Reserved for chromagram refinement
     /// Frequency range
     min_freq: f32,
     max_freq: f32,
@@ -290,7 +290,7 @@ impl ChromaAnalyzer {
     pub fn new() -> Self {
         Self {
             reference_freq: 440.0,
-            bins_per_octave: 12,
+            _bins_per_octave: 12,
             min_freq: 65.0,   // C2
             max_freq: 2100.0, // C7
         }
@@ -423,9 +423,9 @@ pub struct MfccCalculator {
     /// Precomputed mel filterbank
     mel_filterbank: Vec<Vec<f32>>,
     /// Sample rate
-    sample_rate: u32,
+    _sample_rate: u32,  // Reserved for mel filterbank scaling
     /// FFT size
-    fft_size: usize,
+    _fft_size: usize,  // Reserved for frequency resolution
 }
 
 impl MfccCalculator {
@@ -436,8 +436,8 @@ impl MfccCalculator {
             num_mel_bands,
             num_coefficients,
             mel_filterbank,
-            sample_rate,
-            fft_size,
+            _sample_rate: sample_rate,
+            _fft_size: fft_size,
         }
     }
 

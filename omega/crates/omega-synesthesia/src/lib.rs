@@ -77,6 +77,11 @@ pub mod navigation;
 pub mod textures;
 pub mod lights;
 
+// Real-time streaming support
+pub mod streaming;
+pub mod renderer_bridge;
+pub mod optimization;
+
 pub use audio::{AudioAnalyzer, AudioSource, AudioFrame, SpectralData, TestSignalType};
 pub use features::{MusicalFeatures, FeatureExtractor, EmotionalValence};
 pub use mapping::{SpatialMapper, MappingConfig, Coordinate3D};
@@ -94,6 +99,15 @@ pub use animation::{AnimationClip, AnimationChannel, AnimationGenerator};
 pub use navigation::{NavigationPath, PathWaypoint, PathGenerator, NavMesh};
 pub use textures::{TextureGenerator, TextureData, TextureAtlas};
 pub use lights::{SynLight, LightType, LightGenerator, LightManager};
+
+// Streaming exports
+pub use streaming::{FeatureBridge, StreamingWorldGenerator};
+
+// Renderer bridge exports
+pub use renderer_bridge::{MeshConverter, RendererMesh, RendererMaterial, RendererVertex};
+
+// Optimization exports
+pub use optimization::GeometryCache;
 
 use omega_mindscape::MindscapeExplorer;
 use parking_lot::RwLock;
