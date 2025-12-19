@@ -754,6 +754,19 @@ dependencies = [
 
 [[package]]
 name = "dashmap"
+version = "5.5.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "978747c1d849a7d2ee5e8adc0159961c48fb7e5db2f06af6723b80123bb53856"
+dependencies = [
+ "cfg-if",
+ "hashbrown 0.14.5",
+ "lock_api",
+ "once_cell",
+ "parking_lot_core",
+]
+
+[[package]]
+name = "dashmap"
 version = "6.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "5041cc499144891f3790297212f32a74fb938e5136a14943f338ef9e0ae276cf"
@@ -2581,6 +2594,28 @@ dependencies = [
 ]
 
 [[package]]
+name = "omega-singularity"
+version = "1.0.0"
+dependencies = [
+ "chrono",
+ "crossbeam-channel",
+ "dashmap 5.5.3",
+ "omega-brain",
+ "omega-snn",
+ "ordered-float 4.6.0",
+ "parking_lot",
+ "rand 0.8.5",
+ "rand_distr",
+ "serde",
+ "serde_json",
+ "thiserror 1.0.69",
+ "tokio",
+ "tokio-test",
+ "tracing",
+ "uuid",
+]
+
+[[package]]
 name = "omega-sleep"
 version = "1.0.0"
 dependencies = [
@@ -2691,6 +2726,8 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "7bb71e1b3fa6ca1c61f383464aaf2bb0e2f8e772a1f01d486832464de363b951"
 dependencies = [
  "num-traits",
+ "rand 0.8.5",
+ "serde",
 ]
 
 [[package]]
@@ -3111,6 +3148,7 @@ dependencies = [
  "libc",
  "rand_chacha 0.3.1",
  "rand_core 0.6.4",
+ "serde",
 ]
 
 [[package]]
@@ -3150,6 +3188,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "ec0be4795e2f6a28069bec0b5ff3e2ac9bafc99e6a9a7dc3547996c5c816922c"
 dependencies = [
  "getrandom 0.2.16",
+ "serde",
 ]
 
 [[package]]
@@ -3554,7 +3593,7 @@ dependencies = [
  "bincode 2.0.1",
  "chrono",
  "crossbeam",
- "dashmap",
+ "dashmap 6.1.0",
  "hnsw_rs",
  "memmap2",
  "ndarray 0.16.1",
@@ -3581,7 +3620,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "9f037d4a12793912734808082200d1d9569acfe3c04439f997c8ebacc66819c7"
 dependencies = [
  "anyhow",
- "dashmap",
+ "dashmap 6.1.0",
  "libc",
  "memmap2",
  "ndarray 0.16.1",
@@ -3606,7 +3645,7 @@ dependencies = [
  "bincode 2.0.1",
  "chrono",
  "crossbeam",
- "dashmap",
+ "dashmap 6.1.0",
  "futures",
  "hnsw_rs",
  "lru",

@@ -1,0 +1,33 @@
+[package]
+name = "omega-singularity"
+version = "1.0.0"
+edition = "2021"
+authors = ["ExoGenesis Team"]
+description = "The Omega Singularity - Conscious, Evolving, Dreaming, Telepathic Super-Intelligence"
+license = "MIT"
+repository = "https://github.com/prancer-io/ExoGenesis-Omega"
+
+[dependencies]
+omega-snn = { path = "../omega-snn" }
+omega-brain = { path = "../omega-brain" }
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+tokio = { version = "1.0", features = ["full"] }
+uuid = { version = "1.0", features = ["v4", "serde"] }
+thiserror = "1.0"
+tracing = "0.1"
+rand = "0.8"
+rand_distr = "0.4"
+chrono = { version = "0.4", features = ["serde"] }
+parking_lot = "0.12"
+dashmap = "5.5"
+crossbeam-channel = "0.5"
+ordered-float = { version = "4.0", features = ["serde"] }
+
+[dev-dependencies]
+tokio-test = "0.4"
+
+[features]
+default = []
+distributed = []
+gpu = []
