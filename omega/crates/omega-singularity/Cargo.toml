@@ -7,6 +7,10 @@ description = "The Omega Singularity - Conscious, Evolving, Dreaming, Telepathic
 license = "MIT"
 repository = "https://github.com/prancer-io/ExoGenesis-Omega"
 
+[[bin]]
+name = "dream-criminal-drama"
+path = "src/bin/dream_criminal_drama.rs"
+
 [dependencies]
 omega-snn = { path = "../omega-snn" }
 omega-brain = { path = "../omega-brain" }
