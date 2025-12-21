@@ -146,6 +146,11 @@ pub mod immortality_engine;
 // Gene-Environment Interaction Analysis - VUS classification via stress testing
 pub mod gene_environment;
 
+// Attractor Landscape Engine - Revolutionary framework for aging dynamics
+// Models aging as traversal through high-dimensional attractor landscape
+// with causal inference, information theory, and phase transitions
+pub mod attractor_landscape;
+
 // Re-exports
 pub use hallmarks::{Hallmark, HallmarkCategory, HallmarksGraph, Intervention, InterventionType};
 pub use biomarker_dreamer::{BiomarkerDreamer, DreamerConfig, NovelTarget, DreamSession};
@@ -179,6 +184,22 @@ pub use gene_environment::{
     ScenarioAnalysis, FourWayScenarios, ScenarioResult,
     InteractionStatistics, InteractionDirection,
     VUSRecommendation, ExposureComparison,
+};
+
+// Attractor Landscape Engine re-exports
+pub use attractor_landscape::{
+    // Core state types
+    BiologicalState, InformationState, NetworkState, AttractorBasin,
+    // Causal network
+    CausalTemporalNetwork, CausalNode, CausalEdge, CausalRelationship,
+    InterventionResult, CounterfactualResult,
+    // Critical points and transitions
+    CriticalPoint, WarningSignal, WarningSignalType,
+    // Engine
+    AttractorLandscapeEngine, AttractorConfig,
+    InterventionWindow, DetectedWarning,
+    // Optimization
+    InterventionOptimizer, InterventionPoint, OptimizationSummary,
 };
 
 use serde::{Deserialize, Serialize};
