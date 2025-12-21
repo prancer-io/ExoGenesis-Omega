@@ -1,0 +1,33 @@
+[package]
+name = "omega-longevity"
+version = "0.1.0"
+edition = "2021"
+description = "Biological longevity research acceleration using Omega Brain cognitive architecture"
+license = "MIT"
+repository = "https://github.com/ExoGenesis-Omega/omega-longevity"
+keywords = ["longevity", "aging", "geroscience", "ai", "drug-discovery"]
+
+[dependencies]
+omega-core = { path = "../omega-core" }
+omega-snn = { path = "../omega-snn" }
+omega-singularity = { path = "../omega-singularity" }
+omega-memory = { path = "../omega-memory" }
+omega-consciousness = { path = "../omega-consciousness" }
+
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+uuid = { version = "1.0", features = ["v4", "serde"] }
+rand = "0.8"
+rand_distr = "0.4"
+tokio = { version = "1.0", features = ["full"] }
+thiserror = "1.0"
+chrono = { version = "0.4", features = ["serde"] }
+petgraph = "0.6"
+
+[dev-dependencies]
+tokio-test = "0.4"
+
+[features]
+default = []
+clinical = []  # Enable clinical trial simulation features
+omics = []     # Enable multi-omics integration
