@@ -143,6 +143,9 @@ pub mod vus_interpreter;
 // The Immortality Engine - not just predicting death, PREVENTING it
 pub mod immortality_engine;
 
+// Gene-Environment Interaction Analysis - VUS classification via stress testing
+pub mod gene_environment;
+
 // Re-exports
 pub use hallmarks::{Hallmark, HallmarkCategory, HallmarksGraph, Intervention, InterventionType};
 pub use biomarker_dreamer::{BiomarkerDreamer, DreamerConfig, NovelTarget, DreamSession};
@@ -166,6 +169,16 @@ pub use immortality_engine::{
     AgingMechanism, Protocol, DosingSchedule, ProtocolPhase, PhaseIntervention,
     Priority, ProtocolPredictions, LimitingFactor, MaxLifespanEstimate,
     MonitoringSchedule, BiomarkerSchedule, Contingency,
+};
+
+// Gene-Environment Interaction re-exports
+pub use gene_environment::{
+    GeneEnvironmentAnalyzer, GeneEnvironmentConfig,
+    EnvironmentalExposure, ExposureCategory, DamageType, TargetOrgan,
+    GeneExposureInteraction, InteractionType,
+    ScenarioAnalysis, FourWayScenarios, ScenarioResult,
+    InteractionStatistics, InteractionDirection,
+    VUSRecommendation, ExposureComparison,
 };
 
 use serde::{Deserialize, Serialize};
