@@ -5,6 +5,7 @@
 //!
 //! - **Mechanistic genome-based simulation** - Model aging from DNA → cells → organs → death
 //! - **Causal discovery** - Simulate millions of lives to discover what causes aging
+//! - **VUS interpretation** - Classify Variants of Unknown Significance via simulation
 //! - **Dream-based hypothesis generation** for novel intervention discovery
 //! - **Time-dilated lifespan simulation** for intervention evaluation
 //! - **Intuitive pattern detection** in multi-omics aging data
@@ -137,6 +138,7 @@ pub mod genome;
 pub mod cell;
 pub mod organism;
 pub mod causal_discovery;
+pub mod vus_interpreter;
 
 // Re-exports
 pub use hallmarks::{Hallmark, HallmarkCategory, HallmarksGraph, Intervention, InterventionType};
@@ -150,6 +152,7 @@ pub use causal_discovery::{PopulationSimulator, PopulationConfig, PopulationResu
 pub use lifespan_simulator::{LifespanSimulator, SimulatorConfig, InterventionProtocol, SimulationResults};
 pub use senescence_detector::{SenescenceDetector, DetectorConfig, SenescencePattern, BiologicalAgePrediction};
 pub use research_integrator::{ResearchIntegrator, IntegratorConfig, EvidenceSummary, InterventionRanking};
+pub use vus_interpreter::{VUSInterpreter, VUSConfig, VUSInterpretation, VariantQuery, ACMGClassification, query_vus};
 
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
@@ -187,6 +190,7 @@ pub struct LongevityConfig {
     pub simulator: SimulatorConfig,
     pub detector: DetectorConfig,
     pub integrator: IntegratorConfig,
+    pub vus: VUSConfig,
     /// Enable full system integration
     pub integrated_mode: bool,
     /// Enable learning from outcomes
@@ -200,6 +204,7 @@ impl Default for LongevityConfig {
             simulator: SimulatorConfig::default(),
             detector: DetectorConfig::default(),
             integrator: IntegratorConfig::default(),
+            vus: VUSConfig::default(),
             integrated_mode: true,
             learning_enabled: true,
         }
@@ -219,6 +224,8 @@ pub struct LongevityAdvisor {
     detector: SenescenceDetector,
     /// Research integrator for literature synthesis
     integrator: ResearchIntegrator,
+    /// VUS interpreter for variant classification
+    vus_interpreter: VUSInterpreter,
     /// Session history
     sessions: Vec<AdvisorSession>,
 }
@@ -249,6 +256,7 @@ pub enum QueryType {
     Synthesize,
     Rank,
     Advise,
+    InterpretVUS,
 }
 
 impl LongevityAdvisor {
@@ -260,6 +268,7 @@ impl LongevityAdvisor {
             simulator: LifespanSimulator::new(config.simulator.clone()),
             detector: SenescenceDetector::new(config.detector.clone()),
             integrator: ResearchIntegrator::new(config.integrator.clone()),
+            vus_interpreter: VUSInterpreter::new(config.vus.clone()),
             config,
             sessions: Vec::new(),
         }
@@ -385,6 +394,58 @@ impl LongevityAdvisor {
     /// Synthesize research evidence for an intervention
     pub fn synthesize_evidence(&mut self, intervention: &str) -> Result<EvidenceSummary> {
         self.integrator.synthesize_intervention(intervention)
+    }
+
+    /// Interpret a Variant of Unknown Significance (VUS)
+    ///
+    /// This is the key capability for clinical genomics interpretation.
+    /// Given a VUS, we simulate its functional effect across thousands
+    /// of virtual lifespans to determine if it's likely pathogenic or benign.
+    pub fn interpret_vus(&mut self, query: VariantQuery) -> VUSInterpretation {
+        let mut rng = rand::thread_rng();
+        let result = self.vus_interpreter.interpret(query.clone(), &mut rng);
+
+        // Record query
+        if let Some(session) = self.sessions.last_mut() {
+            session.queries.push(AdvisorQuery {
+                query_type: QueryType::InterpretVUS,
+                input: format!("{:?}:{}", query.gene, query.hgvs_cdna),
+                result_summary: format!(
+                    "{:?} (confidence: {:.0}%)",
+                    result.predicted_classification,
+                    result.confidence * 100.0
+                ),
+            });
+        }
+
+        result
+    }
+
+    /// Batch interpret multiple VUS variants
+    pub fn interpret_vus_batch(&mut self, queries: Vec<VariantQuery>) -> Vec<VUSInterpretation> {
+        let mut rng = rand::thread_rng();
+        let results = self.vus_interpreter.batch_interpret(queries.clone(), &mut rng);
+
+        // Record query
+        if let Some(session) = self.sessions.last_mut() {
+            session.queries.push(AdvisorQuery {
+                query_type: QueryType::InterpretVUS,
+                input: format!("{} variants", queries.len()),
+                result_summary: format!(
+                    "{} interpreted ({} pathogenic/likely pathogenic)",
+                    results.len(),
+                    results.iter()
+                        .filter(|r| matches!(
+                            r.predicted_classification,
+                            vus_interpreter::ACMGClassification::Pathogenic |
+                            vus_interpreter::ACMGClassification::LikelyPathogenic
+                        ))
+                        .count()
+                ),
+            });
+        }
+
+        results
     }
 
     /// Get ranked interventions based on evidence
@@ -648,5 +709,24 @@ mod tests {
         let advisor = LongevityAdvisor::default();
         let leverage = advisor.hallmarks().find_leverage_points();
         assert!(!leverage.is_empty());
+    }
+
+    #[test]
+    fn test_vus_interpretation() {
+        let mut advisor = LongevityAdvisor::default();
+        advisor.new_session();
+
+        // Create a VUS query for a BRCA1 variant
+        let query = query_vus(Gene::BRCA1, "c.1234A>G");
+        let result = advisor.interpret_vus(query);
+
+        // Should produce a classification with recommendations
+        assert!(!result.recommendations.is_empty());
+        assert!(result.confidence >= 0.0);
+
+        // Session should record the query
+        let session = advisor.current_session().unwrap();
+        assert!(!session.queries.is_empty());
+        assert!(matches!(session.queries.last().unwrap().query_type, QueryType::InterpretVUS));
     }
 }
