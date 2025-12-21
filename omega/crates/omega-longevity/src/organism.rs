@@ -573,12 +573,38 @@ impl Organism {
 
         if rng.gen::<f64>() < net_mutation_rate * self.age {
             use crate::genome::{SomaticMutation, MutationType, Tissue};
+
+            // Select tissue based on realistic mutation accumulation rates
+            // Blood/BoneMarrow has highest turnover, followed by gut, skin, lung
+            let tissue_roll: f64 = rng.gen();
+            let tissue_origin = if tissue_roll < 0.25 {
+                Tissue::Blood         // Hematopoietic - high turnover
+            } else if tissue_roll < 0.40 {
+                Tissue::Intestine     // Gut epithelium - rapid renewal
+            } else if tissue_roll < 0.52 {
+                Tissue::Skin          // Exposed, high turnover
+            } else if tissue_roll < 0.62 {
+                Tissue::Lung          // Exposed to environment
+            } else if tissue_roll < 0.70 {
+                Tissue::Liver         // Regenerative tissue
+            } else if tissue_roll < 0.77 {
+                Tissue::BoneMarrow    // Stem cell compartment
+            } else if tissue_roll < 0.84 {
+                Tissue::Pancreas      // Moderate turnover
+            } else if tissue_roll < 0.90 {
+                Tissue::Kidney        // Moderate turnover
+            } else if tissue_roll < 0.95 {
+                Tissue::Brain         // Low turnover, but accumulates
+            } else {
+                Tissue::Heart         // Low turnover
+            };
+
             self.genome.somatic_mutations.push(SomaticMutation {
                 id: Uuid::new_v4(),
                 gene: None,
                 mutation_type: MutationType::PointMutation,
                 age_acquired: self.age,
-                tissue_origin: Tissue::Blood, // Placeholder
+                tissue_origin,
                 clonal_expansion: 0.001,
                 is_driver: rng.gen::<f64>() < 0.0001,
             });
@@ -668,7 +694,7 @@ impl Organism {
             ph: 7.4,
         };
 
-        for (organ, state) in &mut self.organs {
+        for (_organ, state) in &mut self.organs {
             // Age the sample cells
             for cell in &mut state.cells.sample_cells {
                 cell.step(&self.genome, &cell_env, 1.0, rng);
@@ -736,7 +762,23 @@ impl Organism {
         // Alzheimer's (age + inflammation + genetics)
         if self.age > 60.0 && !self.has_disease(DiseaseType::Alzheimers) {
             let brain_damage = self.organs.get(&Organ::Brain).map(|o| o.damage).unwrap_or(0.0);
-            let genetic_risk = 1.0 - self.genome.gene_function(Gene::SIRT1); // Placeholder for APOE
+
+            // Genetic risk factors for Alzheimer's:
+            // - SIRT1/SIRT3/SIRT6: neuroprotective sirtuins (higher = protective)
+            // - NFKB1/IL6/TNF: inflammatory genes (higher = risk)
+            // - TP53/ATM: DNA repair (higher = protective)
+            let sirtuin_protection = (self.genome.gene_function(Gene::SIRT1)
+                + self.genome.gene_function(Gene::SIRT3)
+                + self.genome.gene_function(Gene::SIRT6)) / 3.0;
+            let inflammatory_risk = (self.genome.gene_function(Gene::NFKB1)
+                + self.genome.gene_function(Gene::IL6)
+                + self.genome.gene_function(Gene::TNF)) / 3.0;
+            let repair_protection = self.genome.gene_function(Gene::ATM) * 0.5;
+
+            // Combined genetic risk: higher sirtuin/repair = protective, higher inflammation = risk
+            let genetic_risk = (inflammatory_risk * 0.4 + (1.0 - sirtuin_protection) * 0.4 + (1.0 - repair_protection) * 0.2)
+                .clamp(0.0, 1.0);
+
             let risk = (brain_damage + genetic_risk + self.systemic.inflammation) / 3.0;
 
             if rng.gen::<f64>() < risk * 0.02 {
@@ -802,7 +844,7 @@ impl Organism {
         });
     }
 
-    fn identify_causal_factors(&self, disease: &DiseaseType, _rng: &mut impl Rng) -> Vec<CausalFactor> {
+    fn identify_causal_factors(&self, _disease: &DiseaseType, _rng: &mut impl Rng) -> Vec<CausalFactor> {
         let mut factors = Vec::new();
 
         // Genetic factors

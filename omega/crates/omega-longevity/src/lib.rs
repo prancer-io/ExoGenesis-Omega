@@ -522,9 +522,9 @@ impl LongevityAdvisor {
         }
 
         // Generate advice based on age acceleration
-        let urgency = if age_acceleration > 10.0 {
+        let urgency = if age_acceleration >= 10.0 {
             Urgency::High
-        } else if age_acceleration > 5.0 {
+        } else if age_acceleration >= 5.0 {
             Urgency::Medium
         } else if age_acceleration > 0.0 {
             Urgency::Low

@@ -498,7 +498,7 @@ impl Cell {
 
     fn age_machinery(
         &mut self,
-        genome: &Genome,
+        _genome: &Genome,
         dt_years: f64,
         rng: &mut impl Rng,
     ) {

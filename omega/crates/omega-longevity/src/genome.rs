@@ -433,7 +433,7 @@ impl Epigenome {
     }
 
     /// Apply age-related epigenetic drift
-    pub fn age_one_year(&mut self, chronological_age: f64, rng: &mut impl Rng) {
+    pub fn age_one_year(&mut self, _chronological_age: f64, rng: &mut impl Rng) {
         // Global hypomethylation
         self.global_methylation -= rng.gen::<f64>() * 0.002;
         self.global_methylation = self.global_methylation.max(0.3);

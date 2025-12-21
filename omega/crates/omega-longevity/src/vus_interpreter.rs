@@ -407,6 +407,10 @@ impl VUSInterpreter {
         let mut with_variant_diseases: HashMap<DiseaseType, usize> = HashMap::new();
         let mut without_variant_diseases: HashMap<DiseaseType, usize> = HashMap::new();
 
+        // Track disease onset ages to determine when variant effect manifests
+        let mut with_variant_onset_ages: Vec<f64> = Vec::new();
+        let mut without_variant_onset_ages: Vec<f64> = Vec::new();
+
         // Run simulations with variant
         for _ in 0..self.config.simulations_per_arm {
             let mut organism = Organism::new_random(rng);
@@ -431,6 +435,7 @@ impl VUSInterpreter {
 
             for disease in &organism.diseases {
                 *with_variant_diseases.entry(disease.disease_type).or_insert(0) += 1;
+                with_variant_onset_ages.push(disease.onset_age);
             }
         }
 
@@ -447,6 +452,7 @@ impl VUSInterpreter {
 
             for disease in &organism.diseases {
                 *without_variant_diseases.entry(disease.disease_type).or_insert(0) += 1;
+                without_variant_onset_ages.push(disease.onset_age);
             }
         }
 
@@ -498,6 +504,36 @@ impl VUSInterpreter {
             0.0
         };
 
+        // Calculate effect onset age: when does the variant begin to show its impact?
+        // Compare earliest disease onset in variant vs control groups
+        let effect_onset_age = if with_variant_onset_ages.is_empty() {
+            // No diseases in variant group - effect may be protective or neutral
+            None
+        } else if without_variant_onset_ages.is_empty() {
+            // Diseases in variant but not control - use earliest variant onset
+            with_variant_onset_ages.iter().cloned().reduce(f64::min)
+        } else {
+            // Compare mean onset ages
+            let mean_with_onset = with_variant_onset_ages.iter().sum::<f64>()
+                / with_variant_onset_ages.len() as f64;
+            let mean_without_onset = without_variant_onset_ages.iter().sum::<f64>()
+                / without_variant_onset_ages.len() as f64;
+
+            // If variant causes earlier onset, use the variant mean
+            // If variant is protective, use control mean (or None if no effect)
+            if mean_with_onset < mean_without_onset - 2.0 {
+                // Variant causes diseases ~2+ years earlier
+                Some(mean_with_onset)
+            } else if delta < -2.0 {
+                // Lifespan effect but no earlier disease - estimate onset
+                // Effect likely manifests mid-life
+                Some(mean_with_onset.min(mean_without_onset))
+            } else {
+                // No significant earlier onset
+                None
+            }
+        };
+
         VUSSimulationResults {
             total_simulations: self.config.simulations_per_arm * 2,
             lifespan_with_variant: mean_with,
@@ -506,7 +542,7 @@ impl VUSInterpreter {
             p_value,
             disease_risks,
             effect_consistency: effect_direction_consistent,
-            effect_onset_age: Some(40.0), // Placeholder
+            effect_onset_age,
             penetrance,
         }
     }
@@ -601,8 +637,8 @@ impl VUSInterpreter {
 
     fn generate_clinical_implications(
         &self,
-        query: &VariantQuery,
-        functional_effect: &PredictedFunctionalEffect,
+        _query: &VariantQuery,
+        _functional_effect: &PredictedFunctionalEffect,
         simulation: &VUSSimulationResults,
     ) -> Vec<ClinicalImplication> {
         let mut implications = Vec::new();

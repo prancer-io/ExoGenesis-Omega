@@ -829,15 +829,135 @@ impl ImmortalityEngine {
     }
 
     fn load_synergies(&mut self) {
-        // Synergies between interventions
-        // Rapamycin + NMN synergy (complementary pathways)
-        // Senolytics + Reprogramming synergy
-        // etc.
+        // Get intervention IDs by name for synergy definitions
+        let get_id = |name: &str| -> Option<Uuid> {
+            self.interventions.iter()
+                .find(|i| i.name.contains(name))
+                .map(|i| i.id)
+        };
+
+        // Rapamycin + NMN synergy: mTOR inhibition enhances NAD+ benefits
+        if let (Some(rapa_id), Some(nmn_id)) = (get_id("Rapamycin"), get_id("NMN")) {
+            self.synergies.insert((rapa_id, nmn_id), SynergyEffect {
+                intervention_a: rapa_id,
+                intervention_b: nmn_id,
+                effect_multiplier: 1.25,
+                mechanism: "mTOR inhibition potentiates sirtuin activation from NAD+ restoration".to_string(),
+            });
+        }
+
+        // Senolytics + Reprogramming synergy: clear senescent cells before reprogramming
+        if let (Some(dq_id), Some(osk_id)) = (get_id("Dasatinib"), get_id("Yamanaka")) {
+            self.synergies.insert((dq_id, osk_id), SynergyEffect {
+                intervention_a: dq_id,
+                intervention_b: osk_id,
+                effect_multiplier: 1.4,
+                mechanism: "Senescent cell clearance prevents SASP interference with reprogramming".to_string(),
+            });
+        }
+
+        // NMN + HIIT synergy: exercise boosts NAD+ utilization
+        if let (Some(nmn_id), Some(hiit_id)) = (get_id("NMN"), get_id("HIIT")) {
+            self.synergies.insert((nmn_id, hiit_id), SynergyEffect {
+                intervention_a: nmn_id,
+                intervention_b: hiit_id,
+                effect_multiplier: 1.2,
+                mechanism: "Exercise increases NAD+ demand and sirtuin activation".to_string(),
+            });
+        }
+
+        // Caloric restriction + Rapamycin synergy: complementary mTOR/AMPK pathways
+        if let (Some(cr_id), Some(rapa_id)) = (get_id("Caloric Restriction"), get_id("Rapamycin")) {
+            self.synergies.insert((cr_id, rapa_id), SynergyEffect {
+                intervention_a: cr_id,
+                intervention_b: rapa_id,
+                effect_multiplier: 1.15,
+                mechanism: "CR activates AMPK which synergizes with mTOR inhibition".to_string(),
+            });
+        }
+
+        // Telomerase + Senolytics synergy: prevent telomere-induced senescence accumulation
+        if let (Some(tert_id), Some(fis_id)) = (get_id("TERT"), get_id("Fisetin")) {
+            self.synergies.insert((tert_id, fis_id), SynergyEffect {
+                intervention_a: tert_id,
+                intervention_b: fis_id,
+                effect_multiplier: 1.3,
+                mechanism: "Telomerase prevents new senescence while senolytics clear existing".to_string(),
+            });
+        }
+
+        // Metformin + NMN synergy: AMPK + NAD+ dual activation
+        if let (Some(met_id), Some(nmn_id)) = (get_id("Metformin"), get_id("NMN")) {
+            self.synergies.insert((met_id, nmn_id), SynergyEffect {
+                intervention_a: met_id,
+                intervention_b: nmn_id,
+                effect_multiplier: 1.2,
+                mechanism: "AMPK activation enhances NAD+ dependent pathways".to_string(),
+            });
+        }
+
+        // Sleep optimization + all interventions: recovery enables all mechanisms
+        if let Some(sleep_id) = get_id("Sleep") {
+            for int in &self.interventions {
+                if int.id != sleep_id && !int.name.contains("Sleep") {
+                    self.synergies.insert((sleep_id, int.id), SynergyEffect {
+                        intervention_a: sleep_id,
+                        intervention_b: int.id,
+                        effect_multiplier: 1.1,
+                        mechanism: "Optimal sleep enhances DNA repair and protein clearance overnight".to_string(),
+                    });
+                }
+            }
+        }
     }
 
     fn load_contraindications(&mut self) {
-        // Contraindications
-        // e.g., Rapamycin + certain immunosuppressants
+        // Get intervention IDs by name for contraindication definitions
+        let get_id = |name: &str| -> Option<Uuid> {
+            self.interventions.iter()
+                .find(|i| i.name.contains(name))
+                .map(|i| i.id)
+        };
+
+        // Rapamycin + Dasatinib: Both immunosuppressive, combined risk too high
+        if let (Some(rapa_id), Some(dasa_id)) = (get_id("Rapamycin"), get_id("Dasatinib")) {
+            self.contraindications.push(Contraindication {
+                intervention_a: rapa_id,
+                intervention_b: dasa_id,
+                reason: "Combined immunosuppression increases infection risk significantly".to_string(),
+                severity: ContraindicationSeverity::Timing,
+            });
+        }
+
+        // Telomerase activation + Reprogramming at same time: cancer risk
+        if let (Some(tert_id), Some(osk_id)) = (get_id("TERT"), get_id("Yamanaka")) {
+            self.contraindications.push(Contraindication {
+                intervention_a: tert_id,
+                intervention_b: osk_id,
+                reason: "Concurrent telomerase activation and reprogramming increases teratoma/cancer risk".to_string(),
+                severity: ContraindicationSeverity::Relative,
+            });
+        }
+
+        // Multiple senolytics simultaneously: excessive cell death
+        if let (Some(dq_id), Some(fis_id)) = (get_id("Dasatinib"), get_id("Fisetin")) {
+            self.contraindications.push(Contraindication {
+                intervention_a: dq_id,
+                intervention_b: fis_id,
+                reason: "Combining senolytics on same day may cause excessive cell death".to_string(),
+                severity: ContraindicationSeverity::Timing,
+            });
+        }
+
+        // Aggressive caloric restriction + intensive exercise: metabolic stress
+        if let (Some(cr_id), Some(hiit_id)) = (get_id("Caloric Restriction"), get_id("HIIT")) {
+            self.contraindications.push(Contraindication {
+                intervention_a: cr_id,
+                intervention_b: hiit_id,
+                reason: "Severe caloric restriction with intense exercise risks sarcopenia and metabolic stress".to_string(),
+                severity: ContraindicationSeverity::Relative,
+            });
+        }
     }
 
     /// Generate the optimal immortality protocol for a genome
@@ -965,19 +1085,63 @@ impl ImmortalityEngine {
 
         for int_id in combo {
             if let Some(intervention) = self.interventions.iter().find(|i| i.id == *int_id) {
-                for (hallmark, effect) in &intervention.hallmark_effects {
+                // Calculate genetic modifier for this intervention
+                let mut genetic_modifier = 1.0;
+                for (gene, modifier_strength) in &intervention.genetic_modifiers {
+                    let gene_function = genome.gene_function(*gene);
+                    // If gene function is low and modifier is positive, reduce efficacy
+                    // If gene function is high and modifier is positive, increase efficacy
+                    genetic_modifier *= 1.0 + (*modifier_strength - 1.0) * gene_function;
+                }
+
+                // Apply intervention effects with genetic personalization
+                for (hallmark, base_effect) in &intervention.hallmark_effects {
+                    let personalized_effect = base_effect * genetic_modifier;
                     let entry = effects.entry(*hallmark).or_insert(0.0);
-                    *entry += effect;
+                    *entry += personalized_effect;
                 }
             }
         }
 
-        // Apply synergies
-        for (int_a, int_b) in combo.iter().zip(combo.iter().skip(1)) {
-            if let Some(synergy) = self.synergies.get(&(*int_a, *int_b)) {
-                for (hallmark, effect) in &mut effects {
-                    *effect *= synergy.effect_multiplier;
+        // Apply synergies (check both orderings)
+        for i in 0..combo.len() {
+            for j in (i + 1)..combo.len() {
+                let (int_a, int_b) = (combo[i], combo[j]);
+
+                // Check both orderings since synergies are directional
+                let synergy = self.synergies.get(&(int_a, int_b))
+                    .or_else(|| self.synergies.get(&(int_b, int_a)));
+
+                if let Some(syn) = synergy {
+                    for (_hallmark, effect) in &mut effects {
+                        *effect *= syn.effect_multiplier;
+                    }
                 }
+            }
+        }
+
+        // Apply genome-specific adjustments based on aging pathway status
+        let dna_repair = genome.dna_repair_capacity();
+        if dna_repair < 0.5 {
+            // Poor DNA repair means more benefit from repair-enhancing interventions
+            if let Some(effect) = effects.get_mut(&Hallmark::GenomicInstability) {
+                *effect *= 1.2; // 20% more benefit
+            }
+        }
+
+        let inflammation = genome.inflammation_tendency();
+        if inflammation > 0.6 {
+            // High inflammation means more benefit from anti-inflammatory interventions
+            if let Some(effect) = effects.get_mut(&Hallmark::AlteredIntercellularCommunication) {
+                *effect *= 1.3; // 30% more benefit
+            }
+        }
+
+        let senescence = genome.senescence_propensity();
+        if senescence > 0.5 {
+            // High senescence propensity means more benefit from senolytics
+            if let Some(effect) = effects.get_mut(&Hallmark::CellularSenescence) {
+                *effect *= 1.25;
             }
         }
 
@@ -989,18 +1153,199 @@ impl ImmortalityEngine {
         organism: &mut Organism,
         effects: &HashMap<Hallmark, f64>
     ) {
-        // Modify organism's aging rate based on intervention effects
-        // This would modify the systemic state, genome repair capacity, etc.
+        // Apply hallmark-specific effects to the organism
 
-        // For now, just improve the lifestyle
-        organism.lifestyle.diet_quality = (organism.lifestyle.diet_quality + 0.2).min(1.0);
-        organism.lifestyle.exercise_hours = (organism.lifestyle.exercise_hours + 2.0).min(10.0);
-        organism.lifestyle.stress = (organism.lifestyle.stress - 0.2).max(0.1);
+        // Genomic Instability: Improve DNA repair in the genome
+        if let Some(&effect) = effects.get(&Hallmark::GenomicInstability) {
+            // Negative effect means improvement (less instability)
+            // Increase expression of DNA repair genes
+            if effect < 0.0 {
+                let repair_boost = (-effect * 0.3).min(0.5); // Max 50% boost
+                if let Some(state) = organism.genome.nuclear_genes.get_mut(&Gene::TP53) {
+                    state.expression = (state.expression + repair_boost).min(1.0);
+                }
+                if let Some(state) = organism.genome.nuclear_genes.get_mut(&Gene::BRCA1) {
+                    state.expression = (state.expression + repair_boost).min(1.0);
+                }
+                if let Some(state) = organism.genome.nuclear_genes.get_mut(&Gene::ATM) {
+                    state.expression = (state.expression + repair_boost).min(1.0);
+                }
+            }
+        }
+
+        // Telomere Attrition: Increase telomerase activity
+        if let Some(&effect) = effects.get(&Hallmark::TelomereAttrition) {
+            if effect < 0.0 {
+                let telomerase_boost = (-effect * 0.2).min(0.3);
+                for telo in &mut organism.genome.telomeres {
+                    telo.telomerase_activity = (telo.telomerase_activity + telomerase_boost).min(1.0);
+                }
+            }
+        }
+
+        // Epigenetic Alterations: Reduce epigenetic noise
+        if let Some(&effect) = effects.get(&Hallmark::EpigeneticAlterations) {
+            if effect < 0.0 {
+                let noise_reduction = -effect * 0.3;
+                organism.genome.epigenome.epigenetic_noise =
+                    (organism.genome.epigenome.epigenetic_noise - noise_reduction).max(0.0);
+                // Partially reset clock sites toward younger state
+                for site in &mut organism.genome.epigenome.clock_sites {
+                    *site = (*site - noise_reduction * 0.1).max(0.0);
+                }
+            }
+        }
+
+        // Loss of Proteostasis: Boost heat shock proteins
+        if let Some(&effect) = effects.get(&Hallmark::LossOfProteostasis) {
+            if effect < 0.0 {
+                let proteo_boost = (-effect * 0.25).min(0.4);
+                if let Some(state) = organism.genome.nuclear_genes.get_mut(&Gene::HSF1) {
+                    state.expression = (state.expression + proteo_boost).min(1.0);
+                }
+                if let Some(state) = organism.genome.nuclear_genes.get_mut(&Gene::HSP70) {
+                    state.expression = (state.expression + proteo_boost).min(1.0);
+                }
+            }
+        }
+
+        // Deregulated Nutrient Sensing: Improve metabolic gene expression
+        if let Some(&effect) = effects.get(&Hallmark::DeregulatedNutrientSensing) {
+            if effect < 0.0 {
+                let sensing_improvement = (-effect * 0.2).min(0.3);
+                if let Some(state) = organism.genome.nuclear_genes.get_mut(&Gene::FOXO3) {
+                    state.expression = (state.expression + sensing_improvement).min(1.0);
+                }
+                if let Some(state) = organism.genome.nuclear_genes.get_mut(&Gene::SIRT1) {
+                    state.expression = (state.expression + sensing_improvement).min(1.0);
+                }
+                // Reduce mTOR activity (lower expression = better for longevity)
+                if let Some(state) = organism.genome.nuclear_genes.get_mut(&Gene::MTOR) {
+                    state.expression = (state.expression - sensing_improvement * 0.5).max(0.2);
+                }
+            }
+        }
+
+        // Mitochondrial Dysfunction: Improve mtDNA and complex function
+        if let Some(&effect) = effects.get(&Hallmark::MitochondrialDysfunction) {
+            if effect < 0.0 {
+                let mito_improvement = (-effect * 0.15).min(0.25);
+                organism.genome.mtdna.complex_i_function =
+                    (organism.genome.mtdna.complex_i_function + mito_improvement).min(1.0);
+                organism.genome.mtdna.complex_iii_function =
+                    (organism.genome.mtdna.complex_iii_function + mito_improvement).min(1.0);
+                organism.genome.mtdna.complex_iv_function =
+                    (organism.genome.mtdna.complex_iv_function + mito_improvement).min(1.0);
+                // Reduce mutation fraction
+                organism.genome.mtdna.mutation_fraction =
+                    (organism.genome.mtdna.mutation_fraction - mito_improvement * 0.5).max(0.0);
+            }
+        }
+
+        // Cellular Senescence: Reduce senescence markers
+        if let Some(&effect) = effects.get(&Hallmark::CellularSenescence) {
+            if effect < 0.0 {
+                let senescence_reduction = (-effect * 0.2).min(0.4);
+                // Reduce p16 expression (less senescence induction)
+                if let Some(state) = organism.genome.nuclear_genes.get_mut(&Gene::CDKN2A) {
+                    state.expression = (state.expression - senescence_reduction).max(0.1);
+                }
+            }
+        }
+
+        // Stem Cell Exhaustion: Boost stem cell maintenance genes
+        if let Some(&effect) = effects.get(&Hallmark::StemCellExhaustion) {
+            if effect < 0.0 {
+                let stem_boost = (-effect * 0.15).min(0.3);
+                if let Some(state) = organism.genome.nuclear_genes.get_mut(&Gene::NANOG) {
+                    state.expression = (state.expression + stem_boost).min(0.8); // Don't max out - cancer risk
+                }
+            }
+        }
+
+        // Altered Intercellular Communication: Reduce inflammation
+        if let Some(&effect) = effects.get(&Hallmark::AlteredIntercellularCommunication) {
+            if effect < 0.0 {
+                let inflammation_reduction = (-effect * 0.25).min(0.4);
+                // Reduce pro-inflammatory gene expression
+                if let Some(state) = organism.genome.nuclear_genes.get_mut(&Gene::NFKB1) {
+                    state.expression = (state.expression - inflammation_reduction).max(0.2);
+                }
+                if let Some(state) = organism.genome.nuclear_genes.get_mut(&Gene::IL6) {
+                    state.expression = (state.expression - inflammation_reduction).max(0.1);
+                }
+                if let Some(state) = organism.genome.nuclear_genes.get_mut(&Gene::TNF) {
+                    state.expression = (state.expression - inflammation_reduction).max(0.1);
+                }
+            }
+        }
+
+        // Also improve lifestyle based on intervention types
+        let total_effect: f64 = effects.values().map(|e| e.abs()).sum();
+        let lifestyle_boost = (total_effect * 0.05).min(0.3);
+
+        organism.lifestyle.diet_quality = (organism.lifestyle.diet_quality + lifestyle_boost).min(1.0);
+        organism.lifestyle.exercise_hours = (organism.lifestyle.exercise_hours + lifestyle_boost * 5.0).min(10.0);
+        organism.lifestyle.stress = (organism.lifestyle.stress - lifestyle_boost).max(0.1);
+        organism.lifestyle.sleep_hours = organism.genome.optimal_sleep_hours(); // Match genetic optimum
     }
 
     fn estimate_healthspan(&self, organism: &Organism) -> f64 {
-        // Healthspan ends when biological age exceeds target
-        organism.age // Simplified - would calculate bio age trajectory
+        // Healthspan ends when biological age exceeds a threshold (typically ~70 bio-years)
+        // where chronic disease risk becomes substantial
+        const HEALTHSPAN_BIO_AGE_THRESHOLD: f64 = 70.0;
+
+        // Calculate current biological age
+        let current_bio_age = organism.biological_age();
+        let current_chrono_age = organism.age;
+
+        // If already past threshold, healthspan is current age minus deficit
+        if current_bio_age >= HEALTHSPAN_BIO_AGE_THRESHOLD {
+            // Healthspan ended some time ago - estimate when
+            let aging_rate = if current_chrono_age > 0.0 {
+                current_bio_age / current_chrono_age
+            } else {
+                1.0
+            };
+            // When did bio age cross threshold?
+            return if aging_rate > 0.0 {
+                HEALTHSPAN_BIO_AGE_THRESHOLD / aging_rate
+            } else {
+                current_chrono_age
+            };
+        }
+
+        // Calculate aging rate (biological years per chronological year)
+        let aging_rate = if current_chrono_age > 20.0 {
+            // After development, measure aging rate
+            (current_bio_age - 20.0) / (current_chrono_age - 20.0).max(1.0)
+        } else {
+            1.0 // During development, 1:1 bio:chrono
+        };
+
+        // Factor in genetic longevity potential (inverse of genetic risk)
+        let genetic_risk_score = organism.genome.calculate_genetic_risk_score();
+        let genetic_longevity = 1.0 - genetic_risk_score.overall;
+        let genetic_modifier = 1.0 + (genetic_longevity - 0.5) * 0.3; // ±15% based on genetics
+
+        // Factor in lifestyle quality
+        let lifestyle_factor = 0.7 + (organism.lifestyle.diet_quality * 0.1)
+            + ((10.0 - organism.lifestyle.stress) / 10.0 * 0.1)
+            + (organism.lifestyle.sleep_quality * 0.1);
+
+        // Adjusted aging rate considering interventions
+        let effective_aging_rate = aging_rate / (genetic_modifier * lifestyle_factor);
+
+        // Project when biological age will reach threshold
+        if effective_aging_rate > 0.0 {
+            let remaining_bio_years = HEALTHSPAN_BIO_AGE_THRESHOLD - current_bio_age;
+            let projected_chrono_years = remaining_bio_years / effective_aging_rate;
+            current_chrono_age + projected_chrono_years
+        } else {
+            // Aging rate <= 0 means biological age reversal - theoretical infinite healthspan
+            // Cap at reasonable maximum
+            200.0
+        }
     }
 
     fn create_protocol(
@@ -1008,7 +1353,7 @@ impl ImmortalityEngine {
         genome: &Genome,
         combo: &[Uuid],
         score: f64,
-        rng: &mut impl Rng,
+        _rng: &mut impl Rng,
     ) -> ImmortalityProtocol {
         let interventions: Vec<_> = combo.iter()
             .filter_map(|id| self.interventions.iter().find(|i| i.id == *id))
@@ -1211,7 +1556,7 @@ impl ImmortalityEngine {
     }
 
     /// Quick estimate of achievable lifespan for a genome
-    pub fn estimate_max_lifespan(&self, genome: &Genome, rng: &mut impl Rng) -> MaxLifespanEstimate {
+    pub fn estimate_max_lifespan(&self, genome: &Genome, _rng: &mut impl Rng) -> MaxLifespanEstimate {
         let risk_score = genome.calculate_genetic_risk_score();
 
         // Base lifespan without interventions
