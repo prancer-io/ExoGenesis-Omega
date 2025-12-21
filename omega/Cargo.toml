@@ -17,6 +17,7 @@ members = [
     "crates/omega-brain",
     "crates/omega-mindscape",
     "crates/omega-synesthesia",
+    "crates/omega-singularity",
     "crates/omega-examples",
     "examples/digital-twin-social",
 ]
