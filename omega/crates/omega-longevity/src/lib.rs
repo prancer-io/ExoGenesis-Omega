@@ -3,10 +3,31 @@
 //! This crate leverages the Omega ExoGenesis Brain cognitive architecture
 //! to accelerate biological longevity research through:
 //!
+//! - **Mechanistic genome-based simulation** - Model aging from DNA → cells → organs → death
+//! - **Causal discovery** - Simulate millions of lives to discover what causes aging
 //! - **Dream-based hypothesis generation** for novel intervention discovery
 //! - **Time-dilated lifespan simulation** for intervention evaluation
 //! - **Intuitive pattern detection** in multi-omics aging data
 //! - **Collective intelligence** for research literature synthesis
+//!
+//! ## The Key Insight: Bottom-Up Simulation
+//!
+//! Traditional approaches apply known hallmarks top-down. This system simulates
+//! molecular mechanisms bottom-up and lets aging patterns EMERGE:
+//!
+//! ```text
+//! GENOME (DNA + variants + epigenetics)
+//!     ↓
+//! CELLS (damage, repair, senescence, death)
+//!     ↓
+//! TISSUES (stem cell exhaustion, inflammation)
+//!     ↓
+//! ORGANS (function decline, failure cascades)
+//!     ↓
+//! ORGANISM (diseases, frailty, death)
+//!     ↓
+//! POPULATION (millions of lives → causal patterns)
+//! ```
 //!
 //! ## Architecture Overview
 //!
@@ -102,15 +123,30 @@
 //! - **Sinclair Lab** NAD+ and epigenetic reprogramming
 //! - **Kaeberlein Lab** mTOR and rapamycin research
 
+// Core hallmarks knowledge
 pub mod hallmarks;
+
+// AI-powered research tools
 pub mod biomarker_dreamer;
 pub mod lifespan_simulator;
 pub mod senescence_detector;
 pub mod research_integrator;
 
+// Mechanistic simulation (bottom-up)
+pub mod genome;
+pub mod cell;
+pub mod organism;
+pub mod causal_discovery;
+
 // Re-exports
 pub use hallmarks::{Hallmark, HallmarkCategory, HallmarksGraph, Intervention, InterventionType};
 pub use biomarker_dreamer::{BiomarkerDreamer, DreamerConfig, NovelTarget, DreamSession};
+
+// Mechanistic simulation re-exports
+pub use genome::{Genome, Gene, GeneState, GeneVariant, MitochondrialDNA, Epigenome, TelomereState};
+pub use cell::{Cell, CellType, CellularDamage, MolecularMachinery, CellFate, CellPopulation};
+pub use organism::{Organism, Lifestyle, OrganState, SystemicState, Disease, DiseaseType, DeathCause, DeathRecord};
+pub use causal_discovery::{PopulationSimulator, PopulationConfig, PopulationResults, CausalPattern, LifeSummary};
 pub use lifespan_simulator::{LifespanSimulator, SimulatorConfig, InterventionProtocol, SimulationResults};
 pub use senescence_detector::{SenescenceDetector, DetectorConfig, SenescencePattern, BiologicalAgePrediction};
 pub use research_integrator::{ResearchIntegrator, IntegratorConfig, EvidenceSummary, InterventionRanking};
