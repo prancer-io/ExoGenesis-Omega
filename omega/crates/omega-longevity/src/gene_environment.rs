@@ -815,12 +815,10 @@ mod tests {
         });
 
         let variant = GeneVariant {
-            position: 12345,
-            reference: "G".to_string(),
-            alternate: "A".to_string(),
-            zygosity: crate::genome::Zygosity::Heterozygous,
+            rsid: "rs12345".to_string(),
             effect: VariantEffect::ReducedFunction,
-            clinical_significance: None,
+            allele_frequency: 0.05,
+            longevity_effect: -0.2,
         };
 
         let smoking = GeneEnvironmentAnalyzer::smoking_exposure(1.0);
