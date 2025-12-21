@@ -241,6 +241,8 @@ pub struct Lifestyle {
     pub exercise_hours: f64,
     /// Sleep quality (0-1)
     pub sleep_quality: f64,
+    /// Actual sleep hours per night
+    pub sleep_hours: f64,
     /// Chronic stress level (0-1)
     pub stress: f64,
     /// Smoking (cigarettes/day)
@@ -262,6 +264,7 @@ impl Default for Lifestyle {
             diet_quality: 0.6,
             exercise_hours: 2.0,
             sleep_quality: 0.7,
+            sleep_hours: 7.5, // Default to population mean
             stress: 0.3,
             smoking: 0,
             alcohol: 3,
@@ -457,10 +460,33 @@ pub enum LifeEventType {
 }
 
 impl Organism {
-    /// Create a new organism with random genome
+    /// Create a new organism with random genome and randomized lifestyle
     pub fn new_random(rng: &mut impl Rng) -> Self {
         let genome = Genome::new_random(rng);
-        Self::with_genome(genome, Lifestyle::default())
+
+        // Randomize lifestyle, including sleep based on genetics
+        let optimal_sleep = genome.optimal_sleep_hours();
+
+        // People's actual sleep varies around their genetic optimum
+        // Some sleep too little, some too much, some about right
+        let sleep_deviation = rng.gen_range(-2.5..2.0);
+        let actual_sleep = (optimal_sleep + sleep_deviation).clamp(4.0, 11.0);
+
+        let lifestyle = Lifestyle {
+            caloric_intake: rng.gen_range(0.8..1.4),
+            diet_quality: rng.gen_range(0.2..0.95),
+            exercise_hours: rng.gen_range(0.0..10.0),
+            sleep_quality: rng.gen_range(0.3..0.95),
+            sleep_hours: actual_sleep,
+            stress: rng.gen_range(0.1..0.8),
+            smoking: if rng.gen::<f64>() < 0.2 { rng.gen_range(0..30) } else { 0 },
+            alcohol: rng.gen_range(0..30),
+            sun_exposure: rng.gen_range(0.1..0.8),
+            pollution: rng.gen_range(0.0..0.6),
+            social: rng.gen_range(0.2..0.9),
+        };
+
+        Self::with_genome(genome, lifestyle)
     }
 
     /// Create organism with specific genome and lifestyle
@@ -560,19 +586,27 @@ impl Organism {
     }
 
     fn update_systemic_state(&mut self, rng: &mut impl Rng) {
-        // Inflammation increases with age
+        // Calculate sleep deviation effect on aging
+        // This modulates inflammation, oxidative stress, and DNA repair
+        let sleep_aging_factor = self.genome.sleep_deviation_aging_factor(self.lifestyle.sleep_hours);
+
+        // Inflammation increases with age (sleep deprivation increases inflammation)
         let lifestyle_inflammation = self.lifestyle.inflammation_factor();
         let organ_inflammation: f64 = self.organs.values()
             .map(|o| o.inflammation)
             .sum::<f64>() / self.organs.len() as f64;
         let sasp_inflammation = self.systemic.sasp_level * 0.3;
 
-        self.systemic.inflammation = (lifestyle_inflammation + organ_inflammation + sasp_inflammation)
+        // Sleep deviation increases inflammation (poor sleep = higher IL-6, TNF-α)
+        let sleep_inflammation = (sleep_aging_factor - 1.0) * 0.2;
+
+        self.systemic.inflammation = (lifestyle_inflammation + organ_inflammation + sasp_inflammation + sleep_inflammation)
             .clamp(0.0, 1.0);
 
-        // Oxidative stress
+        // Oxidative stress (sleep deprivation impairs antioxidant defenses)
+        let sleep_oxidative_penalty = (sleep_aging_factor - 1.0) * 0.15;
         self.systemic.oxidative_stress = self.lifestyle.oxidative_stress_factor() +
-            (1.0 - self.genome.mtdna.respiratory_efficiency()) * 0.3;
+            (1.0 - self.genome.mtdna.respiratory_efficiency()) * 0.3 + sleep_oxidative_penalty;
         self.systemic.oxidative_stress = self.systemic.oxidative_stress.clamp(0.0, 1.0);
 
         // NAD+ declines with age

@@ -125,6 +125,18 @@ pub enum Gene {
     BCL2,       // Anti-apoptotic
     BAX,        // Pro-apoptotic
     CASP3,      // Caspase 3
+
+    // Circadian Rhythm / Sleep
+    CLOCK,      // Core circadian transcription factor
+    BMAL1,      // ARNTL - partner of CLOCK
+    PER1,       // Period 1 - negative feedback
+    PER2,       // Period 2 - critical for rhythm
+    PER3,       // Period 3 - sleep duration/timing
+    CRY1,       // Cryptochrome 1 - negative feedback
+    CRY2,       // Cryptochrome 2
+    DEC2,       // BHLHE41 - "short sleep" gene
+    ADRB1,      // Adrenergic receptor - short sleep mutation
+    ADA,        // Adenosine deaminase - sleep pressure
 }
 
 impl Gene {
@@ -139,6 +151,8 @@ impl Gene {
             Gene::NFKB1, Gene::NLRP3, Gene::IL6, Gene::TNF,
             Gene::NANOG, Gene::OCT4, Gene::KLF4, Gene::MYC,
             Gene::BCL2, Gene::BAX, Gene::CASP3,
+            Gene::CLOCK, Gene::BMAL1, Gene::PER1, Gene::PER2, Gene::PER3,
+            Gene::CRY1, Gene::CRY2, Gene::DEC2, Gene::ADRB1, Gene::ADA,
         ]
     }
 
@@ -156,6 +170,8 @@ impl Gene {
             Gene::NFKB1 | Gene::NLRP3 | Gene::IL6 | Gene::TNF => AgingRole::Inflammation,
             Gene::NANOG | Gene::OCT4 | Gene::KLF4 | Gene::MYC => AgingRole::StemCell,
             Gene::BCL2 | Gene::BAX | Gene::CASP3 => AgingRole::Apoptosis,
+            Gene::CLOCK | Gene::BMAL1 | Gene::PER1 | Gene::PER2 | Gene::PER3 |
+            Gene::CRY1 | Gene::CRY2 | Gene::DEC2 | Gene::ADRB1 | Gene::ADA => AgingRole::CircadianRhythm,
         }
     }
 }
@@ -173,6 +189,7 @@ pub enum AgingRole {
     Inflammation,
     StemCell,
     Apoptosis,
+    CircadianRhythm,
 }
 
 /// State of a gene (expression, variants, damage)
@@ -628,6 +645,105 @@ impl Genome {
 
         (mutation_burden + aberration_burden + mtdna_damage + repair_deficit) / 4.0
     }
+
+    /// Calculate genetically-determined optimal sleep duration (hours)
+    ///
+    /// Based on circadian rhythm gene variants:
+    /// - DEC2/ADRB1 mutations can reduce need to 4-6 hours ("short sleep" phenotype)
+    /// - PER3 variants affect sleep duration preference
+    /// - ADA variants affect adenosine metabolism and sleep pressure
+    /// - CLOCK variants affect circadian period length
+    ///
+    /// Returns the optimal sleep hours for this genome (typically 6-9 hours)
+    pub fn optimal_sleep_hours(&self) -> f64 {
+        let mut optimal = 7.5; // Population mean
+
+        // DEC2 (BHLHE41) - "short sleep" gene
+        // Loss-of-function variants allow healthy short sleep
+        let dec2 = self.gene_function(Gene::DEC2);
+        if dec2 < 0.5 {
+            optimal -= 1.5; // Short sleep phenotype
+        }
+
+        // ADRB1 - another "short sleep" gene
+        let adrb1 = self.gene_function(Gene::ADRB1);
+        if adrb1 < 0.5 {
+            optimal -= 1.0;
+        }
+
+        // PER3 - period gene affecting sleep duration
+        // Variable number tandem repeat (VNTR) affects duration
+        let per3 = self.gene_function(Gene::PER3);
+        if per3 > 0.6 {
+            optimal += 0.5; // Long sleep tendency
+        } else if per3 < 0.4 {
+            optimal -= 0.5;
+        }
+
+        // ADA - adenosine deaminase
+        // Low function = faster adenosine accumulation = more sleep pressure
+        let ada = self.gene_function(Gene::ADA);
+        if ada < 0.4 {
+            optimal += 0.5; // Higher sleep need
+        }
+
+        // CLOCK gene variants affect circadian period
+        let clock = self.gene_function(Gene::CLOCK);
+        if clock > 0.6 {
+            optimal += 0.25; // Slightly longer sleep preference
+        }
+
+        optimal.clamp(4.0, 10.0) // Physiological range
+    }
+
+    /// Calculate circadian rhythm robustness (0-1)
+    ///
+    /// Strong circadian rhythms are associated with:
+    /// - Better metabolic health
+    /// - Lower inflammation
+    /// - Improved DNA repair (occurs during sleep)
+    /// - Enhanced proteostasis (autophagy during sleep)
+    pub fn circadian_robustness(&self) -> f64 {
+        let clock_genes = [
+            Gene::CLOCK, Gene::BMAL1, Gene::PER1, Gene::PER2, Gene::PER3,
+            Gene::CRY1, Gene::CRY2
+        ];
+
+        let total: f64 = clock_genes.iter()
+            .map(|g| self.gene_function(*g))
+            .sum();
+
+        (total / clock_genes.len() as f64).clamp(0.0, 1.0)
+    }
+
+    /// Calculate the health impact of actual vs optimal sleep
+    ///
+    /// Returns a multiplier for aging rate based on sleep deviation:
+    /// - 1.0 = optimal (no acceleration)
+    /// - >1.0 = accelerated aging from sleep deprivation or excess
+    ///
+    /// Both insufficient and excessive sleep accelerate aging through:
+    /// - Reduced DNA repair (occurs during deep sleep)
+    /// - Impaired glymphatic clearance (amyloid removal)
+    /// - Increased inflammation
+    /// - Metabolic dysfunction
+    pub fn sleep_deviation_aging_factor(&self, actual_sleep_hours: f64) -> f64 {
+        let optimal = self.optimal_sleep_hours();
+        let deviation = (actual_sleep_hours - optimal).abs();
+
+        // Quadratic penalty for deviation from optimal
+        // Based on U-shaped mortality curve for sleep duration
+        let base_penalty = (deviation / optimal).powi(2);
+
+        // Circadian robustness provides some buffer
+        let robustness = self.circadian_robustness();
+        let buffered_penalty = base_penalty * (1.5 - robustness * 0.5);
+
+        // Short sleep is worse than long sleep for most outcomes
+        let asymmetry = if actual_sleep_hours < optimal { 1.2 } else { 1.0 };
+
+        1.0 + buffered_penalty * asymmetry * 0.3 // Max ~1.3x aging acceleration
+    }
 }
 
 /// Generate a random variant for a gene
@@ -653,6 +769,11 @@ fn generate_random_variant(gene: Gene, rng: &mut impl Rng) -> GeneVariant {
         },
         (AgingRole::Inflammation, VariantEffect::ReducedFunction) => 0.2,
         (AgingRole::TelomereMaintenance, VariantEffect::EnhancedFunction) => 0.2,
+        (AgingRole::CircadianRhythm, VariantEffect::ReducedFunction) => {
+            // DEC2/ADRB1 loss-of-function = beneficial short sleep phenotype
+            if gene == Gene::DEC2 || gene == Gene::ADRB1 { 0.2 } else { -0.1 }
+        },
+        (AgingRole::CircadianRhythm, VariantEffect::EnhancedFunction) => 0.1,
         _ => rng.gen_range(-0.2..0.2),
     };
 
@@ -707,5 +828,50 @@ mod tests {
         }
 
         assert!(mtdna.heteroplasmy > 0.0);
+    }
+
+    #[test]
+    fn test_optimal_sleep_hours() {
+        let mut rng = rand::thread_rng();
+        let genome = Genome::new_random(&mut rng);
+
+        let optimal = genome.optimal_sleep_hours();
+
+        // Optimal sleep should be within physiological range
+        assert!(optimal >= 4.0 && optimal <= 10.0);
+
+        // Population mean is around 7.5 hours
+        // Most people should be in 6-9 hour range
+    }
+
+    #[test]
+    fn test_sleep_deviation_aging_factor() {
+        let mut rng = rand::thread_rng();
+        let genome = Genome::new_random(&mut rng);
+
+        let optimal = genome.optimal_sleep_hours();
+
+        // Sleeping at optimal hours should have no aging penalty
+        let optimal_factor = genome.sleep_deviation_aging_factor(optimal);
+        assert!((optimal_factor - 1.0).abs() < 0.01);
+
+        // Severe sleep deprivation should accelerate aging
+        let deprived_factor = genome.sleep_deviation_aging_factor(4.0);
+        assert!(deprived_factor > 1.0);
+
+        // Excessive sleep should also have some penalty
+        let oversleep_factor = genome.sleep_deviation_aging_factor(11.0);
+        assert!(oversleep_factor > 1.0);
+    }
+
+    #[test]
+    fn test_circadian_robustness() {
+        let mut rng = rand::thread_rng();
+        let genome = Genome::new_random(&mut rng);
+
+        let robustness = genome.circadian_robustness();
+
+        // Should be between 0 and 1
+        assert!(robustness >= 0.0 && robustness <= 1.0);
     }
 }

@@ -803,6 +803,7 @@ fn random_lifestyle(rng: &mut impl Rng) -> Lifestyle {
         diet_quality: rng.gen_range(0.2..0.95),
         exercise_hours: rng.gen_range(0.0..10.0),
         sleep_quality: rng.gen_range(0.3..0.95),
+        sleep_hours: rng.gen_range(4.0..10.0), // Varies around population mean
         stress: rng.gen_range(0.1..0.8),
         smoking: if rng.gen::<f64>() < 0.2 { rng.gen_range(0..30) } else { 0 },
         alcohol: rng.gen_range(0..30),
