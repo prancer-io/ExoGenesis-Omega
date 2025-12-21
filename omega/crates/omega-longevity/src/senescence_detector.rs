@@ -421,7 +421,7 @@ impl SenescenceDetector {
 
     fn detect_tissue_specific(&self, sample: &OmicsSample) -> Option<SenescencePattern> {
         let tissue_markers = self.markers.tissue_markers.get(&sample.tissue)?;
-        let mut score = 0.0;
+        let mut score: f64 = 0.0;
         let mut found_features = Vec::new();
 
         for layer in sample.layers.values() {
@@ -448,7 +448,7 @@ impl SenescenceDetector {
                 id: Uuid::new_v4(),
                 name: format!("{:?}-Specific Senescence", sample.tissue),
                 senescence_type: SenescenceType::StressInduced,
-                confidence: score.min(1.0),
+                confidence: score.min(1.0_f64),
                 synchrony: self.calculate_synchrony(&found_features),
                 features: found_features,
                 hallmarks: vec![Hallmark::CellularSenescence, Hallmark::StemCellExhaustion],

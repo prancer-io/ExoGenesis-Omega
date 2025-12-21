@@ -56,8 +56,8 @@ pub struct Genome {
     pub nuclear_genes: HashMap<Gene, GeneState>,
     /// Mitochondrial DNA - 37 genes, high mutation rate
     pub mtdna: MitochondrialDNA,
-    /// Telomere lengths per chromosome (23 pairs)
-    pub telomeres: [TelomereState; 46],
+    /// Telomere lengths per chromosome (23 pairs = 46 chromosomes)
+    pub telomeres: Vec<TelomereState>,
     /// Epigenetic state (DNA methylation patterns)
     pub epigenome: Epigenome,
     /// Accumulated mutations
@@ -351,7 +351,7 @@ impl MitochondrialDNA {
 }
 
 /// Telomere state for a chromosome
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, Serialize, Deserialize)]
 pub struct TelomereState {
     /// Length in base pairs (newborn ~10-15kb, critical <5kb)
     pub length_bp: u32,
@@ -526,11 +526,13 @@ impl Genome {
             nuclear_genes.insert(gene, state);
         }
 
-        // Initialize telomeres with some variation
-        let mut telomeres = [TelomereState::default(); 46];
-        for telo in &mut telomeres {
-            telo.length_bp = rng.gen_range(10000..14000);
-        }
+        // Initialize telomeres with some variation (46 chromosomes)
+        let mut telomeres: Vec<TelomereState> = (0..46)
+            .map(|_| TelomereState {
+                length_bp: rng.gen_range(10000..14000),
+                ..TelomereState::default()
+            })
+            .collect();
 
         // Check for TERT/TERC variants that affect telomerase
         if let Some(tert) = nuclear_genes.get(&Gene::TERT) {
@@ -656,7 +658,7 @@ impl Genome {
     ///
     /// Returns the optimal sleep hours for this genome (typically 6-9 hours)
     pub fn optimal_sleep_hours(&self) -> f64 {
-        let mut optimal = 7.5; // Population mean
+        let mut optimal: f64 = 7.5; // Population mean
 
         // DEC2 (BHLHE41) - "short sleep" gene
         // Loss-of-function variants allow healthy short sleep
@@ -693,7 +695,7 @@ impl Genome {
             optimal += 0.25; // Slightly longer sleep preference
         }
 
-        optimal.clamp(4.0, 10.0) // Physiological range
+        optimal.clamp(4.0_f64, 10.0_f64) // Physiological range
     }
 
     /// Calculate circadian rhythm robustness (0-1)

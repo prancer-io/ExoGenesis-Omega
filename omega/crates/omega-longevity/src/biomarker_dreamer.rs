@@ -432,7 +432,8 @@ impl BiomarkerDreamer {
             "could alter metabolic flux toward",
         ];
 
-        let mech = &mechanisms[self.rng.gen_range(0..mechanisms.len())];
+        let mut rng = rand::thread_rng();
+        let mech = &mechanisms[rng.gen_range(0..mechanisms.len())];
         format!("{} {} {}", from, mech, to)
     }
 

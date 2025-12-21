@@ -140,6 +140,9 @@ pub mod organism;
 pub mod causal_discovery;
 pub mod vus_interpreter;
 
+// The Immortality Engine - not just predicting death, PREVENTING it
+pub mod immortality_engine;
+
 // Re-exports
 pub use hallmarks::{Hallmark, HallmarkCategory, HallmarksGraph, Intervention, InterventionType};
 pub use biomarker_dreamer::{BiomarkerDreamer, DreamerConfig, NovelTarget, DreamSession};
@@ -155,6 +158,15 @@ pub use lifespan_simulator::{LifespanSimulator, SimulatorConfig, InterventionPro
 pub use senescence_detector::{SenescenceDetector, DetectorConfig, SenescencePattern, BiologicalAgePrediction};
 pub use research_integrator::{ResearchIntegrator, IntegratorConfig, EvidenceSummary, InterventionRanking};
 pub use vus_interpreter::{VUSInterpreter, VUSConfig, VUSInterpretation, VariantQuery, ACMGClassification, query_vus};
+
+// Immortality Engine re-exports
+pub use immortality_engine::{
+    ImmortalityEngine, ImmortalityConfig, ImmortalityProtocol,
+    Intervention as ImmortalityIntervention, InterventionCategory, EvidenceLevel,
+    AgingMechanism, Protocol, DosingSchedule, ProtocolPhase, PhaseIntervention,
+    Priority, ProtocolPredictions, LimitingFactor, MaxLifespanEstimate,
+    MonitoringSchedule, BiomarkerSchedule, Contingency,
+};
 
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;

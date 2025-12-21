@@ -62,7 +62,7 @@ use std::collections::HashMap;
 use uuid::Uuid;
 use rand::Rng;
 
-use crate::genome::{Genome, Gene, Tissue, GeneVariant};
+use crate::genome::{Genome, Gene, Tissue, GeneVariant, GeneticRiskScore, GeneticRiskFactor, GeneticProtectiveFactor};
 use crate::cell::{Cell, CellPopulation, CellEnvironment, CellType, CellFate};
 use crate::{Result, LongevityError};
 
@@ -337,7 +337,7 @@ pub struct Disease {
     pub causal_factors: Vec<CausalFactor>,
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub enum DiseaseType {
     // Cardiovascular
     Atherosclerosis,
@@ -426,7 +426,7 @@ pub struct DeathRecord {
     pub final_biomarkers: BiomarkerSnapshot,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub enum DeathCause {
     Disease(DiseaseType),
     OrganFailure(Organ),
@@ -944,6 +944,8 @@ impl Organism {
             }
         }
 
+        let cause_desc = format!("Died: {:?}", cause);
+
         self.death = Some(DeathRecord {
             age: self.age,
             cause,
@@ -955,7 +957,7 @@ impl Organism {
         self.life_events.push(LifeEvent {
             age: self.age,
             event_type: LifeEventType::Death,
-            description: format!("Died: {:?}", cause),
+            description: cause_desc,
             impact: HashMap::new(),
         });
     }
@@ -1035,7 +1037,7 @@ impl Organism {
             lifespans.push(organism.age);
 
             if let Some(death) = &organism.death {
-                *death_causes.entry(death.primary_cause).or_insert(0) += 1;
+                *death_causes.entry(death.cause.clone()).or_insert(0) += 1;
             }
 
             for disease in &organism.diseases {
@@ -1073,7 +1075,7 @@ impl Organism {
         // Most likely death cause
         let most_likely_cause = death_causes.iter()
             .max_by_key(|(_, count)| *count)
-            .map(|(cause, _)| *cause)
+            .map(|(cause, _)| cause.clone())
             .unwrap_or(DeathCause::MultiOrganFailure);
 
         // Disease risk predictions
@@ -1145,43 +1147,12 @@ pub struct LifespanPrediction {
     pub key_protective_factors: Vec<GeneticProtectiveFactor>,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct GeneticRiskScore {
-    /// Overall genetic risk (0 = low risk, 1 = high risk)
-    pub overall: f64,
-    /// Cancer risk score
-    pub cancer: f64,
-    /// Cardiovascular risk score
-    pub cardiovascular: f64,
-    /// Neurodegeneration risk score
-    pub neurodegeneration: f64,
-    /// Metabolic risk score
-    pub metabolic: f64,
-    /// Accelerated aging risk
-    pub accelerated_aging: f64,
-}
-
+/// Disease risk prediction from simulation
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct DiseaseRiskPrediction {
     pub disease_type: DiseaseType,
     pub lifetime_risk: f64,
     pub mean_onset_age: Option<f64>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct GeneticRiskFactor {
-    pub gene: Gene,
-    pub variant_description: String,
-    pub impact: String,
-    pub risk_increase: f64,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct GeneticProtectiveFactor {
-    pub gene: Gene,
-    pub variant_description: String,
-    pub impact: String,
-    pub protection_level: f64,
 }
 
 #[cfg(test)]

@@ -33,6 +33,7 @@ use serde::{Deserialize, Serialize};
 use std::collections::{HashMap, HashSet};
 use uuid::Uuid;
 use petgraph::graph::{DiGraph, NodeIndex};
+use petgraph::visit::EdgeRef;
 use petgraph::algo::{dijkstra, all_simple_paths};
 use petgraph::Direction;
 

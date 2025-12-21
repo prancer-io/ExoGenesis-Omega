@@ -306,7 +306,7 @@ impl VUSInterpreter {
     }
 
     fn predict_functional_effect(&self, query: &VariantQuery) -> PredictedFunctionalEffect {
-        let mut function_level = 1.0;
+        let mut function_level: f64 = 1.0;
         let mut effect_type = VariantEffect::Neutral;
 
         // Use conservation to predict impact
@@ -486,7 +486,7 @@ impl VUSInterpreter {
         // Effect consistency (how consistent is the effect across simulations?)
         let effect_direction_consistent = with_variant_lifespans.iter()
             .zip(without_variant_lifespans.iter())
-            .filter(|(w, wo)| (*w < **wo) == (delta < 0.0))
+            .filter(|(w, wo)| (*w < *wo) == (delta < 0.0))
             .count() as f64 / n;
 
         // Penetrance (% showing significant effect)
@@ -517,8 +517,8 @@ impl VUSInterpreter {
         functional_effect: &PredictedFunctionalEffect,
         simulation: &VUSSimulationResults,
     ) -> (ACMGClassification, f64) {
-        let mut pathogenic_score = 0.0;
-        let mut benign_score = 0.0;
+        let mut pathogenic_score: f64 = 0.0;
+        let mut benign_score: f64 = 0.0;
 
         // Simulation evidence
         if simulation.lifespan_delta < -5.0 && simulation.p_value < 0.05 {

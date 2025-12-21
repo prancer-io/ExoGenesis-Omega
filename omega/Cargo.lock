@@ -2480,6 +2480,27 @@ dependencies = [
 ]
 
 [[package]]
+name = "omega-longevity"
+version = "0.1.0"
+dependencies = [
+ "chrono",
+ "omega-consciousness",
+ "omega-core",
+ "omega-memory",
+ "omega-singularity",
+ "omega-snn",
+ "petgraph",
+ "rand 0.8.5",
+ "rand_distr",
+ "serde",
+ "serde_json",
+ "thiserror 1.0.69",
+ "tokio",
+ "tokio-test",
+ "uuid",
+]
+
+[[package]]
 name = "omega-loops"
 version = "1.0.0"
 dependencies = [
