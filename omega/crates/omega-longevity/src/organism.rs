@@ -1010,6 +1010,178 @@ impl Organism {
             self.age_one_year(rng);
         }
     }
+
+    /// Predict lifespan from genome by running multiple simulations
+    ///
+    /// Returns prediction with confidence intervals based on genetic risk factors.
+    /// Simulates multiple lives with the same genome but varied lifestyle to
+    /// determine the range of possible outcomes.
+    pub fn predict_lifespan_from_genome(
+        genome: &Genome,
+        num_simulations: usize,
+        rng: &mut impl Rng,
+    ) -> LifespanPrediction {
+        let mut lifespans = Vec::with_capacity(num_simulations);
+        let mut death_causes: HashMap<DeathCause, usize> = HashMap::new();
+        let mut disease_ages: HashMap<DiseaseType, Vec<f64>> = HashMap::new();
+
+        for _ in 0..num_simulations {
+            let mut organism = Organism::new_random(rng);
+            // Replace the random genome with the query genome
+            organism.genome = genome.clone();
+
+            organism.simulate_life(rng);
+
+            lifespans.push(organism.age);
+
+            if let Some(death) = &organism.death {
+                *death_causes.entry(death.primary_cause).or_insert(0) += 1;
+            }
+
+            for disease in &organism.diseases {
+                disease_ages.entry(disease.disease_type)
+                    .or_insert_with(Vec::new)
+                    .push(disease.onset_age);
+            }
+        }
+
+        // Calculate statistics
+        lifespans.sort_by(|a, b| a.partial_cmp(b).unwrap());
+        let n = lifespans.len() as f64;
+
+        let mean_lifespan = lifespans.iter().sum::<f64>() / n;
+
+        let variance = lifespans.iter()
+            .map(|x| (x - mean_lifespan).powi(2))
+            .sum::<f64>() / n;
+        let std_dev = variance.sqrt();
+
+        let median_lifespan = if lifespans.len() % 2 == 0 {
+            (lifespans[lifespans.len() / 2 - 1] + lifespans[lifespans.len() / 2]) / 2.0
+        } else {
+            lifespans[lifespans.len() / 2]
+        };
+
+        let p10 = lifespans[(n * 0.1) as usize];
+        let p25 = lifespans[(n * 0.25) as usize];
+        let p75 = lifespans[(n * 0.75) as usize];
+        let p90 = lifespans[(n * 0.9) as usize];
+
+        // Calculate genetic risk score
+        let genetic_risk = genome.calculate_genetic_risk_score();
+
+        // Most likely death cause
+        let most_likely_cause = death_causes.iter()
+            .max_by_key(|(_, count)| *count)
+            .map(|(cause, _)| *cause)
+            .unwrap_or(DeathCause::MultiOrganFailure);
+
+        // Disease risk predictions
+        let mut disease_risks = Vec::new();
+        for (disease_type, ages) in &disease_ages {
+            let risk = ages.len() as f64 / n;
+            let mean_onset = if ages.is_empty() {
+                None
+            } else {
+                Some(ages.iter().sum::<f64>() / ages.len() as f64)
+            };
+            disease_risks.push(DiseaseRiskPrediction {
+                disease_type: *disease_type,
+                lifetime_risk: risk,
+                mean_onset_age: mean_onset,
+            });
+        }
+        disease_risks.sort_by(|a, b| b.lifetime_risk.partial_cmp(&a.lifetime_risk).unwrap());
+
+        LifespanPrediction {
+            genome_id: genome.id,
+            num_simulations,
+            mean_lifespan,
+            median_lifespan,
+            std_deviation: std_dev,
+            percentile_10: p10,
+            percentile_25: p25,
+            percentile_75: p75,
+            percentile_90: p90,
+            min_lifespan: *lifespans.first().unwrap_or(&0.0),
+            max_lifespan: *lifespans.last().unwrap_or(&0.0),
+            genetic_risk_score: genetic_risk,
+            most_likely_death_cause: most_likely_cause,
+            death_cause_distribution: death_causes,
+            disease_risks,
+            optimal_sleep_hours: genome.optimal_sleep_hours(),
+            key_risk_factors: genome.identify_risk_factors(),
+            key_protective_factors: genome.identify_protective_factors(),
+        }
+    }
+}
+
+/// Prediction of lifespan from genome
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct LifespanPrediction {
+    pub genome_id: Uuid,
+    pub num_simulations: usize,
+
+    // Lifespan statistics
+    pub mean_lifespan: f64,
+    pub median_lifespan: f64,
+    pub std_deviation: f64,
+    pub percentile_10: f64,  // 10% die before this age
+    pub percentile_25: f64,
+    pub percentile_75: f64,
+    pub percentile_90: f64,  // 90% die before this age
+    pub min_lifespan: f64,
+    pub max_lifespan: f64,
+
+    // Genetic risk analysis
+    pub genetic_risk_score: GeneticRiskScore,
+    pub most_likely_death_cause: DeathCause,
+    pub death_cause_distribution: HashMap<DeathCause, usize>,
+    pub disease_risks: Vec<DiseaseRiskPrediction>,
+
+    // Personalized insights
+    pub optimal_sleep_hours: f64,
+    pub key_risk_factors: Vec<GeneticRiskFactor>,
+    pub key_protective_factors: Vec<GeneticProtectiveFactor>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct GeneticRiskScore {
+    /// Overall genetic risk (0 = low risk, 1 = high risk)
+    pub overall: f64,
+    /// Cancer risk score
+    pub cancer: f64,
+    /// Cardiovascular risk score
+    pub cardiovascular: f64,
+    /// Neurodegeneration risk score
+    pub neurodegeneration: f64,
+    /// Metabolic risk score
+    pub metabolic: f64,
+    /// Accelerated aging risk
+    pub accelerated_aging: f64,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct DiseaseRiskPrediction {
+    pub disease_type: DiseaseType,
+    pub lifetime_risk: f64,
+    pub mean_onset_age: Option<f64>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct GeneticRiskFactor {
+    pub gene: Gene,
+    pub variant_description: String,
+    pub impact: String,
+    pub risk_increase: f64,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct GeneticProtectiveFactor {
+    pub gene: Gene,
+    pub variant_description: String,
+    pub impact: String,
+    pub protection_level: f64,
 }
 
 #[cfg(test)]
@@ -1092,5 +1264,47 @@ mod tests {
         // Biological age should roughly track chronological age
         let last = organism.biomarker_history.last().unwrap();
         assert!(last.biological_age > 0.0);
+    }
+
+    #[test]
+    fn test_lifespan_prediction_from_genome() {
+        let mut rng = rand::thread_rng();
+        let genome = Genome::new_random(&mut rng);
+
+        // Run prediction with 50 simulations (small for test speed)
+        let prediction = Organism::predict_lifespan_from_genome(&genome, 50, &mut rng);
+
+        // Should have valid lifespan statistics
+        assert!(prediction.mean_lifespan > 0.0);
+        assert!(prediction.median_lifespan > 0.0);
+        assert!(prediction.percentile_10 < prediction.percentile_90);
+        assert!(prediction.min_lifespan <= prediction.max_lifespan);
+
+        // Should have genetic risk scores
+        assert!(prediction.genetic_risk_score.overall >= 0.0);
+        assert!(prediction.genetic_risk_score.overall <= 1.0);
+
+        // Should have optimal sleep hours
+        assert!(prediction.optimal_sleep_hours >= 4.0);
+        assert!(prediction.optimal_sleep_hours <= 10.0);
+
+        // Death cause distribution should have entries
+        assert!(!prediction.death_cause_distribution.is_empty());
+    }
+
+    #[test]
+    fn test_genetic_risk_score() {
+        let mut rng = rand::thread_rng();
+        let genome = Genome::new_random(&mut rng);
+
+        let risk = genome.calculate_genetic_risk_score();
+
+        // All scores should be between 0 and 1
+        assert!(risk.overall >= 0.0 && risk.overall <= 1.0);
+        assert!(risk.cancer >= 0.0 && risk.cancer <= 1.0);
+        assert!(risk.cardiovascular >= 0.0 && risk.cardiovascular <= 1.0);
+        assert!(risk.neurodegeneration >= 0.0 && risk.neurodegeneration <= 1.0);
+        assert!(risk.metabolic >= 0.0 && risk.metabolic <= 1.0);
+        assert!(risk.accelerated_aging >= 0.0 && risk.accelerated_aging <= 1.0);
     }
 }

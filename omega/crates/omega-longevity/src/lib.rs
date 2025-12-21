@@ -145,9 +145,11 @@ pub use hallmarks::{Hallmark, HallmarkCategory, HallmarksGraph, Intervention, In
 pub use biomarker_dreamer::{BiomarkerDreamer, DreamerConfig, NovelTarget, DreamSession};
 
 // Mechanistic simulation re-exports
-pub use genome::{Genome, Gene, GeneState, GeneVariant, MitochondrialDNA, Epigenome, TelomereState};
+pub use genome::{Genome, Gene, GeneState, GeneVariant, MitochondrialDNA, Epigenome, TelomereState,
+                 GeneticRiskScore, GeneticRiskFactor, GeneticProtectiveFactor};
 pub use cell::{Cell, CellType, CellularDamage, MolecularMachinery, CellFate, CellPopulation};
-pub use organism::{Organism, Lifestyle, OrganState, SystemicState, Disease, DiseaseType, DeathCause, DeathRecord};
+pub use organism::{Organism, Lifestyle, OrganState, SystemicState, Disease, DiseaseType, DeathCause, DeathRecord,
+                   LifespanPrediction, DiseaseRiskPrediction};
 pub use causal_discovery::{PopulationSimulator, PopulationConfig, PopulationResults, CausalPattern, LifeSummary};
 pub use lifespan_simulator::{LifespanSimulator, SimulatorConfig, InterventionProtocol, SimulationResults};
 pub use senescence_detector::{SenescenceDetector, DetectorConfig, SenescencePattern, BiologicalAgePrediction};

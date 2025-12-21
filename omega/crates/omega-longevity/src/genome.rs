@@ -744,6 +744,185 @@ impl Genome {
 
         1.0 + buffered_penalty * asymmetry * 0.3 // Max ~1.3x aging acceleration
     }
+
+    /// Calculate genetic risk score for various conditions
+    ///
+    /// Returns scores from 0.0 (low risk) to 1.0 (high risk) for:
+    /// - Overall mortality risk
+    /// - Cancer risk (based on DNA repair genes)
+    /// - Cardiovascular risk (inflammation, metabolism)
+    /// - Neurodegeneration risk (proteostasis, mitochondria)
+    /// - Metabolic risk (nutrient sensing, sirtuins)
+    /// - Accelerated aging (telomeres, progeria genes)
+    pub fn calculate_genetic_risk_score(&self) -> GeneticRiskScore {
+        // Cancer risk: DNA repair deficiency + tumor suppressor variants
+        let cancer_risk = {
+            let dna_repair = 1.0 - self.dna_repair_capacity();
+            let tp53 = 1.0 - self.gene_function(Gene::TP53);
+            let brca = (1.0 - self.gene_function(Gene::BRCA1) + 1.0 - self.gene_function(Gene::BRCA2)) / 2.0;
+            ((dna_repair + tp53 + brca) / 3.0).clamp(0.0, 1.0)
+        };
+
+        // Cardiovascular risk: inflammation + metabolic genes
+        let cardiovascular_risk = {
+            let inflammation = self.inflammation_tendency();
+            let mtor = self.gene_function(Gene::MTOR); // High mTOR = higher risk
+            let ampk = 1.0 - self.gene_function(Gene::AMPK); // Low AMPK = higher risk
+            ((inflammation + mtor * 0.5 + ampk * 0.5) / 2.0).clamp(0.0, 1.0)
+        };
+
+        // Neurodegeneration risk: proteostasis + mitochondrial function
+        let neurodegeneration_risk = {
+            let proteostasis = 1.0 - self.proteostasis_capacity();
+            let mito = 1.0 - self.gene_function(Gene::PPARGC1A);
+            let pink1 = 1.0 - self.gene_function(Gene::PINK1);
+            ((proteostasis + mito + pink1) / 3.0).clamp(0.0, 1.0)
+        };
+
+        // Metabolic risk: nutrient sensing dysregulation
+        let metabolic_risk = {
+            let igf1 = self.gene_function(Gene::IGF1R); // High = more growth = more risk
+            let foxo3 = 1.0 - self.gene_function(Gene::FOXO3); // Low FOXO3 = risk
+            let sirt = 1.0 - (self.gene_function(Gene::SIRT1) + self.gene_function(Gene::SIRT3)) / 2.0;
+            ((igf1 * 0.5 + foxo3 + sirt) / 2.5).clamp(0.0, 1.0)
+        };
+
+        // Accelerated aging risk: telomeres + progeria genes
+        let accelerated_aging_risk = {
+            let telo = 1.0 - self.gene_function(Gene::TERT);
+            let wrn = 1.0 - self.gene_function(Gene::WRN);
+            let lmna = 1.0 - self.gene_function(Gene::LMNA);
+            let senescence = self.senescence_propensity();
+            ((telo + wrn * 0.5 + lmna * 0.5 + senescence) / 3.0).clamp(0.0, 1.0)
+        };
+
+        // Overall risk is weighted average
+        let overall = (
+            cancer_risk * 0.25 +
+            cardiovascular_risk * 0.25 +
+            neurodegeneration_risk * 0.15 +
+            metabolic_risk * 0.15 +
+            accelerated_aging_risk * 0.20
+        ).clamp(0.0, 1.0);
+
+        GeneticRiskScore {
+            overall,
+            cancer: cancer_risk,
+            cardiovascular: cardiovascular_risk,
+            neurodegeneration: neurodegeneration_risk,
+            metabolic: metabolic_risk,
+            accelerated_aging: accelerated_aging_risk,
+        }
+    }
+
+    /// Identify key genetic risk factors in this genome
+    pub fn identify_risk_factors(&self) -> Vec<GeneticRiskFactor> {
+        let mut factors = Vec::new();
+
+        // Check each gene for damaging variants
+        for gene in Gene::all() {
+            if let Some(state) = self.nuclear_genes.get(&gene) {
+                for variant in &state.variants {
+                    if variant.longevity_effect < -0.1 {
+                        factors.push(GeneticRiskFactor {
+                            gene,
+                            variant_description: format!("{} {:?}", variant.rsid, variant.effect),
+                            impact: match gene.aging_role() {
+                                AgingRole::DNARepair => "Reduced DNA repair capacity".to_string(),
+                                AgingRole::TelomereMaintenance => "Accelerated telomere shortening".to_string(),
+                                AgingRole::Senescence => "Increased cellular senescence".to_string(),
+                                AgingRole::Proteostasis => "Impaired protein quality control".to_string(),
+                                AgingRole::Mitochondrial => "Mitochondrial dysfunction".to_string(),
+                                AgingRole::Inflammation => "Increased inflammatory signaling".to_string(),
+                                AgingRole::CircadianRhythm => "Disrupted circadian rhythm".to_string(),
+                                AgingRole::Progeria => "Progeroid syndrome risk".to_string(),
+                                _ => "Potential negative impact on longevity".to_string(),
+                            },
+                            risk_increase: -variant.longevity_effect,
+                        });
+                    }
+                }
+            }
+        }
+
+        // Sort by risk level
+        factors.sort_by(|a, b| b.risk_increase.partial_cmp(&a.risk_increase).unwrap());
+        factors.truncate(10); // Top 10 risk factors
+        factors
+    }
+
+    /// Identify key protective genetic factors
+    pub fn identify_protective_factors(&self) -> Vec<GeneticProtectiveFactor> {
+        let mut factors = Vec::new();
+
+        for gene in Gene::all() {
+            if let Some(state) = self.nuclear_genes.get(&gene) {
+                for variant in &state.variants {
+                    if variant.longevity_effect > 0.1 {
+                        factors.push(GeneticProtectiveFactor {
+                            gene,
+                            variant_description: format!("{} {:?}", variant.rsid, variant.effect),
+                            impact: match gene.aging_role() {
+                                AgingRole::DNARepair => "Enhanced DNA repair".to_string(),
+                                AgingRole::Sirtuins => "Enhanced sirtuin activity".to_string(),
+                                AgingRole::NutrientSensing => {
+                                    if gene == Gene::FOXO3 {
+                                        "FOXO3 longevity variant".to_string()
+                                    } else {
+                                        "Favorable nutrient sensing".to_string()
+                                    }
+                                },
+                                AgingRole::CircadianRhythm => {
+                                    if gene == Gene::DEC2 || gene == Gene::ADRB1 {
+                                        "Natural short sleep phenotype".to_string()
+                                    } else {
+                                        "Robust circadian rhythm".to_string()
+                                    }
+                                },
+                                AgingRole::TelomereMaintenance => "Enhanced telomere maintenance".to_string(),
+                                AgingRole::Inflammation => "Reduced inflammatory signaling".to_string(),
+                                _ => "Potential positive impact on longevity".to_string(),
+                            },
+                            protection_level: variant.longevity_effect,
+                        });
+                    }
+                }
+            }
+        }
+
+        factors.sort_by(|a, b| b.protection_level.partial_cmp(&a.protection_level).unwrap());
+        factors.truncate(10);
+        factors
+    }
+}
+
+/// Genetic risk score for various conditions
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct GeneticRiskScore {
+    pub overall: f64,
+    pub cancer: f64,
+    pub cardiovascular: f64,
+    pub neurodegeneration: f64,
+    pub metabolic: f64,
+    pub accelerated_aging: f64,
+}
+
+/// A genetic factor that increases disease/mortality risk
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct GeneticRiskFactor {
+    pub gene: Gene,
+    pub variant_description: String,
+    pub impact: String,
+    pub risk_increase: f64,
+}
+
+/// A genetic factor that protects against disease/mortality
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct GeneticProtectiveFactor {
+    pub gene: Gene,
+    pub variant_description: String,
+    pub impact: String,
+    pub protection_level: f64,
 }
 
 /// Generate a random variant for a gene
