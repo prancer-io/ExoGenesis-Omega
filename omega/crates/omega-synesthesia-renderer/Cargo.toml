@@ -29,6 +29,7 @@ image = "0.25"
 # Utilities
 thiserror = { workspace = true }
 parking_lot = "0.12"
+rand = "0.8"  # For procedural generation
 
 # Async runtime
 tokio = { workspace = true }

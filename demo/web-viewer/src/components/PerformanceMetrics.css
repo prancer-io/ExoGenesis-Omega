@@ -1,0 +1,87 @@
+.performance-metrics {
+  background: #1a1a2e;
+  border-radius: 8px;
+  padding: 1.5rem;
+  overflow-y: auto;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+}
+
+.performance-metrics h2 {
+  font-size: 1.5rem;
+  margin-bottom: 1.5rem;
+  color: #667eea;
+}
+
+.performance-metrics h3 {
+  font-size: 1.1rem;
+  margin: 1.5rem 0 0.75rem;
+  color: #aaa;
+}
+
+.metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.metric {
+  background: #252540;
+  border-radius: 6px;
+  padding: 1rem;
+  text-align: center;
+}
+
+.metric-label {
+  font-size: 0.8rem;
+  color: #aaa;
+  margin-bottom: 0.5rem;
+}
+
+.metric-value {
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: #667eea;
+}
+
+.audio-features {
+  background: #252540;
+  border-radius: 6px;
+  padding: 1rem;
+}
+
+.feature {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid #333;
+  font-size: 0.85rem;
+}
+
+.feature:last-child {
+  border-bottom: none;
+}
+
+.feature span:first-child {
+  color: #aaa;
+}
+
+.feature span:last-child {
+  color: #fff;
+  font-weight: 500;
+}
+
+.confidence-bar {
+  width: 100px;
+  height: 8px;
+  background: #333;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.confidence-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+  transition: width 0.3s ease;
+}

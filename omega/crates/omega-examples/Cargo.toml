@@ -60,6 +60,7 @@ omega-meta-sona = { path = "../omega-meta-sona" }
 omega-runtime = { path = "../omega-runtime" }
 omega-mindscape = { path = "../omega-mindscape" }
 omega-synesthesia = { path = "../omega-synesthesia" }
+omega-synesthesia-renderer = { path = "../omega-synesthesia-renderer" }
 
 # External dependencies
 tokio = { workspace = true }
@@ -69,3 +70,9 @@ chrono = { workspace = true }
 tracing = { workspace = true }
 tracing-subscriber = { workspace = true }
 rand = { workspace = true }
+
+# GPU rendering dependencies (for gpu_world_viewer example)
+winit = "0.29"
+glam = "0.29"
+parking_lot = "0.12"
+env_logger = "0.11"

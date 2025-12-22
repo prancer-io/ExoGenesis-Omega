@@ -44,12 +44,42 @@ mod camera;
 mod camera_follow;
 mod mesh;
 mod material;
+pub mod particle_system;
+pub mod video_export;
 
 pub use renderer::{SynesthesiaRenderer, RenderConfig};
 pub use camera::{Camera, CameraController};
 pub use camera_follow::{CameraFollowController, FollowMode};
+pub use particle_system::{ParticleSystem, ParticleConfig};
+pub use video_export::VideoExporter;
 pub use mesh::{Mesh, Vertex};
 pub use material::{Material, PbrMaterial};
+
+/// Terrain generation configuration
+#[derive(Debug, Clone, Copy)]
+pub struct TerrainConfig {
+    pub resolution: u32,
+    pub heightmap_seed: u32,
+    pub max_height: f32,
+    pub roughness: f32,
+    pub wave_amplitude: f32,
+    pub wave_frequency: f32,
+    pub wave_time: f32,
+}
+
+impl Default for TerrainConfig {
+    fn default() -> Self {
+        Self {
+            resolution: 30,
+            heightmap_seed: 0,
+            max_height: 5.0,
+            roughness: 0.5,
+            wave_amplitude: 0.0,
+            wave_frequency: 0.0,
+            wave_time: 0.0,
+        }
+    }
+}
 
 use thiserror::Error;
 

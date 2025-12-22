@@ -133,7 +133,7 @@ impl Mesh {
     }
 
     /// Create a sphere mesh (icosphere subdivision)
-    pub fn sphere(radius: f32, subdivisions: u32, color: [f32; 4]) -> Self {
+    pub fn sphere(radius: f32, _subdivisions: u32, color: [f32; 4]) -> Self {
         // Start with icosahedron
         let t = (1.0 + 5.0_f32.sqrt()) / 2.0;
 
@@ -152,7 +152,7 @@ impl Mesh {
             Vertex::new(Vec3::new(-t, 0.0, 1.0).normalize() * radius, Vec3::ZERO, Vec2::ZERO, color),
         ];
 
-        let mut indices = vec![
+        let indices = vec![
             0, 11, 5,  0, 5, 1,   0, 1, 7,   0, 7, 10,  0, 10, 11,
             1, 5, 9,   5, 11, 4,  11, 10, 2, 10, 7, 6,  7, 1, 8,
             3, 9, 4,   3, 4, 2,   3, 2, 6,   3, 6, 8,   3, 8, 9,
