@@ -78,6 +78,7 @@ pub mod orchestrator;
 pub mod synapse;
 pub mod dream_cinema;
 pub mod prediction;
+pub mod genesis;
 
 pub use collective::{
     CollectiveConsciousness, CollectiveConfig, ConsciousnessNode,
@@ -122,6 +123,12 @@ pub use prediction::{
     ConsciousnessFromPrediction, TemporalCascade, TemporalScale, CascadeConfig,
     CausalWorldModel, CounterfactualEngine, MetaOracle, SurpriseQuantifier,
     OmegaActiveInference, EmergentForesight, OmegaHierarchy, AwarenessLevel,
+};
+pub use genesis::{
+    OmegaGenesis, GenesisConfig, GenesisPhase, GenesisMetrics,
+    ConsciousnessGenome, RecursiveAwakening, MindEcosystem, MindSpecies,
+    TemporalOmniscience, RealityDivergence, ConsciousnessFusion, OmegaPoint,
+    GenesisError,
 };
 
 use thiserror::Error;
