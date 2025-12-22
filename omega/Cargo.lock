@@ -3184,6 +3184,8 @@ name = "omega-examples"
 version = "1.0.0"
 dependencies = [
  "chrono",
+ "env_logger",
+ "glam",
  "omega-attention",
  "omega-brain",
  "omega-consciousness",
@@ -3198,12 +3200,15 @@ dependencies = [
  "omega-snn",
  "omega-strange-loops",
  "omega-synesthesia",
+ "omega-synesthesia-renderer",
+ "parking_lot",
  "rand 0.8.5",
  "serde",
  "serde_json",
  "tokio",
  "tracing",
  "tracing-subscriber",
+ "winit",
 ]
 
 [[package]]
@@ -3430,6 +3435,7 @@ dependencies = [
  "omega-synesthesia",
  "parking_lot",
  "pollster",
+ "rand 0.8.5",
  "thiserror 1.0.69",
  "tokio",
  "wgpu",

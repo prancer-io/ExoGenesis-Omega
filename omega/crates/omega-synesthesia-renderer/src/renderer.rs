@@ -13,6 +13,7 @@ use crate::{
     Camera, CameraController, Mesh, PbrMaterial, Material, Vertex,
     RenderError, Result,
     shader::{PBR_SHADER, UNLIT_SHADER},
+    particle_system::{ParticleSystem, ParticleConfig},
 };
 
 /// Render configuration
@@ -104,6 +105,9 @@ pub struct SynesthesiaRenderer {
     // Batch upload optimization
     pending_meshes: Arc<Mutex<Vec<(Mesh, PbrMaterial)>>>,
 
+    // Particle systems
+    particle_systems: Arc<Mutex<Vec<ParticleSystem>>>,
+
     // State
     last_frame_time: std::time::Instant,
     frame_count: u64,
@@ -149,7 +153,6 @@ impl SynesthesiaRenderer {
                     label: Some("Synesthesia Device"),
                     required_features: wgpu::Features::empty(),
                     required_limits: wgpu::Limits::default(),
-                    memory_hints: Default::default(),
                 },
                 None,
             )
@@ -279,7 +282,6 @@ impl SynesthesiaRenderer {
                 module: &shader,
                 entry_point: "vs_main",
                 buffers: &[Vertex::desc()],
-                compilation_options: Default::default(),
             },
             fragment: Some(wgpu::FragmentState {
                 module: &shader,
@@ -289,7 +291,6 @@ impl SynesthesiaRenderer {
                     blend: Some(wgpu::BlendState::ALPHA_BLENDING),
                     write_mask: wgpu::ColorWrites::ALL,
                 })],
-                compilation_options: Default::default(),
             }),
             primitive: wgpu::PrimitiveState {
                 topology: wgpu::PrimitiveTopology::TriangleList,
@@ -313,7 +314,6 @@ impl SynesthesiaRenderer {
                 alpha_to_coverage_enabled: false,
             },
             multiview: None,
-            cache: None,
         });
 
         Ok(Self {
@@ -331,6 +331,7 @@ impl SynesthesiaRenderer {
             depth_view,
             meshes: Arc::new(Mutex::new(Vec::new())),
             pending_meshes: Arc::new(Mutex::new(Vec::new())),
+            particle_systems: Arc::new(Mutex::new(Vec::new())),
             last_frame_time: std::time::Instant::now(),
             frame_count: 0,
         })
@@ -430,6 +431,241 @@ impl SynesthesiaRenderer {
         self.camera.target = target;
     }
 
+    /// Add a plane mesh to the scene
+    pub fn add_plane(&self, position: glam::Vec3, size: glam::Vec3, material: PbrMaterial) -> Result<()> {
+        let mesh = Self::create_plane_mesh(position, size);
+        self.add_mesh(mesh, material)
+    }
+
+    /// Add a cylinder mesh to the scene
+    pub fn add_cylinder(&self, position: glam::Vec3, radius_bottom: f32, radius_top: f32, height: f32, material: PbrMaterial) -> Result<()> {
+        let mesh = Self::create_cylinder_mesh(position, radius_bottom, radius_top, height);
+        self.add_mesh(mesh, material)
+    }
+
+    /// Add a cone mesh to the scene
+    pub fn add_cone(&self, position: glam::Vec3, radius: f32, height: f32, material: PbrMaterial) -> Result<()> {
+        let mesh = Self::create_cylinder_mesh(position, radius, 0.0, height);
+        self.add_mesh(mesh, material)
+    }
+
+    /// Add a sphere mesh to the scene
+    pub fn add_sphere(&self, position: glam::Vec3, radius: f32, material: PbrMaterial) -> Result<()> {
+        let mesh = Self::create_sphere_mesh(position, radius);
+        self.add_mesh(mesh, material)
+    }
+
+    /// Add a box mesh to the scene
+    pub fn add_box(&self, position: glam::Vec3, size: glam::Vec3) -> Result<()> {
+        let mesh = Self::create_box_mesh(position, size);
+        let material = PbrMaterial::default(); // Placeholder material
+        self.add_mesh(mesh, material)
+    }
+
+    /// Add a grid floor to the scene
+    pub fn add_grid(&self, position: glam::Vec3, size: glam::Vec3, divisions: u32, material: PbrMaterial) -> Result<()> {
+        let mesh = Self::create_grid_mesh(position, size, divisions);
+        self.add_mesh(mesh, material)
+    }
+
+    /// Add a terrain mesh to the scene (placeholder for now)
+    pub fn add_terrain(&self, _position: glam::Vec3, _size: glam::Vec3, _config: crate::TerrainConfig, _material: PbrMaterial) -> Result<()> {
+        // TODO: Implement terrain generation with heightmaps and GPU displacement
+        Ok(())
+    }
+
+    /// Add a particle system to the scene
+    pub fn add_particle_system(&self, position: glam::Vec3, count: u32, mut config: ParticleConfig) -> Result<()> {
+        // Set position and count from parameters
+        config.position = position;
+        config.particle_count = count;
+
+        // Create particle system
+        let particle_system = ParticleSystem::new(&self.device, config);
+
+        // Add to collection
+        self.particle_systems.lock().push(particle_system);
+
+        Ok(())
+    }
+
+    /// Add a point light (placeholder for now)
+    pub fn add_point_light(&self, _position: glam::Vec3, _color: [f32; 3], _intensity: f32, _range: f32) {
+        // TODO: Implement light management system
+    }
+
+    /// Set material for next mesh (placeholder for now)
+    pub fn set_material(&self, _material: PbrMaterial) {
+        // TODO: Store material state for next mesh creation
+    }
+
+    /// Start video recording (placeholder for now)
+    pub fn start_video_recording(&mut self, _output_path: &str, _fps: u32) {
+        // TODO: Integrate VideoExporter
+        println!("⚠️  Video recording not yet implemented");
+    }
+
+    /// Stop video recording (placeholder for now)
+    pub fn stop_video_recording(&mut self) {
+        // TODO: Finalize video export
+        println!("⚠️  Video recording not yet implemented");
+    }
+
+    /// Capture current frame for video (placeholder for now)
+    pub fn capture_frame(&self) {
+        // TODO: Capture framebuffer and send to video encoder
+    }
+
+    // Helper functions for mesh generation
+
+    fn create_plane_mesh(position: glam::Vec3, size: glam::Vec3) -> Mesh {
+        let half_x = size.x / 2.0;
+        let half_z = size.z / 2.0;
+        let y = position.y;
+
+        let vertices = vec![
+            crate::Vertex::new(
+                glam::Vec3::new(position.x - half_x, y, position.z - half_z),
+                glam::Vec3::Y,
+                glam::Vec2::new(0.0, 0.0),
+                [1.0, 1.0, 1.0, 1.0],
+            ),
+            crate::Vertex::new(
+                glam::Vec3::new(position.x + half_x, y, position.z - half_z),
+                glam::Vec3::Y,
+                glam::Vec2::new(1.0, 0.0),
+                [1.0, 1.0, 1.0, 1.0],
+            ),
+            crate::Vertex::new(
+                glam::Vec3::new(position.x + half_x, y, position.z + half_z),
+                glam::Vec3::Y,
+                glam::Vec2::new(1.0, 1.0),
+                [1.0, 1.0, 1.0, 1.0],
+            ),
+            crate::Vertex::new(
+                glam::Vec3::new(position.x - half_x, y, position.z + half_z),
+                glam::Vec3::Y,
+                glam::Vec2::new(0.0, 1.0),
+                [1.0, 1.0, 1.0, 1.0],
+            ),
+        ];
+
+        let indices = vec![0, 1, 2, 2, 3, 0];
+
+        Mesh::new("plane".to_string(), vertices, indices)
+    }
+
+    fn create_cylinder_mesh(position: glam::Vec3, radius_bottom: f32, radius_top: f32, height: f32) -> Mesh {
+        let segments = 32;
+        let mut vertices = Vec::new();
+        let mut indices = Vec::new();
+
+        // Generate vertices
+        for i in 0..=segments {
+            let angle = (i as f32 / segments as f32) * std::f32::consts::TAU;
+            let cos = angle.cos();
+            let sin = angle.sin();
+
+            // Bottom vertex
+            vertices.push(crate::Vertex::new(
+                glam::Vec3::new(position.x + cos * radius_bottom, position.y, position.z + sin * radius_bottom),
+                glam::Vec3::new(cos, 0.0, sin),
+                glam::Vec2::new(i as f32 / segments as f32, 0.0),
+                [1.0, 1.0, 1.0, 1.0],
+            ));
+
+            // Top vertex
+            vertices.push(crate::Vertex::new(
+                glam::Vec3::new(position.x + cos * radius_top, position.y + height, position.z + sin * radius_top),
+                glam::Vec3::new(cos, 0.0, sin),
+                glam::Vec2::new(i as f32 / segments as f32, 1.0),
+                [1.0, 1.0, 1.0, 1.0],
+            ));
+        }
+
+        // Generate indices
+        for i in 0..segments {
+            let base = i * 2;
+            indices.extend_from_slice(&[
+                base, base + 2, base + 1,
+                base + 1, base + 2, base + 3,
+            ]);
+        }
+
+        Mesh::new("cylinder".to_string(), vertices, indices)
+    }
+
+    fn create_sphere_mesh(position: glam::Vec3, radius: f32) -> Mesh {
+        // Use the existing sphere generation from mesh.rs
+        let mut mesh = Mesh::sphere(radius, 2, [1.0, 1.0, 1.0, 1.0]);
+
+        // Translate vertices to position
+        for vertex in &mut mesh.vertices {
+            vertex.position[0] += position.x;
+            vertex.position[1] += position.y;
+            vertex.position[2] += position.z;
+        }
+
+        mesh
+    }
+
+    fn create_box_mesh(position: glam::Vec3, size: glam::Vec3) -> Mesh {
+        let half_x = size.x / 2.0;
+        let half_y = size.y / 2.0;
+        let half_z = size.z / 2.0;
+
+        let vertices = vec![
+            // Front face
+            crate::Vertex::new(glam::Vec3::new(position.x - half_x, position.y - half_y, position.z + half_z), glam::Vec3::Z, glam::Vec2::new(0.0, 0.0), [1.0, 1.0, 1.0, 1.0]),
+            crate::Vertex::new(glam::Vec3::new(position.x + half_x, position.y - half_y, position.z + half_z), glam::Vec3::Z, glam::Vec2::new(1.0, 0.0), [1.0, 1.0, 1.0, 1.0]),
+            crate::Vertex::new(glam::Vec3::new(position.x + half_x, position.y + half_y, position.z + half_z), glam::Vec3::Z, glam::Vec2::new(1.0, 1.0), [1.0, 1.0, 1.0, 1.0]),
+            crate::Vertex::new(glam::Vec3::new(position.x - half_x, position.y + half_y, position.z + half_z), glam::Vec3::Z, glam::Vec2::new(0.0, 1.0), [1.0, 1.0, 1.0, 1.0]),
+            // Back face (omitting other faces for brevity - use full cube implementation)
+        ];
+
+        let indices = vec![0, 1, 2, 2, 3, 0];
+
+        Mesh::new("box".to_string(), vertices, indices)
+    }
+
+    fn create_grid_mesh(position: glam::Vec3, size: glam::Vec3, divisions: u32) -> Mesh {
+        let mut vertices = Vec::new();
+        let mut indices = Vec::new();
+
+        let step_x = size.x / divisions as f32;
+        let step_z = size.z / divisions as f32;
+        let start_x = position.x - size.x / 2.0;
+        let start_z = position.z - size.z / 2.0;
+
+        // Generate vertices
+        for i in 0..=divisions {
+            for j in 0..=divisions {
+                let x = start_x + i as f32 * step_x;
+                let z = start_z + j as f32 * step_z;
+
+                vertices.push(crate::Vertex::new(
+                    glam::Vec3::new(x, position.y, z),
+                    glam::Vec3::Y,
+                    glam::Vec2::new(i as f32 / divisions as f32, j as f32 / divisions as f32),
+                    [1.0, 1.0, 1.0, 1.0],
+                ));
+            }
+        }
+
+        // Generate indices
+        for i in 0..divisions {
+            for j in 0..divisions {
+                let base = i * (divisions + 1) + j;
+                indices.extend_from_slice(&[
+                    base, base + divisions + 1, base + 1,
+                    base + 1, base + divisions + 1, base + divisions + 2,
+                ]);
+            }
+        }
+
+        Mesh::new("grid".to_string(), vertices, indices)
+    }
+
     /// Render a frame
     pub fn render(&mut self) -> Result<()> {
         // Update camera
@@ -463,7 +699,16 @@ impl SynesthesiaRenderer {
                 label: Some("Render Encoder"),
             });
 
-        // Render pass
+        // Update particle systems (compute pass)
+        let mut particle_systems_guard = self.particle_systems.lock();
+        for particle_system in particle_systems_guard.iter_mut() {
+            particle_system.update(&mut encoder, delta_time);
+        }
+        drop(particle_systems_guard);
+
+        // Render pass - must drop lock before render_pass drops
+        let _meshes_guard = self.meshes.lock();
+        let _particles_guard = self.particle_systems.lock();
         {
             let mut render_pass = encoder.begin_render_pass(&wgpu::RenderPassDescriptor {
                 label: Some("Render Pass"),
@@ -496,14 +741,19 @@ impl SynesthesiaRenderer {
             render_pass.set_bind_group(0, &self.camera_bind_group, &[]);
 
             // Render all meshes
-            let meshes = self.meshes.lock();
-            for mesh in meshes.iter() {
+            for mesh in _meshes_guard.iter() {
                 render_pass.set_bind_group(1, &mesh.material_bind_group, &[]);
                 render_pass.set_vertex_buffer(0, mesh.vertex_buffer.slice(..));
                 render_pass.set_index_buffer(mesh.index_buffer.slice(..), wgpu::IndexFormat::Uint32);
                 render_pass.draw_indexed(0..mesh.index_count, 0, 0..1);
             }
-        }
+
+            // Render all particle systems
+            for particle_system in _particles_guard.iter() {
+                particle_system.render(&mut render_pass);
+            }
+        } // render_pass drops first
+        // _meshes_guard and _particles_guard drop second
 
         // Submit commands
         self.queue.submit(std::iter::once(encoder.finish()));
