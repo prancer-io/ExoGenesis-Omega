@@ -2483,6 +2483,7 @@ dependencies = [
 name = "omega-longevity"
 version = "0.1.0"
 dependencies = [
+ "async-trait",
  "chrono",
  "omega-consciousness",
  "omega-core",
@@ -2490,10 +2491,12 @@ dependencies = [
  "omega-singularity",
  "omega-snn",
  "petgraph",
+ "pgvector",
  "rand 0.8.5",
  "rand_distr",
  "serde",
  "serde_json",
+ "sqlx",
  "thiserror 1.0.69",
  "tokio",
  "tokio-test",

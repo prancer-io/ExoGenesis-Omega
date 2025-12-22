@@ -151,6 +151,10 @@ pub mod gene_environment;
 // with causal inference, information theory, and phase transitions
 pub mod attractor_landscape;
 
+// Gene Vector Database - Ultra-fast gene similarity search using ruvector-postgres
+// Provides vector embeddings for genes and high-performance similarity search
+pub mod gene_vector_db;
+
 // Re-exports
 pub use hallmarks::{Hallmark, HallmarkCategory, HallmarksGraph, Intervention, InterventionType};
 pub use biomarker_dreamer::{BiomarkerDreamer, DreamerConfig, NovelTarget, DreamSession};
@@ -200,6 +204,16 @@ pub use attractor_landscape::{
     InterventionWindow, DetectedWarning,
     // Optimization
     InterventionOptimizer, InterventionPoint, OptimizationSummary,
+};
+
+// Gene Vector Database re-exports - Ultra-fast gene similarity search
+pub use gene_vector_db::{
+    // Configuration
+    GeneVectorConfig, IndexType,
+    // Embeddings
+    GeneEmbedding, GeneMetadata, GeneCategory, GeneEncoder,
+    // Search
+    SimilarityResult, SearchParams, InMemoryGeneVectorDB, DatabaseStats,
 };
 
 use serde::{Deserialize, Serialize};

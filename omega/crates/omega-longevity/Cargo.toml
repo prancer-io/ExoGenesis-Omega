@@ -24,6 +24,13 @@ thiserror = "1.0"
 chrono = { version = "0.4", features = ["serde"] }
 petgraph = "0.6"
 
+# Vector database for ultra-fast gene similarity search
+# Note: sqlx and pgvector are optional - enable with `vector-db` feature
+# Uses ruvector-postgres Docker image: docker.io/ruvnet/ruvector-postgres
+sqlx = { version = "0.8", features = ["runtime-tokio", "postgres", "uuid", "chrono"], optional = true }
+pgvector = { version = "0.4", features = ["sqlx"], optional = true }
+async-trait = { version = "0.1", optional = true }
+
 [dev-dependencies]
 tokio-test = "0.4"
 
@@ -31,3 +38,4 @@ tokio-test = "0.4"
 default = []
 clinical = []  # Enable clinical trial simulation features
 omics = []     # Enable multi-omics integration
+vector-db = ["sqlx", "pgvector", "async-trait"]  # Enable ruvector-postgres integration
