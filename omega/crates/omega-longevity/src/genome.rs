@@ -228,7 +228,7 @@ pub struct GeneVariant {
     pub longevity_effect: f64, // -1 to +1 (harmful to protective)
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub enum VariantEffect {
     LossOfFunction,
     GainOfFunction,

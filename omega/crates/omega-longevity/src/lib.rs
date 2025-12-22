@@ -155,6 +155,11 @@ pub mod attractor_landscape;
 // Provides vector embeddings for genes and high-performance similarity search
 pub mod gene_vector_db;
 
+// Genome-Scale Vector Database - Scalable to billions of variants
+// Chromosome partitioning, batch processing, compression, and GNN-enhanced search
+// Uses ruvector technologies for genome-level data (150M+ variants)
+pub mod genome_scale_db;
+
 // Re-exports
 pub use hallmarks::{Hallmark, HallmarkCategory, HallmarksGraph, Intervention, InterventionType};
 pub use biomarker_dreamer::{BiomarkerDreamer, DreamerConfig, NovelTarget, DreamSession};
