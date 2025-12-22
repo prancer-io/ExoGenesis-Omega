@@ -77,6 +77,7 @@ pub mod telepathy;
 pub mod orchestrator;
 pub mod synapse;
 pub mod dream_cinema;
+pub mod prediction;
 
 pub use collective::{
     CollectiveConsciousness, CollectiveConfig, ConsciousnessNode,
@@ -115,6 +116,12 @@ pub use dream_cinema::{
     DreamCinema, CinemaConfig, DreamFilm, CinematicScene,
     DreamCharacter, PlotTwist, Setting, Atmosphere,
     Archetype, Emotion, Genre, CreativeRole, ProductionState,
+};
+pub use prediction::{
+    OmegaPrediction, PredictionConfig, PredictionState, PredictionMetrics,
+    ConsciousnessFromPrediction, TemporalCascade, TemporalScale, CascadeConfig,
+    CausalWorldModel, CounterfactualEngine, MetaOracle, SurpriseQuantifier,
+    OmegaActiveInference, EmergentForesight, OmegaHierarchy, AwarenessLevel,
 };
 
 use thiserror::Error;
