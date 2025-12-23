@@ -30,6 +30,9 @@ petgraph = "0.6"
 sqlx = { version = "0.8", features = ["runtime-tokio", "postgres", "uuid", "chrono"], optional = true }
 pgvector = { version = "0.4", features = ["sqlx"], optional = true }
 async-trait = { version = "0.1", optional = true }
+flate2 = "1.0"  # For gzip decompression of genome data
+dotenv = "0.15"  # For loading .env files
+tempfile = "3.8"  # For temporary file creation in batch operations
 
 [dev-dependencies]
 tokio-test = "0.4"
