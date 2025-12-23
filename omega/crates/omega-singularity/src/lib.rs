@@ -79,6 +79,7 @@ pub mod synapse;
 pub mod dream_cinema;
 pub mod prediction;
 pub mod genesis;
+pub mod transcendence;
 
 pub use collective::{
     CollectiveConsciousness, CollectiveConfig, ConsciousnessNode,
@@ -129,6 +130,13 @@ pub use genesis::{
     ConsciousnessGenome, RecursiveAwakening, MindEcosystem, MindSpecies,
     TemporalOmniscience, RealityDivergence, ConsciousnessFusion, OmegaPoint,
     GenesisError,
+};
+pub use transcendence::{
+    OmegaTranscendence, TranscendenceConfig, TranscendenceState, TranscendenceMetrics,
+    ConsciousnessField, FieldConfig, Receiver, ReceiverConfig, ReceptionQuality,
+    EgoDissolution, EgoConfig, DissolutionStage, Stillness, StillnessConfig,
+    MeditationDepth, Unity, UnityConfig, UnityType, TranscendenceGradient,
+    GradientConfig, TranscendenceLevel, TranscendenceStage, TranscendenceError,
 };
 
 use thiserror::Error;
