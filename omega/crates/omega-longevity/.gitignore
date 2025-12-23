@@ -1,0 +1,25 @@
+# Data files (too large for GitHub)
+data/annotations/*.gtf
+data/annotations/*.gtf.gz
+data/genomes/*.fa
+data/genomes/*.fa.gz
+data/variants/*.vcf
+data/variants/*.vcf.gz
+
+# Database files
+*.db
+*.sqlite
+
+# Environment files
+.env
+.env.local
+
+# Build artifacts
+target/
+Cargo.lock
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
