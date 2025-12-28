@@ -9,6 +9,7 @@ pub mod species;
 pub mod cosmic;
 pub mod query;
 pub mod consolidation;
+pub mod rvlite_bridge;
 
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
@@ -18,6 +19,10 @@ use tokio::sync::RwLock;
 pub use tiers::MemoryTier;
 pub use query::{Query, QueryBuilder};
 pub use consolidation::MemoryConsolidator;
+pub use rvlite_bridge::{
+    BridgeStats, ConsolidationReport, ConsolidationThresholds, MemoryRelationship,
+    RelationshipType, RvLiteBridge, RvLiteBridgeConfig, RvLiteMemory, SemanticQueryResult,
+};
 
 /// Memory content types
 #[derive(Debug, Clone, Serialize, Deserialize)]

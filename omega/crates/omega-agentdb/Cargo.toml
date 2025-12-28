@@ -21,6 +21,7 @@ thiserror = "1.0"
 uuid = { version = "1.6", features = ["v4", "serde"] }
 ordered-float = "4.2"
 rand = "0.8"
+async-trait = "0.1"
 
 # HNSW index
 instant-distance = "0.6"

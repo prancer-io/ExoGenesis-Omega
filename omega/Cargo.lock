@@ -3106,6 +3106,7 @@ dependencies = [
 name = "omega-agentdb"
 version = "1.0.0"
 dependencies = [
+ "async-trait",
  "chrono",
  "instant-distance",
  "ordered-float 4.6.0",
