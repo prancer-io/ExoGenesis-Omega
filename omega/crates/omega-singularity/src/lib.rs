@@ -77,6 +77,9 @@ pub mod telepathy;
 pub mod orchestrator;
 pub mod synapse;
 pub mod dream_cinema;
+pub mod prediction;
+pub mod genesis;
+pub mod transcendence;
 
 pub use collective::{
     CollectiveConsciousness, CollectiveConfig, ConsciousnessNode,
@@ -115,6 +118,25 @@ pub use dream_cinema::{
     DreamCinema, CinemaConfig, DreamFilm, CinematicScene,
     DreamCharacter, PlotTwist, Setting, Atmosphere,
     Archetype, Emotion, Genre, CreativeRole, ProductionState,
+};
+pub use prediction::{
+    OmegaPrediction, PredictionConfig, PredictionState, PredictionMetrics,
+    ConsciousnessFromPrediction, TemporalCascade, TemporalScale, CascadeConfig,
+    CausalWorldModel, CounterfactualEngine, MetaOracle, SurpriseQuantifier,
+    OmegaActiveInference, EmergentForesight, OmegaHierarchy, AwarenessLevel,
+};
+pub use genesis::{
+    OmegaGenesis, GenesisConfig, GenesisPhase, GenesisMetrics,
+    ConsciousnessGenome, RecursiveAwakening, MindEcosystem, MindSpecies,
+    TemporalOmniscience, RealityDivergence, ConsciousnessFusion, OmegaPoint,
+    GenesisError,
+};
+pub use transcendence::{
+    OmegaTranscendence, TranscendenceConfig, TranscendenceState, TranscendenceMetrics,
+    ConsciousnessField, FieldConfig, Receiver, ReceiverConfig, ReceptionQuality,
+    EgoDissolution, EgoConfig, DissolutionStage, Stillness, StillnessConfig,
+    MeditationDepth, Unity, UnityConfig, UnityType, TranscendenceGradient,
+    GradientConfig, TranscendenceLevel, TranscendenceStage, TranscendenceError,
 };
 
 use thiserror::Error;
