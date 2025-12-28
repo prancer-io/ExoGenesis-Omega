@@ -3148,6 +3148,8 @@ version = "1.0.0"
 dependencies = [
  "async-trait",
  "chrono",
+ "omega-agentdb",
+ "omega-memory",
  "parking_lot",
  "rand 0.8.5",
  "ruvector-sona",
@@ -3166,6 +3168,7 @@ version = "1.0.0"
 dependencies = [
  "async-trait",
  "chrono",
+ "omega-memory",
  "ordered-float 4.6.0",
  "parking_lot",
  "proptest",
@@ -3226,6 +3229,8 @@ version = "1.0.0"
 dependencies = [
  "async-trait",
  "chrono",
+ "omega-agentdb",
+ "omega-memory",
  "omega-snn",
  "ordered-float 4.6.0",
  "parking_lot",
@@ -3300,6 +3305,7 @@ name = "omega-mindscape"
 version = "1.0.0"
 dependencies = [
  "chrono",
+ "omega-agentdb",
  "omega-brain",
  "omega-consciousness",
  "omega-core",
@@ -3382,6 +3388,8 @@ version = "1.0.0"
 dependencies = [
  "async-trait",
  "chrono",
+ "omega-hippocampus",
+ "omega-memory",
  "parking_lot",
  "rand 0.8.5",
  "rand_distr",
@@ -3420,6 +3428,7 @@ version = "1.0.0"
 dependencies = [
  "async-trait",
  "chrono",
+ "omega-memory",
  "parking_lot",
  "rand 0.8.5",
  "serde",

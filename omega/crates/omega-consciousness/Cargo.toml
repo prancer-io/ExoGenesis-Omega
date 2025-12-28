@@ -25,6 +25,13 @@ rand = "0.8"
 parking_lot = "0.12"
 ordered-float = "4.2"
 
+# Memory integration for consciousness state tracking
+omega-memory = { version = "1.0.0", path = "../omega-memory", optional = true }
+
+[features]
+default = []
+memory-integration = ["omega-memory"]
+
 [dev-dependencies]
 tokio-test = "0.4"
 proptest.workspace = true

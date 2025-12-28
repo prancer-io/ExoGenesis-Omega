@@ -28,6 +28,10 @@ async-trait = { workspace = true }
 # RuVector crates for runtime adaptation
 ruvector-sona = { version = "0.1", optional = true }
 
+# Memory integration for persistent learning
+omega-memory = { version = "1.0.0", path = "../omega-memory", optional = true }
+omega-agentdb = { version = "1.0.0", path = "../omega-agentdb", optional = true }
+
 # Additional dependencies
 parking_lot = "0.12"
 rand = "0.8"
@@ -35,6 +39,8 @@ rand = "0.8"
 [features]
 default = []
 runtime-adaptation = ["ruvector-sona"]
+persistent-memory = ["omega-memory", "omega-agentdb"]
+full = ["runtime-adaptation", "persistent-memory"]
 
 [dev-dependencies]
 tokio-test = "0.4"

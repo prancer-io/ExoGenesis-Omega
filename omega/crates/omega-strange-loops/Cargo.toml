@@ -27,5 +27,12 @@ parking_lot = "0.12"
 # SIMD acceleration
 simsimd = "5.9"
 
+# Memory integration for self-referential tracking
+omega-memory = { version = "1.0.0", path = "../omega-memory", optional = true }
+
+[features]
+default = []
+memory-integration = ["omega-memory"]
+
 [dev-dependencies]
 tokio-test = "0.4"

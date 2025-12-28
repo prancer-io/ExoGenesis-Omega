@@ -28,6 +28,8 @@ ordered-float = "4.2"
 
 # Local dependencies
 omega-snn = { version = "1.0.0", path = "../omega-snn" }
+omega-memory = { version = "1.0.0", path = "../omega-memory" }
+omega-agentdb = { version = "1.0.0", path = "../omega-agentdb" }
 
 [dev-dependencies]
 tokio-test = "0.4"
