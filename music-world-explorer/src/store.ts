@@ -1,6 +1,7 @@
 import { create } from 'zustand'
 
 export type Genre = 'electronic' | 'classical' | 'metal' | 'ambient' | 'jazz'
+export type AudioMode = 'synth' | 'file'
 
 export interface AudioFeatures {
   // Core features
@@ -25,10 +26,31 @@ export interface AudioFeatures {
   time: number
 }
 
+export interface StoryState {
+  chapterName: string
+  chapterIndex: number
+  chapterProgress: number
+  totalChapters: number
+}
+
 interface AppState {
   // Genre
   genre: Genre
   setGenre: (genre: Genre) => void
+
+  // Audio mode
+  audioMode: AudioMode
+  setAudioMode: (mode: AudioMode) => void
+
+  // Audio file
+  audioFile: File | null
+  setAudioFile: (file: File | null) => void
+  audioFileName: string
+  setAudioFileName: (name: string) => void
+
+  // Volume
+  volume: number
+  setVolume: (volume: number) => void
 
   // Audio
   audioFeatures: AudioFeatures
@@ -37,6 +59,10 @@ interface AppState {
   // Playback
   isPlaying: boolean
   setIsPlaying: (playing: boolean) => void
+
+  // Story
+  storyState: StoryState
+  setStoryState: (state: Partial<StoryState>) => void
 
   // Camera
   cameraMode: 'orbit' | 'fly' | 'cinematic'
@@ -65,9 +91,27 @@ const defaultAudioFeatures: AudioFeatures = {
   time: 0,
 }
 
+const defaultStoryState: StoryState = {
+  chapterName: 'awakening',
+  chapterIndex: 0,
+  chapterProgress: 0,
+  totalChapters: 5,
+}
+
 export const useStore = create<AppState>((set) => ({
   genre: 'electronic',
   setGenre: (genre) => set({ genre }),
+
+  audioMode: 'synth',
+  setAudioMode: (audioMode) => set({ audioMode }),
+
+  audioFile: null,
+  setAudioFile: (audioFile) => set({ audioFile }),
+  audioFileName: '',
+  setAudioFileName: (audioFileName) => set({ audioFileName }),
+
+  volume: 0.7,
+  setVolume: (volume) => set({ volume }),
 
   audioFeatures: defaultAudioFeatures,
   setAudioFeatures: (features) => set((state) => ({
@@ -76,6 +120,11 @@ export const useStore = create<AppState>((set) => ({
 
   isPlaying: true,
   setIsPlaying: (isPlaying) => set({ isPlaying }),
+
+  storyState: defaultStoryState,
+  setStoryState: (state) => set((prev) => ({
+    storyState: { ...prev.storyState, ...state }
+  })),
 
   cameraMode: 'cinematic',
   setCameraMode: (cameraMode) => set({ cameraMode }),

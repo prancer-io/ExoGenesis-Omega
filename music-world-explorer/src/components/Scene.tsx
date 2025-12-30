@@ -18,7 +18,7 @@ import * as THREE from 'three'
 import { useStore, type Genre } from '../store'
 import { Terrain } from '../systems/Terrain'
 import { ParticleSystem, AtmosphericParticles } from '../systems/Particles'
-import { GenreStructures } from '../systems/Structures'
+import { StoryStructures } from '../systems/StoryStructures'
 
 // Genre-specific environment settings
 const envConfigs: Record<Genre, {
@@ -299,8 +299,8 @@ export function Scene() {
       {/* Procedural terrain */}
       <Terrain size={300} resolution={150} />
 
-      {/* Genre-specific structures */}
-      <GenreStructures />
+      {/* Story-driven genre structures */}
+      <StoryStructures />
 
       {/* Particle systems */}
       <ParticleSystem count={4000} />
