@@ -18,7 +18,7 @@ import * as THREE from 'three'
 import { useStore, type Genre } from '../store'
 import { Terrain } from '../systems/Terrain'
 import { ParticleSystem, AtmosphericParticles } from '../systems/Particles'
-import { StoryStructures } from '../systems/StoryStructures'
+import { DynamicStoryWorld } from '../systems/DynamicStoryWorld'
 
 // Genre-specific environment settings
 const envConfigs: Record<Genre, {
@@ -83,23 +83,30 @@ const envConfigs: Record<Genre, {
   },
 }
 
-// Cinematic camera controller
+// Cinematic camera controller - more dynamic
 function CinematicCamera() {
   const { camera } = useThree()
   const audioFeatures = useStore((s) => s.audioFeatures)
   const cameraMode = useStore((s) => s.cameraMode)
-  const targetRef = useRef(new THREE.Vector3(0, 10, 0))
-  const positionRef = useRef(new THREE.Vector3(0, 20, 50))
-  const shakeRef = useRef({ x: 0, y: 0 })
+  const targetRef = useRef(new THREE.Vector3(0, 20, 0))
+  const positionRef = useRef(new THREE.Vector3(0, 30, 60))
+  const shakeRef = useRef({ x: 0, y: 0, z: 0 })
+  const zoomRef = useRef(60)
+  const lastBeatTimeRef = useRef(0)
 
   useFrame((state, delta) => {
     const time = state.clock.elapsedTime
 
+    // Dynamic zoom based on energy
+    const targetZoom = 50 + audioFeatures.rms * 30 - audioFeatures.bass * 20
+    zoomRef.current = THREE.MathUtils.lerp(zoomRef.current, targetZoom, 0.05)
+
     if (cameraMode === 'cinematic') {
-      // Sweeping orbital camera
-      const radius = 80 + Math.sin(time * 0.1) * 20
-      const height = 25 + Math.sin(time * 0.15) * 15
-      const angle = time * 0.1
+      // More dramatic sweeping motion
+      const baseRadius = zoomRef.current + 20
+      const radius = baseRadius + Math.sin(time * 0.2) * 25
+      const height = 20 + Math.sin(time * 0.15) * 20 + audioFeatures.bass * 15
+      const angle = time * 0.12 + audioFeatures.beatIntensity * 0.5
 
       positionRef.current.set(
         Math.cos(angle) * radius,
@@ -107,47 +114,61 @@ function CinematicCamera() {
         Math.sin(angle) * radius
       )
 
+      // Target follows the energy
       targetRef.current.set(
-        Math.sin(time * 0.05) * 10,
-        10 + Math.sin(time * 0.1) * 5,
-        Math.cos(time * 0.05) * 10
+        Math.sin(time * 0.08) * 15,
+        15 + audioFeatures.mid * 10,
+        Math.cos(time * 0.08) * 15
       )
     } else if (cameraMode === 'fly') {
-      // Flying through the world
-      const speed = 20
+      // Flying through with energy-based speed
+      const speed = 15 + audioFeatures.rms * 20
       positionRef.current.z -= delta * speed
-      positionRef.current.x = Math.sin(time * 0.3) * 30
-      positionRef.current.y = 15 + Math.sin(time * 0.2) * 10
+      positionRef.current.x = Math.sin(time * 0.3) * 40
+      positionRef.current.y = 20 + Math.sin(time * 0.2) * 15 + audioFeatures.bass * 10
 
       targetRef.current.set(
-        positionRef.current.x + Math.sin(time * 0.5) * 10,
-        10,
-        positionRef.current.z - 50
+        positionRef.current.x + Math.sin(time * 0.5) * 15,
+        15 + audioFeatures.high * 10,
+        positionRef.current.z - 60
       )
 
-      // Reset position periodically
       if (positionRef.current.z < -500) {
         positionRef.current.z = 100
       }
     }
 
-    // Camera shake on beats
-    if (audioFeatures.isBeat) {
-      shakeRef.current.x = (Math.random() - 0.5) * audioFeatures.beatIntensity * 2
-      shakeRef.current.y = (Math.random() - 0.5) * audioFeatures.beatIntensity * 2
+    // Dramatic camera shake on beats
+    if (audioFeatures.isBeat && time - lastBeatTimeRef.current > 0.1) {
+      const shakeIntensity = audioFeatures.beatIntensity * 4
+      shakeRef.current.x = (Math.random() - 0.5) * shakeIntensity
+      shakeRef.current.y = (Math.random() - 0.5) * shakeIntensity
+      shakeRef.current.z = (Math.random() - 0.5) * shakeIntensity * 0.5
+      lastBeatTimeRef.current = time
     } else {
-      shakeRef.current.x *= 0.9
-      shakeRef.current.y *= 0.9
+      shakeRef.current.x *= 0.85
+      shakeRef.current.y *= 0.85
+      shakeRef.current.z *= 0.85
     }
 
     // Smooth camera movement
-    camera.position.lerp(positionRef.current, delta * 2)
+    camera.position.lerp(positionRef.current, delta * 3)
     camera.position.x += shakeRef.current.x
     camera.position.y += shakeRef.current.y
+    camera.position.z += shakeRef.current.z
 
-    // Look at target
-    const lookTarget = targetRef.current.clone()
-    camera.lookAt(lookTarget)
+    // Dynamic FOV
+    if ('fov' in camera) {
+      const targetFov = 55 + audioFeatures.beatIntensity * 10
+      ;(camera as THREE.PerspectiveCamera).fov = THREE.MathUtils.lerp(
+        (camera as THREE.PerspectiveCamera).fov,
+        targetFov,
+        0.1
+      )
+      ;(camera as THREE.PerspectiveCamera).updateProjectionMatrix()
+    }
+
+    camera.lookAt(targetRef.current)
   })
 
   return null
@@ -218,42 +239,45 @@ function DynamicLighting() {
   )
 }
 
-// Post-processing effects
+// Post-processing effects - more dramatic
 function PostProcessing() {
   const genre = useStore((s) => s.genre)
   const audioFeatures = useStore((s) => s.audioFeatures)
   const config = envConfigs[genre]
 
+  // More intense bloom during high energy
+  const dynamicBloom = config.bloomIntensity + audioFeatures.beatIntensity * 1.5 + audioFeatures.bass * 0.5
+
   return (
     <EffectComposer>
-      {/* Bloom for glow effects */}
+      {/* Intense bloom for glow effects */}
       <Bloom
-        intensity={config.bloomIntensity + audioFeatures.beatIntensity * 0.5}
-        luminanceThreshold={config.bloomThreshold}
-        luminanceSmoothing={0.9}
+        intensity={dynamicBloom}
+        luminanceThreshold={config.bloomThreshold - audioFeatures.rms * 0.1}
+        luminanceSmoothing={0.8}
         mipmapBlur
       />
 
-      {/* Chromatic aberration on beats - using simple offset */}
+      {/* Strong chromatic aberration on beats */}
       <ChromaticAberration
         offset={new THREE.Vector2(
-          audioFeatures.beatIntensity * 0.002,
-          audioFeatures.beatIntensity * 0.002
+          audioFeatures.beatIntensity * 0.005 + audioFeatures.bass * 0.002,
+          audioFeatures.beatIntensity * 0.005 + audioFeatures.bass * 0.002
         )}
         radialModulation={false}
         modulationOffset={0.5}
       />
 
-      {/* Vignette for cinematic look */}
+      {/* Dynamic vignette */}
       <Vignette
-        offset={0.3}
-        darkness={0.7 + audioFeatures.bass * 0.2}
+        offset={0.2 + audioFeatures.beatIntensity * 0.1}
+        darkness={0.6 + audioFeatures.bass * 0.3}
         blendFunction={BlendFunction.NORMAL}
       />
 
       {/* Subtle noise for film grain */}
       <Noise
-        opacity={0.02}
+        opacity={0.03 + audioFeatures.high * 0.02}
         blendFunction={BlendFunction.OVERLAY}
       />
 
@@ -299,12 +323,12 @@ export function Scene() {
       {/* Procedural terrain */}
       <Terrain size={300} resolution={150} />
 
-      {/* Story-driven genre structures */}
-      <StoryStructures />
+      {/* Dynamic story world - main visual show */}
+      <DynamicStoryWorld />
 
-      {/* Particle systems */}
-      <ParticleSystem count={4000} />
-      <AtmosphericParticles count={800} />
+      {/* Enhanced particle systems */}
+      <ParticleSystem count={6000} />
+      <AtmosphericParticles count={1200} />
 
       {/* Post-processing */}
       <PostProcessing />
