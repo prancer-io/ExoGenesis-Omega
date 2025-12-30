@@ -1,0 +1,871 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SYNESTHESIA - Music-Driven Visualization</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: #000;
+            overflow: hidden;
+            font-family: 'Segoe UI', system-ui, sans-serif;
+        }
+        #canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+        #ui {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 100;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+        }
+        #drop-zone {
+            padding: 40px 60px;
+            border: 2px dashed rgba(255,255,255,0.3);
+            border-radius: 20px;
+            color: rgba(255,255,255,0.7);
+            font-size: 18px;
+            cursor: pointer;
+            transition: all 0.3s;
+            background: rgba(0,0,0,0.5);
+            backdrop-filter: blur(10px);
+        }
+        #drop-zone:hover {
+            border-color: rgba(255,255,255,0.6);
+            background: rgba(255,255,255,0.1);
+        }
+        #drop-zone.active {
+            border-color: #00ff88;
+            background: rgba(0,255,136,0.1);
+        }
+        #file-input { display: none; }
+        #info {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            color: rgba(255,255,255,0.8);
+            font-size: 14px;
+            z-index: 100;
+            background: rgba(0,0,0,0.5);
+            padding: 15px 20px;
+            border-radius: 10px;
+            backdrop-filter: blur(10px);
+            max-width: 300px;
+        }
+        #info h1 { font-size: 24px; margin-bottom: 10px; color: #fff; }
+        #info p { margin-bottom: 8px; line-height: 1.4; }
+        #stats {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            color: rgba(255,255,255,0.9);
+            font-size: 12px;
+            font-family: monospace;
+            z-index: 100;
+            background: rgba(0,0,0,0.7);
+            padding: 15px;
+            border-radius: 10px;
+            min-width: 200px;
+        }
+        .stat-row { display: flex; justify-content: space-between; margin: 4px 0; }
+        .stat-label { color: rgba(255,255,255,0.6); }
+        .stat-value { color: #00ff88; }
+        .stat-bar {
+            height: 4px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 2px;
+            margin-top: 2px;
+            overflow: hidden;
+        }
+        .stat-bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #00ff88, #00aaff);
+            transition: width 0.05s;
+        }
+        #clarity-display {
+            position: fixed;
+            bottom: 100px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: #fff;
+            font-size: 16px;
+            text-align: center;
+            z-index: 100;
+        }
+        #clarity-level {
+            font-size: 32px;
+            font-weight: bold;
+            background: linear-gradient(90deg, #ff6b6b, #ffd93d, #6bcb77, #4d96ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .hidden { display: none !important; }
+    </style>
+</head>
+<body>
+    <canvas id="canvas"></canvas>
+
+    <div id="info">
+        <h1>◉ SYNESTHESIA</h1>
+        <p>Music-driven visualization that reveals itself like a painting coming to life.</p>
+        <p>Drop any audio file to begin.</p>
+    </div>
+
+    <div id="stats" class="hidden">
+        <div class="stat-row">
+            <span class="stat-label">Key:</span>
+            <span class="stat-value" id="stat-key">--</span>
+        </div>
+        <div class="stat-row">
+            <span class="stat-label">BPM:</span>
+            <span class="stat-value" id="stat-bpm">--</span>
+        </div>
+        <div class="stat-row">
+            <span class="stat-label">Section:</span>
+            <span class="stat-value" id="stat-section">--</span>
+        </div>
+        <div class="stat-row">
+            <span class="stat-label">Emotion:</span>
+            <span class="stat-value" id="stat-emotion">--</span>
+        </div>
+        <div style="margin-top: 10px;">
+            <div class="stat-row">
+                <span class="stat-label">Bass</span>
+            </div>
+            <div class="stat-bar"><div class="stat-bar-fill" id="bar-bass"></div></div>
+        </div>
+        <div>
+            <div class="stat-row">
+                <span class="stat-label">Mid</span>
+            </div>
+            <div class="stat-bar"><div class="stat-bar-fill" id="bar-mid"></div></div>
+        </div>
+        <div>
+            <div class="stat-row">
+                <span class="stat-label">High</span>
+            </div>
+            <div class="stat-bar"><div class="stat-bar-fill" id="bar-high"></div></div>
+        </div>
+        <div>
+            <div class="stat-row">
+                <span class="stat-label">Energy</span>
+            </div>
+            <div class="stat-bar"><div class="stat-bar-fill" id="bar-energy"></div></div>
+        </div>
+    </div>
+
+    <div id="clarity-display" class="hidden">
+        <div id="clarity-level">ABSTRACT</div>
+        <div id="clarity-desc">Pure sensation</div>
+    </div>
+
+    <div id="ui">
+        <div id="drop-zone">
+            🎵 Drop audio file or click to select
+        </div>
+        <input type="file" id="file-input" accept="audio/*">
+    </div>
+
+    <script>
+    // ═══════════════════════════════════════════════════════════════════
+    // SYNESTHESIA - Music-Driven Visualization Demo
+    // ═══════════════════════════════════════════════════════════════════
+
+    const canvas = document.getElementById('canvas');
+    const gl = canvas.getContext('webgl2') || canvas.getContext('webgl');
+    const dropZone = document.getElementById('drop-zone');
+    const fileInput = document.getElementById('file-input');
+    const stats = document.getElementById('stats');
+    const clarityDisplay = document.getElementById('clarity-display');
+    const info = document.getElementById('info');
+
+    // Audio context and analyzer
+    let audioContext;
+    let analyser;
+    let audioSource;
+    let audioBuffer;
+    let isPlaying = false;
+    let startTime = 0;
+
+    // Music understanding state
+    const musicState = {
+        // Signal layer
+        spectrum: new Float32Array(512),
+        bass: 0,
+        mid: 0,
+        high: 0,
+        energy: 0,
+        isBeat: false,
+        beatStrength: 0,
+
+        // Theory layer (simulated)
+        key: 'A',
+        mode: 'minor',
+        tempo: 120,
+
+        // Structure layer
+        section: 'Intro',
+        sectionProgress: 0,
+
+        // Emotion
+        emotion: 'Mysterious',
+        valence: 0,
+        arousal: 0,
+
+        // Revelation
+        clarity: 0,
+        keyClarity: 0,
+        structureClarity: 0,
+        patternClarity: 0,
+        climaxClarity: 0,
+
+        // Time
+        time: 0,
+        songDuration: 180,
+    };
+
+    // Beat detection state
+    let energyHistory = [];
+    let lastBeatTime = 0;
+    let beatIntervals = [];
+
+    // ═══════════════════════════════════════════════════════════════════
+    // WEBGL SHADERS
+    // ═══════════════════════════════════════════════════════════════════
+
+    const vertexShaderSource = `#version 300 es
+        in vec2 a_position;
+        out vec2 v_uv;
+        void main() {
+            v_uv = a_position * 0.5 + 0.5;
+            gl_Position = vec4(a_position, 0.0, 1.0);
+        }
+    `;
+
+    const fragmentShaderSource = `#version 300 es
+        precision highp float;
+
+        in vec2 v_uv;
+        out vec4 fragColor;
+
+        uniform float u_time;
+        uniform float u_clarity;
+        uniform float u_bass;
+        uniform float u_mid;
+        uniform float u_high;
+        uniform float u_energy;
+        uniform float u_beat;
+        uniform float u_valence;
+        uniform float u_arousal;
+        uniform vec2 u_resolution;
+
+        // Noise functions
+        float hash(vec2 p) {
+            return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453);
+        }
+
+        float noise(vec2 p) {
+            vec2 i = floor(p);
+            vec2 f = fract(p);
+            f = f * f * (3.0 - 2.0 * f);
+            return mix(
+                mix(hash(i), hash(i + vec2(1.0, 0.0)), f.x),
+                mix(hash(i + vec2(0.0, 1.0)), hash(i + vec2(1.0, 1.0)), f.x),
+                f.y
+            );
+        }
+
+        float fbm(vec2 p, int octaves) {
+            float value = 0.0;
+            float amplitude = 0.5;
+            for(int i = 0; i < octaves; i++) {
+                value += amplitude * noise(p);
+                p *= 2.0;
+                amplitude *= 0.5;
+            }
+            return value;
+        }
+
+        // Color from emotion
+        vec3 emotionColor(float valence, float arousal, float t) {
+            // High arousal + positive = warm bright
+            // High arousal + negative = red/dark
+            // Low arousal + positive = cool calm
+            // Low arousal + negative = blue/purple dark
+
+            vec3 warm = vec3(1.0, 0.6, 0.2);
+            vec3 cool = vec3(0.2, 0.5, 1.0);
+            vec3 intense = vec3(1.0, 0.2, 0.3);
+            vec3 dark = vec3(0.3, 0.1, 0.5);
+
+            vec3 positive = mix(cool, warm, arousal * 0.5 + 0.5);
+            vec3 negative = mix(dark, intense, arousal * 0.5 + 0.5);
+
+            return mix(negative, positive, valence * 0.5 + 0.5);
+        }
+
+        void main() {
+            vec2 uv = v_uv;
+            vec2 center = uv - 0.5;
+            float dist = length(center);
+            float angle = atan(center.y, center.x);
+
+            // Time with beat influence
+            float t = u_time * 0.5 + u_beat * 0.2;
+
+            // Base color from emotion
+            vec3 baseColor = emotionColor(u_valence, u_arousal, t);
+
+            // ─────────────────────────────────────────────────────────
+            // ABSTRACT LAYER (always present, fades with clarity)
+            // ─────────────────────────────────────────────────────────
+
+            float abstractAmount = 1.0 - u_clarity;
+
+            // Flowing noise
+            vec2 noiseCoord = uv * 3.0 + t * 0.3;
+            float n = fbm(noiseCoord, 4);
+
+            // Audio-reactive distortion
+            noiseCoord += vec2(
+                sin(angle * 3.0 + t) * u_bass * 0.2,
+                cos(angle * 2.0 + t) * u_mid * 0.2
+            );
+            n = fbm(noiseCoord, 5);
+
+            // Abstract color mixing
+            vec3 abstractColor = baseColor;
+            abstractColor = mix(abstractColor, baseColor * 0.5, n);
+            abstractColor += vec3(u_high * 0.3) * (1.0 - dist);
+
+            // Beat pulse for abstract
+            float beatPulse = u_beat * (1.0 - dist * 0.5);
+            abstractColor += beatPulse * 0.3;
+
+            // ─────────────────────────────────────────────────────────
+            // EMERGING LAYER (clarity 0.15-0.35)
+            // ─────────────────────────────────────────────────────────
+
+            float emergingAmount = smoothstep(0.1, 0.35, u_clarity) * (1.0 - smoothstep(0.35, 0.55, u_clarity));
+
+            // Shapes starting to form
+            float shape1 = smoothstep(0.4, 0.35, dist + sin(angle * 3.0 + t) * 0.1 * u_bass);
+            float shape2 = smoothstep(0.3, 0.25, dist + cos(angle * 2.0 - t * 0.7) * 0.15 * u_mid);
+
+            vec3 emergingColor = abstractColor;
+            emergingColor = mix(emergingColor, baseColor * 1.5, shape1 * 0.3);
+            emergingColor = mix(emergingColor, baseColor * 0.5, shape2 * 0.2);
+
+            // ─────────────────────────────────────────────────────────
+            // FORMING LAYER (clarity 0.35-0.55)
+            // ─────────────────────────────────────────────────────────
+
+            float formingAmount = smoothstep(0.3, 0.55, u_clarity) * (1.0 - smoothstep(0.55, 0.8, u_clarity));
+
+            // More defined shapes
+            float ring1 = smoothstep(0.02, 0.0, abs(dist - 0.3 - u_bass * 0.1));
+            float ring2 = smoothstep(0.015, 0.0, abs(dist - 0.45 - u_mid * 0.05));
+
+            // Radial rays
+            float rays = abs(sin(angle * 8.0 + t * 2.0)) * smoothstep(0.5, 0.2, dist);
+            rays *= u_high * 0.5;
+
+            vec3 formingColor = emergingColor;
+            formingColor += ring1 * baseColor * 2.0;
+            formingColor += ring2 * baseColor * 1.5;
+            formingColor += rays * vec3(1.0);
+
+            // ─────────────────────────────────────────────────────────
+            // CLARIFYING LAYER (clarity 0.55-0.8)
+            // ─────────────────────────────────────────────────────────
+
+            float clarifyingAmount = smoothstep(0.5, 0.8, u_clarity);
+
+            // Central focal point
+            float focal = smoothstep(0.15, 0.0, dist);
+            focal *= 1.0 + u_beat * 0.5;
+
+            // Structured patterns
+            float pattern = sin(uv.x * 20.0 + t) * sin(uv.y * 20.0 + t * 0.7);
+            pattern = smoothstep(0.8, 1.0, pattern) * (1.0 - dist);
+
+            vec3 clarifyingColor = formingColor;
+            clarifyingColor = mix(clarifyingColor, vec3(1.0), focal * 0.5);
+            clarifyingColor += pattern * baseColor * 0.3;
+
+            // ─────────────────────────────────────────────────────────
+            // REVEALED LAYER (clarity 0.8-1.0)
+            // ─────────────────────────────────────────────────────────
+
+            float revealedAmount = smoothstep(0.75, 1.0, u_clarity);
+
+            // Full scene emergence
+            vec3 revealedColor = clarifyingColor;
+
+            // Detailed texture
+            float detail = fbm(uv * 10.0 + t * 0.2, 6);
+            revealedColor = mix(revealedColor, revealedColor * (0.8 + detail * 0.4), revealedAmount);
+
+            // Cinematic vignette
+            float vignette = 1.0 - dist * 0.8;
+            revealedColor *= vignette;
+
+            // Final color blend based on clarity
+            vec3 finalColor = abstractColor;
+            finalColor = mix(finalColor, emergingColor, smoothstep(0.1, 0.3, u_clarity));
+            finalColor = mix(finalColor, formingColor, smoothstep(0.3, 0.5, u_clarity));
+            finalColor = mix(finalColor, clarifyingColor, smoothstep(0.5, 0.75, u_clarity));
+            finalColor = mix(finalColor, revealedColor, smoothstep(0.75, 0.95, u_clarity));
+
+            // ─────────────────────────────────────────────────────────
+            // POST-PROCESSING (always active)
+            // ─────────────────────────────────────────────────────────
+
+            // Beat-reactive bloom
+            float bloom = u_beat * 0.3 * (1.0 - dist);
+            finalColor += bloom;
+
+            // Chromatic aberration on high energy
+            float aberration = u_energy * 0.01;
+            vec2 rOffset = vec2(aberration, 0.0);
+            vec2 bOffset = vec2(-aberration, 0.0);
+            // (simplified - would sample texture in real implementation)
+            finalColor.r += aberration * 0.5;
+            finalColor.b -= aberration * 0.3;
+
+            // Film grain
+            float grain = hash(uv * u_time * 1000.0) * 0.05 * (1.0 - u_clarity * 0.5);
+            finalColor += grain;
+
+            // Vignette pulse with beat
+            float vignettePulse = 0.3 + u_beat * 0.1;
+            finalColor *= 1.0 - dist * vignettePulse;
+
+            // Gamma correction
+            finalColor = pow(finalColor, vec3(0.8));
+
+            fragColor = vec4(finalColor, 1.0);
+        }
+    `;
+
+    // ═══════════════════════════════════════════════════════════════════
+    // WEBGL INITIALIZATION
+    // ═══════════════════════════════════════════════════════════════════
+
+    let program, positionBuffer;
+    let uniforms = {};
+
+    function initWebGL() {
+        // Compile shaders
+        const vertexShader = gl.createShader(gl.VERTEX_SHADER);
+        gl.shaderSource(vertexShader, vertexShaderSource);
+        gl.compileShader(vertexShader);
+
+        if (!gl.getShaderParameter(vertexShader, gl.COMPILE_STATUS)) {
+            console.error('Vertex shader error:', gl.getShaderInfoLog(vertexShader));
+            return false;
+        }
+
+        const fragmentShader = gl.createShader(gl.FRAGMENT_SHADER);
+        gl.shaderSource(fragmentShader, fragmentShaderSource);
+        gl.compileShader(fragmentShader);
+
+        if (!gl.getShaderParameter(fragmentShader, gl.COMPILE_STATUS)) {
+            console.error('Fragment shader error:', gl.getShaderInfoLog(fragmentShader));
+            return false;
+        }
+
+        // Create program
+        program = gl.createProgram();
+        gl.attachShader(program, vertexShader);
+        gl.attachShader(program, fragmentShader);
+        gl.linkProgram(program);
+
+        if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
+            console.error('Program link error:', gl.getProgramInfoLog(program));
+            return false;
+        }
+
+        gl.useProgram(program);
+
+        // Create fullscreen quad
+        positionBuffer = gl.createBuffer();
+        gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
+        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([
+            -1, -1,  1, -1,  -1, 1,
+            -1,  1,  1, -1,   1, 1
+        ]), gl.STATIC_DRAW);
+
+        const positionLoc = gl.getAttribLocation(program, 'a_position');
+        gl.enableVertexAttribArray(positionLoc);
+        gl.vertexAttribPointer(positionLoc, 2, gl.FLOAT, false, 0, 0);
+
+        // Get uniform locations
+        uniforms = {
+            time: gl.getUniformLocation(program, 'u_time'),
+            clarity: gl.getUniformLocation(program, 'u_clarity'),
+            bass: gl.getUniformLocation(program, 'u_bass'),
+            mid: gl.getUniformLocation(program, 'u_mid'),
+            high: gl.getUniformLocation(program, 'u_high'),
+            energy: gl.getUniformLocation(program, 'u_energy'),
+            beat: gl.getUniformLocation(program, 'u_beat'),
+            valence: gl.getUniformLocation(program, 'u_valence'),
+            arousal: gl.getUniformLocation(program, 'u_arousal'),
+            resolution: gl.getUniformLocation(program, 'u_resolution'),
+        };
+
+        return true;
+    }
+
+    function resize() {
+        canvas.width = window.innerWidth * window.devicePixelRatio;
+        canvas.height = window.innerHeight * window.devicePixelRatio;
+        gl.viewport(0, 0, canvas.width, canvas.height);
+    }
+
+    // ═══════════════════════════════════════════════════════════════════
+    // AUDIO ANALYSIS
+    // ═══════════════════════════════════════════════════════════════════
+
+    function initAudio() {
+        audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        analyser = audioContext.createAnalyser();
+        analyser.fftSize = 2048;
+        analyser.smoothingTimeConstant = 0.8;
+    }
+
+    async function loadAudio(file) {
+        const arrayBuffer = await file.arrayBuffer();
+        audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
+        musicState.songDuration = audioBuffer.duration;
+
+        // Start playback
+        playAudio();
+    }
+
+    function playAudio() {
+        if (audioSource) {
+            audioSource.stop();
+        }
+
+        audioSource = audioContext.createBufferSource();
+        audioSource.buffer = audioBuffer;
+        audioSource.connect(analyser);
+        analyser.connect(audioContext.destination);
+
+        audioSource.start(0);
+        startTime = audioContext.currentTime;
+        isPlaying = true;
+
+        // Show UI elements
+        stats.classList.remove('hidden');
+        clarityDisplay.classList.remove('hidden');
+        dropZone.classList.add('hidden');
+        info.classList.add('hidden');
+    }
+
+    function analyzeAudio() {
+        if (!analyser || !isPlaying) return;
+
+        const frequencyData = new Uint8Array(analyser.frequencyBinCount);
+        analyser.getByteFrequencyData(frequencyData);
+
+        // Calculate frequency bands
+        const bassEnd = Math.floor(frequencyData.length * 0.1);
+        const midEnd = Math.floor(frequencyData.length * 0.5);
+
+        let bassSum = 0, midSum = 0, highSum = 0;
+        for (let i = 0; i < frequencyData.length; i++) {
+            const value = frequencyData[i] / 255;
+            if (i < bassEnd) bassSum += value;
+            else if (i < midEnd) midSum += value;
+            else highSum += value;
+        }
+
+        musicState.bass = bassSum / bassEnd;
+        musicState.mid = midSum / (midEnd - bassEnd);
+        musicState.high = highSum / (frequencyData.length - midEnd);
+
+        // Overall energy
+        const totalEnergy = (musicState.bass + musicState.mid + musicState.high) / 3;
+        musicState.energy = musicState.energy * 0.9 + totalEnergy * 0.1;
+
+        // Beat detection
+        energyHistory.push(musicState.bass + musicState.energy);
+        if (energyHistory.length > 43) energyHistory.shift();
+
+        const avgEnergy = energyHistory.reduce((a, b) => a + b, 0) / energyHistory.length;
+        const currentEnergy = musicState.bass + musicState.energy;
+        const threshold = avgEnergy * 1.4;
+
+        const now = performance.now();
+        if (currentEnergy > threshold && now - lastBeatTime > 250) {
+            musicState.isBeat = true;
+            musicState.beatStrength = Math.min((currentEnergy / threshold - 1) * 2, 1);
+
+            // Record beat for tempo estimation
+            if (lastBeatTime > 0) {
+                beatIntervals.push(now - lastBeatTime);
+                if (beatIntervals.length > 10) beatIntervals.shift();
+            }
+            lastBeatTime = now;
+        } else {
+            musicState.beatStrength *= 0.85;
+            if (musicState.beatStrength < 0.01) {
+                musicState.isBeat = false;
+            }
+        }
+
+        // Estimate tempo
+        if (beatIntervals.length > 3) {
+            const avgInterval = beatIntervals.reduce((a, b) => a + b, 0) / beatIntervals.length;
+            musicState.tempo = Math.round(60000 / avgInterval);
+        }
+
+        // Update time
+        musicState.time = audioContext.currentTime - startTime;
+    }
+
+    // ═══════════════════════════════════════════════════════════════════
+    // MUSIC UNDERSTANDING (Simulated - real version uses Essentia)
+    // ═══════════════════════════════════════════════════════════════════
+
+    function updateMusicUnderstanding() {
+        const t = musicState.time;
+        const duration = musicState.songDuration;
+        const progress = t / duration;
+
+        // Simulate section detection based on time
+        if (progress < 0.1) {
+            musicState.section = 'Intro';
+            musicState.sectionProgress = progress / 0.1;
+        } else if (progress < 0.3) {
+            musicState.section = 'Verse';
+            musicState.sectionProgress = (progress - 0.1) / 0.2;
+        } else if (progress < 0.4) {
+            musicState.section = 'Buildup';
+            musicState.sectionProgress = (progress - 0.3) / 0.1;
+        } else if (progress < 0.55) {
+            musicState.section = 'Chorus';
+            musicState.sectionProgress = (progress - 0.4) / 0.15;
+        } else if (progress < 0.65) {
+            musicState.section = 'Verse';
+            musicState.sectionProgress = (progress - 0.55) / 0.1;
+        } else if (progress < 0.75) {
+            musicState.section = 'Buildup';
+            musicState.sectionProgress = (progress - 0.65) / 0.1;
+        } else if (progress < 0.9) {
+            musicState.section = 'Drop';
+            musicState.sectionProgress = (progress - 0.75) / 0.15;
+        } else {
+            musicState.section = 'Outro';
+            musicState.sectionProgress = (progress - 0.9) / 0.1;
+        }
+
+        // Derive emotion from energy and section
+        const arousal = musicState.energy * 2 - 1;
+        const valence = musicState.section === 'Chorus' || musicState.section === 'Drop' ? 0.5 : -0.2;
+
+        musicState.arousal = musicState.arousal * 0.95 + arousal * 0.05;
+        musicState.valence = musicState.valence * 0.95 + valence * 0.05;
+
+        // Map to emotion name
+        if (musicState.arousal > 0.3) {
+            musicState.emotion = musicState.valence > 0 ? 'Euphoria' : 'Intensity';
+        } else if (musicState.arousal < -0.3) {
+            musicState.emotion = musicState.valence > 0 ? 'Peace' : 'Melancholy';
+        } else {
+            musicState.emotion = musicState.valence > 0 ? 'Hope' : 'Tension';
+        }
+
+        // Detect key from spectral centroid (simplified)
+        const brightness = musicState.high / (musicState.bass + 0.01);
+        musicState.mode = brightness > 0.5 ? 'major' : 'minor';
+    }
+
+    // ═══════════════════════════════════════════════════════════════════
+    // REVELATION ENGINE
+    // ═══════════════════════════════════════════════════════════════════
+
+    function updateRevelation() {
+        const t = musicState.time;
+        const progress = t / musicState.songDuration;
+
+        // Key clarity (simulated - increases over first 30 seconds)
+        const keyTarget = Math.min(t / 30, 1) * 0.3;
+        musicState.keyClarity += (keyTarget - musicState.keyClarity) * 0.05;
+
+        // Structure clarity (based on section recognition)
+        let structureTarget = 0;
+        switch (musicState.section) {
+            case 'Intro': structureTarget = 0.1; break;
+            case 'Verse': structureTarget = 0.2; break;
+            case 'Buildup': structureTarget = 0.35; break;
+            case 'Chorus': structureTarget = 0.4; break;
+            case 'Drop': structureTarget = 0.45; break;
+            case 'Outro': structureTarget = 0.3; break;
+        }
+        musicState.structureClarity += (structureTarget - musicState.structureClarity) * 0.05;
+
+        // Pattern clarity (increases with repetition)
+        const patternTarget = Math.min(progress * 2, 0.25);
+        musicState.patternClarity += (patternTarget - musicState.patternClarity) * 0.02;
+
+        // Climax clarity (spikes during chorus/drop)
+        let climaxTarget = 0;
+        if (musicState.section === 'Drop') {
+            climaxTarget = 1.0;
+        } else if (musicState.section === 'Chorus') {
+            climaxTarget = 0.7;
+        } else if (musicState.section === 'Buildup') {
+            climaxTarget = musicState.sectionProgress * 0.5;
+        }
+        musicState.climaxClarity += (climaxTarget - musicState.climaxClarity) * 0.1;
+
+        // Total clarity
+        const totalClarity = musicState.keyClarity +
+                            musicState.structureClarity +
+                            musicState.patternClarity +
+                            Math.max(0, musicState.climaxClarity);
+
+        musicState.clarity = Math.min(totalClarity, 1);
+    }
+
+    // ═══════════════════════════════════════════════════════════════════
+    // UI UPDATE
+    // ═══════════════════════════════════════════════════════════════════
+
+    function updateUI() {
+        // Stats panel
+        document.getElementById('stat-key').textContent = `${musicState.key} ${musicState.mode}`;
+        document.getElementById('stat-bpm').textContent = musicState.tempo;
+        document.getElementById('stat-section').textContent = musicState.section;
+        document.getElementById('stat-emotion').textContent = musicState.emotion;
+
+        document.getElementById('bar-bass').style.width = `${musicState.bass * 100}%`;
+        document.getElementById('bar-mid').style.width = `${musicState.mid * 100}%`;
+        document.getElementById('bar-high').style.width = `${musicState.high * 100}%`;
+        document.getElementById('bar-energy').style.width = `${musicState.energy * 100}%`;
+
+        // Clarity display
+        let clarityText, clarityDesc;
+        if (musicState.clarity < 0.15) {
+            clarityText = 'ABSTRACT';
+            clarityDesc = 'Pure sensation';
+        } else if (musicState.clarity < 0.35) {
+            clarityText = 'EMERGING';
+            clarityDesc = 'Forms appearing';
+        } else if (musicState.clarity < 0.55) {
+            clarityText = 'FORMING';
+            clarityDesc = 'Structure visible';
+        } else if (musicState.clarity < 0.8) {
+            clarityText = 'CLARIFYING';
+            clarityDesc = 'Scene revealing';
+        } else {
+            clarityText = 'REVEALED';
+            clarityDesc = 'Full vision';
+        }
+
+        document.getElementById('clarity-level').textContent = clarityText;
+        document.getElementById('clarity-desc').textContent =
+            `${clarityDesc} • ${Math.round(musicState.clarity * 100)}%`;
+    }
+
+    // ═══════════════════════════════════════════════════════════════════
+    // RENDER LOOP
+    // ═══════════════════════════════════════════════════════════════════
+
+    let lastTime = 0;
+
+    function render(time) {
+        const deltaTime = (time - lastTime) / 1000;
+        lastTime = time;
+
+        // Analyze audio
+        analyzeAudio();
+
+        // Update music understanding
+        if (isPlaying) {
+            updateMusicUnderstanding();
+            updateRevelation();
+            updateUI();
+        }
+
+        // Set uniforms
+        gl.uniform1f(uniforms.time, time / 1000);
+        gl.uniform1f(uniforms.clarity, musicState.clarity);
+        gl.uniform1f(uniforms.bass, musicState.bass);
+        gl.uniform1f(uniforms.mid, musicState.mid);
+        gl.uniform1f(uniforms.high, musicState.high);
+        gl.uniform1f(uniforms.energy, musicState.energy);
+        gl.uniform1f(uniforms.beat, musicState.beatStrength);
+        gl.uniform1f(uniforms.valence, musicState.valence);
+        gl.uniform1f(uniforms.arousal, musicState.arousal);
+        gl.uniform2f(uniforms.resolution, canvas.width, canvas.height);
+
+        // Draw
+        gl.drawArrays(gl.TRIANGLES, 0, 6);
+
+        requestAnimationFrame(render);
+    }
+
+    // ═══════════════════════════════════════════════════════════════════
+    // EVENT HANDLERS
+    // ═══════════════════════════════════════════════════════════════════
+
+    dropZone.addEventListener('click', () => fileInput.click());
+
+    dropZone.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        dropZone.classList.add('active');
+    });
+
+    dropZone.addEventListener('dragleave', () => {
+        dropZone.classList.remove('active');
+    });
+
+    dropZone.addEventListener('drop', (e) => {
+        e.preventDefault();
+        dropZone.classList.remove('active');
+        const file = e.dataTransfer.files[0];
+        if (file && file.type.startsWith('audio/')) {
+            initAudio();
+            loadAudio(file);
+        }
+    });
+
+    fileInput.addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            initAudio();
+            loadAudio(file);
+        }
+    });
+
+    window.addEventListener('resize', resize);
+
+    // ═══════════════════════════════════════════════════════════════════
+    // INITIALIZATION
+    // ═══════════════════════════════════════════════════════════════════
+
+    if (initWebGL()) {
+        resize();
+        requestAnimationFrame(render);
+        console.log('SYNESTHESIA initialized');
+    } else {
+        console.error('WebGL initialization failed');
+    }
+
+    </script>
+</body>
+</html>
