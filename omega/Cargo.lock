@@ -1248,6 +1248,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "dotenv"
+version = "0.15.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "77c90badedccf4105eca100756a0b1289e191f6fcbdadd3cee1d2f614f97da8f"
+
+[[package]]
 name = "dotenvy"
 version = "0.15.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3242,6 +3248,33 @@ dependencies = [
  "tokio",
  "tokio-test",
  "tracing",
+ "uuid",
+]
+
+[[package]]
+name = "omega-longevity"
+version = "0.1.0"
+dependencies = [
+ "async-trait",
+ "chrono",
+ "dotenv",
+ "flate2",
+ "omega-consciousness",
+ "omega-core",
+ "omega-memory",
+ "omega-singularity",
+ "omega-snn",
+ "petgraph",
+ "pgvector",
+ "rand 0.8.5",
+ "rand_distr",
+ "serde",
+ "serde_json",
+ "sqlx",
+ "tempfile",
+ "thiserror 1.0.69",
+ "tokio",
+ "tokio-test",
  "uuid",
 ]
 

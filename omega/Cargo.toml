@@ -20,6 +20,7 @@ members = [
     "crates/omega-synesthesia-streaming",
     "crates/omega-synesthesia-renderer",
     "crates/omega-singularity",
+    "crates/omega-longevity",
     "crates/omega-examples",
     "examples/digital-twin-social",
 ]
