@@ -28,6 +28,11 @@ llama-cpp-rs = { version = "0.1", optional = true }
 candle-core = { version = "0.4", optional = true }
 candle-transformers = { version = "0.4", optional = true }
 
+# Video Generation (for revelation engine)
+hf-hub = { version = "0.3", optional = true }
+safetensors = { version = "0.4", optional = true }
+tokenizers = { version = "0.15", optional = true }
+
 # Async Runtime
 tokio = { version = "1.35", features = ["full"] }
 futures = "0.3"
@@ -62,7 +67,9 @@ omega-world = { path = "../omega/omega-world", optional = true }
 default = ["local-llm"]
 local-llm = ["llama-cpp-rs"]
 candle = ["candle-core", "candle-transformers"]
+video-gen = ["candle", "hf-hub", "safetensors", "tokenizers"]
 omega = ["omega-brain", "omega-perception", "omega-language", "omega-emotion", "omega-creativity", "omega-world"]
+full = ["local-llm", "video-gen", "omega"]
 
 [profile.release]
 opt-level = 3
