@@ -435,13 +435,28 @@ impl RevelationEngine {
 }
 
 /// Clarity breakdown for debugging/UI
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Default)]
 pub struct ClarityBreakdown {
+    /// Total clarity (0.0 - 1.0)
     pub total: f32,
+
+    // Music-driven components (from RevelationEngine)
+    /// Key detection clarity
     pub key: f32,
-    pub structure: f32,
+    /// Pattern/repetition clarity
     pub pattern: f32,
+    /// Climax proximity clarity
     pub climax: f32,
+
+    // Player-mode components (for real-time sync)
+    /// Signal feature clarity (RMS, beats, etc.)
+    pub signal: f32,
+    /// Music theory clarity (key confidence, mode)
+    pub theory: f32,
+    /// Song structure clarity (section detection)
+    pub structure: f32,
+    /// Emotional clarity
+    pub emotion: f32,
 }
 
 impl Default for RevelationEngine {
