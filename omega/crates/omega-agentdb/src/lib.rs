@@ -18,12 +18,19 @@
 mod hnsw;
 pub mod gnn_index;
 pub mod ruvector_integration;
+pub mod rvlite_backend;
 pub mod simd_ops;
 
 pub use gnn_index::{GNNConfig, GNNIndex, GNNNode, GNNSearchResult, GNNStats};
 pub use ruvector_integration::{
     GNNLayer, GNNStats as RuVectorGNNStats, GraphEdge, GraphQueryResult,
     RuVectorConfig, RuVectorError, RuVectorIndex, RuVectorResult, SimdLevel, VectorEntry,
+};
+pub use rvlite_backend::{
+    ConsolidationReport, DistanceMetric as RvLiteDistanceMetric, GraphBackend,
+    GraphQueryResult as RvLiteGraphQueryResult, GraphRelationship, MemoryTier,
+    RelatedNode, ReplayReport, RvLiteBackend, RvLiteConfig, RvLiteEntry, RvLiteStats,
+    SemanticMemoryEntry, TierConfig, VectorBackend,
 };
 pub use simd_ops::DistanceMetric;
 

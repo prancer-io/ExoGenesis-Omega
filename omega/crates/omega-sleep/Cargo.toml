@@ -25,5 +25,9 @@ rand = "0.8"
 rand_distr = "0.4"
 parking_lot = "0.12"
 
+# Memory integration for sleep consolidation
+omega-memory = { version = "1.0.0", path = "../omega-memory" }
+omega-hippocampus = { version = "1.0.0", path = "../omega-hippocampus" }
+
 [dev-dependencies]
 tokio-test = "0.4"

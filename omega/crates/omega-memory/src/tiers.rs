@@ -184,6 +184,26 @@ pub enum MemoryScale {
     Cosmic,
 }
 
+impl From<u8> for MemoryTier {
+    fn from(value: u8) -> Self {
+        match value {
+            1 => MemoryTier::Instant,
+            2 => MemoryTier::Session,
+            3 => MemoryTier::Episodic,
+            4 => MemoryTier::Semantic,
+            5 => MemoryTier::Collective,
+            6 => MemoryTier::Evolutionary,
+            7 => MemoryTier::Architectural,
+            8 => MemoryTier::Substrate,
+            9 => MemoryTier::Civilizational,
+            10 => MemoryTier::Temporal,
+            11 => MemoryTier::Physical,
+            12 => MemoryTier::Omega,
+            _ => MemoryTier::Instant, // Default to Instant for invalid values
+        }
+    }
+}
+
 impl std::fmt::Display for MemoryTier {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
