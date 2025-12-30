@@ -1,0 +1,25 @@
+# SYNESTHESIA Analyzer Dependencies
+
+# Core audio analysis
+essentia==2.1b6.dev1034    # Music analysis (key, chords, structure)
+librosa>=0.10.0            # Additional audio features
+numpy>=1.24.0              # Numerical computing
+scipy>=1.11.0              # Signal processing
+
+# Machine learning
+scikit-learn>=1.3.0        # Clustering for structure
+torch>=2.0.0               # Neural network inference
+
+# Audio I/O
+soundfile>=0.12.0          # Audio file reading
+pydub>=0.25.0              # Audio format conversion
+
+# Utilities
+tqdm>=4.65.0               # Progress bars
+click>=8.1.0               # CLI framework
+pyyaml>=6.0                # Config files
+msgpack>=1.0.0             # Binary serialization (.synth format)
+
+# Optional: Video generation
+# diffusers>=0.21.0        # Stable Diffusion
+# accelerate>=0.21.0       # Model acceleration
