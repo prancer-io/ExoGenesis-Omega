@@ -298,6 +298,224 @@ def export_json(synth_path: str, output_path: str):
     click.echo(f"Exported to {output_path}")
 
 
+@cli.command()
+@click.argument('synth_path', type=click.Path(exists=True))
+@click.option('-o', '--output-dir', default='segments', help='Output directory for video segments')
+@click.option('--mode', type=click.Choice(['procedural', 'static']), default='procedural',
+              help='Video generation mode')
+@click.option('-v', '--verbose', is_flag=True, help='Verbose output')
+def generate_video(synth_path: str, output_dir: str, mode: str, verbose: bool):
+    """
+    Generate video segments for a .synth file.
+
+    This creates pre-rendered video segments that can be blended
+    with real-time shader effects during playback.
+
+    SYNTH_PATH: Path to analyzed .synth file
+    """
+    if verbose:
+        logging.getLogger().setLevel(logging.DEBUG)
+
+    from .synth_format import SynthFile
+    from .video_generator import VideoGenerator, GenerationConfig, GenerationMode
+
+    click.echo(f"🎬 Loading analysis: {synth_path}")
+    synth = SynthFile.load(synth_path)
+
+    if not synth.analysis:
+        click.echo("❌ Error: .synth file has no analysis data", err=True)
+        sys.exit(1)
+
+    click.echo(f"📁 Output directory: {output_dir}")
+    click.echo(f"🎨 Generation mode: {mode}")
+
+    # Configure generator
+    config = GenerationConfig(
+        mode=GenerationMode(mode),
+        output_dir=output_dir,
+    )
+    generator = VideoGenerator(config)
+
+    # Convert analysis to the format expected by generator
+    sections = synth.analysis.sections
+    emotion_arc = synth.analysis.emotion_arc
+    energy_curve = synth.analysis.energy_curve
+
+    click.echo(f"\n⏳ Generating {len(sections)} video segments...")
+
+    segments = generator.generate_segments(
+        sections=sections,
+        emotion_arc=emotion_arc,
+        energy_curve=energy_curve,
+        tempo=synth.analysis.tempo,
+        key=synth.analysis.key,
+        mode=synth.analysis.mode,
+        duration=synth.analysis.duration,
+    )
+
+    click.echo(f"\n✅ Generated {len(segments)} segments:")
+    for seg in segments:
+        click.echo(f"   [{seg.segment_id}] {seg.start_time:.1f}s - {seg.end_time:.1f}s: {seg.mood} ({seg.video_path})")
+
+    click.echo(f"\n💡 To use these segments, update your .synth file with the segment paths.")
+
+
+@cli.command()
+@click.argument('audio_path', type=click.Path(exists=True))
+@click.option('-o', '--output', type=click.Path(), help='Output .synth file path')
+@click.option('--segments-dir', default='segments', help='Directory for video segments')
+@click.option('--video-mode', type=click.Choice(['procedural', 'static', 'none']), default='procedural',
+              help='Video generation mode (none to skip)')
+@click.option('-v', '--verbose', is_flag=True, help='Verbose output')
+def full_pipeline(
+    audio_path: str,
+    output: Optional[str],
+    segments_dir: str,
+    video_mode: str,
+    verbose: bool,
+):
+    """
+    Run the complete analysis + video generation pipeline.
+
+    This is the recommended way to prepare a song for visualization.
+    It analyzes the audio, detects structure and emotion, generates
+    video segments, and packages everything into a .synth file.
+
+    AUDIO_PATH: Path to audio file (MP3, WAV, FLAC, etc.)
+    """
+    if verbose:
+        logging.getLogger().setLevel(logging.DEBUG)
+
+    from .essentia_analyzer import EssentiaAnalyzer
+    from .structure_detector import StructureDetector
+    from .emotion_mapper import EmotionMapper
+    from .synth_format import create_synth_file, SynthFile, VideoSegment as VidSeg
+    import numpy as np
+
+    audio_path = Path(audio_path)
+    if not output:
+        output = audio_path.with_suffix('.synth')
+    output = Path(output)
+
+    click.echo(f"🎵 Full Pipeline: {audio_path.name}")
+    click.echo(f"{'=' * 50}")
+
+    # Step 1: Audio analysis
+    click.echo("\n[1/5] Extracting audio features...")
+    analyzer = EssentiaAnalyzer()
+    analysis = analyzer.analyze(str(audio_path))
+    click.echo(f"      Duration: {analysis.duration:.1f}s | Key: {analysis.key} | Tempo: {analysis.beats.tempo:.1f} BPM")
+
+    # Step 2: Structure detection
+    click.echo("\n[2/5] Detecting song structure...")
+    structure_detector = StructureDetector()
+    spectral_features = np.column_stack([
+        analysis.spectral.centroid,
+        analysis.spectral.rolloff,
+        analysis.spectral.flux,
+        analysis.spectral.rms,
+    ])
+    sections, climaxes = structure_detector.detect(
+        spectral_features,
+        analysis.energy_curve,
+        analysis.beats.beats,
+        analysis.beats.tempo,
+        analysis.duration,
+    )
+    click.echo(f"      Found {len(sections)} sections, {len(climaxes)} climax points")
+
+    # Step 3: Emotion mapping
+    click.echo("\n[3/5] Mapping emotional arc...")
+    emotion_mapper = EmotionMapper()
+    emotion_arc = emotion_mapper.map(
+        key=analysis.key.key,
+        mode=analysis.key.scale,
+        tempo=analysis.beats.tempo,
+        energy_curve=analysis.energy_curve,
+        sections=sections,
+        duration=analysis.duration,
+        chords=analysis.chords,
+    )
+    click.echo(f"      Dominant emotion: {emotion_arc.dominant_emotion.value}")
+
+    # Step 4: Create base .synth file
+    click.echo("\n[4/5] Creating .synth file...")
+    synth_file = create_synth_file(
+        analysis_result=analysis,
+        structure_result=(sections, climaxes),
+        emotion_arc=emotion_arc,
+        audio_path=str(audio_path),
+    )
+
+    # Step 5: Generate video segments (optional)
+    if video_mode != 'none':
+        click.echo(f"\n[5/5] Generating video segments ({video_mode} mode)...")
+        from .video_generator import VideoGenerator, GenerationConfig, GenerationMode
+
+        config = GenerationConfig(
+            mode=GenerationMode(video_mode),
+            output_dir=segments_dir,
+        )
+        generator = VideoGenerator(config)
+
+        # Convert sections to dict format
+        section_dicts = [
+            {
+                'type': s.section_type.value if hasattr(s.section_type, 'value') else str(s.section_type),
+                'start': s.start_time,
+                'end': s.end_time,
+                'energy': s.energy,
+                'repetition': s.repetition,
+            }
+            for s in sections
+        ]
+
+        # Convert emotion arc to dict format
+        emotion_dicts = [
+            {
+                'time': e.time,
+                'emotion': e.emotion.value if hasattr(e.emotion, 'value') else str(e.emotion),
+                'intensity': e.intensity,
+            }
+            for e in emotion_arc.points
+        ]
+
+        segments = generator.generate_segments(
+            sections=section_dicts,
+            emotion_arc=emotion_dicts,
+            energy_curve=analysis.energy_curve.tolist(),
+            tempo=analysis.beats.tempo,
+            key=analysis.key.key,
+            mode=analysis.key.scale,
+            duration=analysis.duration,
+        )
+
+        # Add video segments to synth file
+        synth_file.video_segments = [
+            VidSeg(
+                segment_id=s.segment_id,
+                start_time=s.start_time,
+                end_time=s.end_time,
+                video_path=s.video_path,
+                mood=s.mood,
+                clarity_level=s.clarity_level,
+                base_hue=s.base_hue,
+                saturation=s.saturation,
+                brightness=s.brightness,
+                motion_speed=s.motion_speed,
+            )
+            for s in segments
+        ]
+        click.echo(f"      Generated {len(segments)} video segments")
+    else:
+        click.echo("\n[5/5] Skipping video generation")
+
+    # Save
+    synth_file.save(str(output))
+    click.echo(f"\n✅ Complete! Saved to: {output} ({output.stat().st_size / 1024:.1f} KB)")
+    click.echo(f"\n🚀 Ready for playback with synesthesia player")
+
+
 def main():
     """Entry point"""
     cli()
