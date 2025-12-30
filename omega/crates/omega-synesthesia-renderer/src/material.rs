@@ -20,17 +20,20 @@ pub struct PbrMaterial {
     /// Roughness factor (0.0 = smooth, 1.0 = rough)
     pub roughness: f32,
 
-    /// Emission color (for glowing objects)
-    pub emission: [f32; 3],
+    /// Emissive color (for glowing objects)
+    pub emissive: [f32; 3],
 
-    /// Emission strength
-    pub emission_strength: f32,
+    /// Emissive strength
+    pub emissive_strength: f32,
 
     /// Normal map strength
     pub normal_strength: f32,
 
     /// Ambient occlusion strength
     pub ao_strength: f32,
+
+    /// Wireframe rendering mode
+    pub wireframe: bool,
 }
 
 impl Default for PbrMaterial {
@@ -39,10 +42,11 @@ impl Default for PbrMaterial {
             base_color: [1.0, 1.0, 1.0, 1.0],
             metallic: 0.0,
             roughness: 0.5,
-            emission: [0.0, 0.0, 0.0],
-            emission_strength: 0.0,
+            emissive: [0.0, 0.0, 0.0],
+            emissive_strength: 0.0,
             normal_strength: 1.0,
             ao_strength: 1.0,
+            wireframe: false,
         }
     }
 }
@@ -82,8 +86,8 @@ impl PbrMaterial {
     pub fn emissive(color: [f32; 3], strength: f32) -> Self {
         Self {
             base_color: [color[0], color[1], color[2], 1.0],
-            emission: color,
-            emission_strength: strength,
+            emissive: color,
+            emissive_strength: strength,
             ..Default::default()
         }
     }
@@ -96,10 +100,10 @@ impl Material for PbrMaterial {
             metallic: self.metallic,
             roughness: self.roughness,
             emission: [
-                self.emission[0],
-                self.emission[1],
-                self.emission[2],
-                self.emission_strength,
+                self.emissive[0],
+                self.emissive[1],
+                self.emissive[2],
+                self.emissive_strength,
             ],
             normal_strength: self.normal_strength,
             ao_strength: self.ao_strength,
@@ -164,8 +168,8 @@ impl MaterialPresets {
             base_color: [0.2, 0.15, 0.1, 1.0],
             metallic: 0.0,
             roughness: 0.95,
-            emission: [0.8, 0.3, 0.1],
-            emission_strength: 0.3,
+            emissive: [0.8, 0.3, 0.1],
+            emissive_strength: 0.3,
             ..Default::default()
         }
     }
@@ -176,8 +180,8 @@ impl MaterialPresets {
             base_color: [0.1, 0.3, 0.8, 1.0],
             metallic: 0.9,
             roughness: 0.1,
-            emission: [0.0, 0.5, 1.0],
-            emission_strength: 0.5,
+            emissive: [0.0, 0.5, 1.0],
+            emissive_strength: 0.5,
             ..Default::default()
         }
     }
@@ -188,8 +192,8 @@ impl MaterialPresets {
             base_color: [0.8, 0.9, 1.0, 0.3],
             metallic: 0.0,
             roughness: 0.1,
-            emission: [0.7, 0.8, 0.9],
-            emission_strength: 0.2,
+            emissive: [0.7, 0.8, 0.9],
+            emissive_strength: 0.2,
             ..Default::default()
         }
     }
@@ -216,7 +220,7 @@ mod tests {
         assert!(metal.metallic > 0.5);
 
         let emissive = MaterialPresets::volcanic_rock();
-        assert!(emissive.emission_strength > 0.0);
+        assert!(emissive.emissive_strength > 0.0);
     }
 
     #[test]
